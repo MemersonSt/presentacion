@@ -10,16 +10,6 @@ import { Logo } from "@/components/Logo";
 export default function HomeV2() {
   const bestSellers = INITIAL_PRODUCTS.filter(p => p.isBestSeller);
 
-  // High-quality category images
-  const categoryImages = [
-    "https://images.unsplash.com/photo-1563241527-3004b7be0fab?auto=format&fit=crop&q=80&w=400",
-    "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&q=80&w=400",
-    "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?auto=format&fit=crop&q=80&w=400",
-    "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&q=80&w=400",
-    "https://images.unsplash.com/photo-1530103578275-21127a723e40?auto=format&fit=crop&q=80&w=400",
-    "https://images.unsplash.com/photo-1519225495810-7512ca3df7f2?auto=format&fit=crop&q=80&w=400"
-  ];
-
   return (
     <div className="min-h-screen bg-[#FCFAF8] selection:bg-[#2C2C2B] selection:text-white overflow-x-hidden pt-20">
       <NavbarV2 />
@@ -73,7 +63,7 @@ export default function HomeV2() {
               {/* Main Image */}
               <div className="absolute inset-x-0 inset-y-0 overflow-hidden rounded-[3rem] lg:rounded-[4rem] shadow-2xl">
                 <img 
-                  src="https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&q=80&w=2000" 
+                  src="/assets/v2_hero.png" 
                   className="w-full h-full object-cover transition-transform duration-[10s] hover:scale-110"
                   alt="artistic-floral-design"
                 />
@@ -125,7 +115,7 @@ export default function HomeV2() {
           </Link>
         </div>
         <div className="flex gap-10 lg:gap-16 overflow-x-auto px-8 lg:px-16 no-scrollbar pb-8">
-          {CATEGORIES.map((cat, i) => (
+          {CATEGORIES.map((cat: any, i) => (
             <motion.div 
               key={i} 
               whileHover={{ y: -8 }} 
@@ -134,7 +124,7 @@ export default function HomeV2() {
               <div className="relative w-24 h-24 lg:w-32 lg:h-32 rounded-full p-1 border border-[#E5DACD] group-hover:border-[#2C2C2B] transition-colors duration-500">
                 <div className="w-full h-full rounded-full overflow-hidden border-2 border-white">
                   <img 
-                    src={categoryImages[i] || categoryImages[0]} 
+                    src={cat.image} 
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                     alt={cat.name}
                   />

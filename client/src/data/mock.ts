@@ -17,12 +17,36 @@ export interface Product {
 }
 
 export const CATEGORIES = [
-  { name: "Ramos de rosas", slug: "ramos-de-rosas" },
-  { name: "Flores mixtas", slug: "flores-mixtas" },
-  { name: "Desayunos sorpresa", slug: "desayunos-sorpresa" },
-  { name: "Regalos con vino", slug: "regalos-con-vino" },
-  { name: "Cumpleaños", slug: "cumpleanos" },
-  { name: "Amor y aniversario", slug: "amor-y-aniversario" },
+  { 
+    name: "Ramos de rosas", 
+    slug: "ramos-de-rosas", 
+    image: "/assets/product1.png" 
+  },
+  { 
+    name: "Flores mixtas", 
+    slug: "flores-mixtas", 
+    image: "/assets/product2.png" 
+  },
+  { 
+    name: "Desayunos sorpresa", 
+    slug: "desayunos-sorpresa", 
+    image: "/assets/product3.png" 
+  },
+  { 
+    name: "Regalos con vino", 
+    slug: "regalos-con-vino", 
+    image: "/assets/product5.png" 
+  },
+  { 
+    name: "Cumpleaños", 
+    slug: "cumpleanos", 
+    image: "/assets/product6.png" 
+  },
+  { 
+    name: "Amor y aniversario", 
+    slug: "amor-y-aniversario", 
+    image: "/assets/product4.png" 
+  }
 ];
 
 export const INITIAL_PRODUCTS: Product[] = [
@@ -32,8 +56,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Elegante ramo de 24 rosas rojas frescas de exportación, envueltas en papel decorativo y lazo de seda. Ideal para expresar amor profundo.",
     category: "Ramos de rosas",
     price: "$45.00",
-    image: "https://images.unsplash.com/photo-1591512401823-74ac5003c4cf?auto=format&fit=crop&q=80&w=800",
-    additionalImages: ["https://images.unsplash.com/photo-1591512401823-74ac5003c4cf?auto=format&fit=crop&q=80&w=800"],
+    image: "/assets/product1.png",
+    additionalImages: ["/assets/product1.png"],
     isBestSeller: true,
     stock: 15,
     deliveryTime: "2-3 horas"
@@ -44,8 +68,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Combinación vibrante de lirios, margaritas y claveles en tonos pasteles. Una explosión de frescura para cualquier ocasión.",
     category: "Flores mixtas",
     price: "$38.00",
-    image: "https://images.unsplash.com/photo-1563241527-3004b7be0fab?auto=format&fit=crop&q=80&w=800",
-    additionalImages: ["https://images.unsplash.com/photo-1563241527-3004b7be0fab?auto=format&fit=crop&q=80&w=800"],
+    image: "/assets/product2.png",
+    additionalImages: ["/assets/product2.png"],
     isBestSeller: true,
     stock: 12,
     deliveryTime: "2-4 horas"
@@ -56,8 +80,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Completo desayuno que incluye café premium, croissants recién horneados, ensalada de frutas frescas, jugo de naranja y un mini bouquet decorativo.",
     category: "Desayunos sorpresa",
     price: "$55.00",
-    image: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&q=80&w=800",
-    additionalImages: ["https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&q=80&w=800"],
+    image: "/assets/product3.png",
+    additionalImages: ["/assets/product3.png"],
     isBestSeller: true,
     stock: 8,
     deliveryTime: "En la mañana (6am - 10am)"
@@ -68,7 +92,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Caja de lujo con 12 rosas seleccionadas y follaje decorativo. Un regalo sofisticado y duradero.",
     category: "Amor y aniversario",
     price: "$32.00",
-    image: "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?auto=format&fit=crop&q=80&w=800",
+    image: "/assets/product4.png",
+    additionalImages: ["/assets/product4.png"],
     isBestSeller: false,
     stock: 20,
     deliveryTime: "2-3 horas"
@@ -79,7 +104,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Caja de regalo que incluye una botella de vino tinto Cabernet Sauvignon y un pequeño arreglo de flores complementario.",
     category: "Regalos con vino",
     price: "$65.00",
-    image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&q=80&w=800",
+    image: "/assets/product5.png",
+    additionalImages: ["/assets/product5.png"],
     isBestSeller: false,
     stock: 5,
     deliveryTime: "3-5 horas"
@@ -90,7 +116,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Arreglo colorido con globos metalizados y flores mixtas. La mejor forma de desear un feliz día.",
     category: "Cumpleaños",
     price: "$40.00",
-    image: "https://images.unsplash.com/photo-1530103578275-21127a723e40?auto=format&fit=crop&q=80&w=800",
+    image: "/assets/product6.png",
+    additionalImages: ["/assets/product6.png"],
     isBestSeller: false,
     stock: 10,
     deliveryTime: "2-4 horas"
