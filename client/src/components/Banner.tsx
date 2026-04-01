@@ -6,21 +6,21 @@ import { ArrowRight, MessageSquare } from "lucide-react";
 
 const slides = [
   {
-    image: "/assets/banner1.png",
+    image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&q=80&w=1600",
     title: "Hoy haces su día especial 🌸",
     subtitle: "Entrega en Guayaquil en horas",
     cta: "Comprar ahora",
     color: "pink"
   },
   {
-    image: "/assets/banner2.png",
+    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=1600",
     title: "El despertar perfecto 🥐",
     subtitle: "Desayunos sorpresa que enamoran",
     cta: "Ver desayunos",
     color: "orange"
   },
   {
-    image: "/assets/banner3.png",
+    image: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&q=80&w=1600",
     title: "Celebra con elegancia ✨",
     subtitle: "Arreglos exclusivos para momentos únicos",
     cta: "Más vendidos",

@@ -32,8 +32,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Elegante ramo de 24 rosas rojas frescas de exportación, envueltas en papel decorativo y lazo de seda. Ideal para expresar amor profundo.",
     category: "Ramos de rosas",
     price: "$45.00",
-    image: "/assets/product1.png",
-    additionalImages: ["/assets/product1.png"],
+    image: "https://images.unsplash.com/photo-1591512401823-74ac5003c4cf?auto=format&fit=crop&q=80&w=800",
+    additionalImages: ["https://images.unsplash.com/photo-1591512401823-74ac5003c4cf?auto=format&fit=crop&q=80&w=800"],
     isBestSeller: true,
     stock: 15,
     deliveryTime: "2-3 horas"
@@ -44,20 +44,20 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Combinación vibrante de lirios, margaritas y claveles en tonos pasteles. Una explosión de frescura para cualquier ocasión.",
     category: "Flores mixtas",
     price: "$38.00",
-    image: "/assets/product2.png",
-    additionalImages: ["/assets/product2.png"],
+    image: "https://images.unsplash.com/photo-1563241527-3004b7be0fab?auto=format&fit=crop&q=80&w=800",
+    additionalImages: ["https://images.unsplash.com/photo-1563241527-3004b7be0fab?auto=format&fit=crop&q=80&w=800"],
     isBestSeller: true,
     stock: 12,
     deliveryTime: "2-4 horas"
   },
   {
     id: "3",
-    name: "Desayuno Sorpresa Gourmet",
+    name: "Cesta Sorpresa Gourmet",
     description: "Completo desayuno que incluye café premium, croissants recién horneados, ensalada de frutas frescas, jugo de naranja y un mini bouquet decorativo.",
     category: "Desayunos sorpresa",
     price: "$55.00",
-    image: "/assets/product3.png",
-    additionalImages: ["/assets/product3.png"],
+    image: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&q=80&w=800",
+    additionalImages: ["https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&q=80&w=800"],
     isBestSeller: true,
     stock: 8,
     deliveryTime: "En la mañana (6am - 10am)"
@@ -68,7 +68,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Caja de lujo con 12 rosas seleccionadas y follaje decorativo. Un regalo sofisticado y duradero.",
     category: "Amor y aniversario",
     price: "$32.00",
-    image: "https://images.unsplash.com/photo-1563241527-3004b7be0fab?auto=format&fit=crop&q=80&w=800",
+    image: "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?auto=format&fit=crop&q=80&w=800",
     isBestSeller: false,
     stock: 20,
     deliveryTime: "2-3 horas"
@@ -90,12 +90,13 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Arreglo colorido con globos metalizados y flores mixtas. La mejor forma de desear un feliz día.",
     category: "Cumpleaños",
     price: "$40.00",
-    image: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&q=80&w=800",
+    image: "https://images.unsplash.com/photo-1530103578275-21127a723e40?auto=format&fit=crop&q=80&w=800",
     isBestSeller: false,
     stock: 10,
     deliveryTime: "2-4 horas"
   }
 ];
+
 
 export const SALES_DATA = [
   { month: "Ene", sales: 8500 },

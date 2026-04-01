@@ -3,7 +3,9 @@ dist
 .env
 .git
 .gitignore
-*.md
-Dockerfile
-.dockerignore
 npm-debug.log
+README.md
+client/node_modules
+server/node_modules
+script
+/tmp

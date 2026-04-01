@@ -18,7 +18,7 @@ export function Logo({ className, variant = "light", size = "md" }: LogoProps) {
   };
 
   return (
-    <div className={cn("flex flex-col items-center", sizes[size], className)}>
+    <div className={cn("flex flex-col", className || "items-center", sizes[size])}>
       <svg
         viewBox="0 0 400 120"
         fill="none"
