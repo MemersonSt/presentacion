@@ -214,15 +214,53 @@ exports.createProduct = async (req, res, next) => {
     console.log("Creating product with data:", validation.data);
     // Crear producto con variantes en una transacción
     const productResponse = await prisma.$transaction(async (tx) => {
-      // Usar userId del body o uno por defecto válido (Admin DIFIORI)
-      const userId = validation.data.userId || "cmnnzkhdt0002dpy8jmjgjkm1";
+      // Buscar o crear compañía DIFIORI
+      let company = await tx.company.findFirst({
+        where: { slug: "difiori" }
+      });
+
+      if (!company) {
+        company = await tx.company.create({
+          data: {
+            name: "Difiori Floristería",
+            slug: "difiori",
+            email: "ventas@difiori.com.ec",
+            phone: "+593 99 798 4583",
+            isActive: true,
+            isSetup: true,
+          }
+        });
+        console.log("🏢 Created company:", company.name);
+      }
+
+      // Buscar o crear usuario admin
+      let adminUser = await tx.users.findFirst({
+        where: { email: "admin@difiori.com" }
+      });
+
+      if (!adminUser) {
+        adminUser = await tx.users.create({
+          data: {
+            email: "admin@difiori.com",
+            name: "Admin Difiori",
+            password: "admin123", // Esto debería ser hasheado en producción
+            role: "ADMIN",
+            companyId: company.id,
+            isActive: true,
+          }
+        });
+        console.log("👤 Created admin user:", adminUser.email);
+      }
+
+      // Usar userId del body o el admin creado
+      const userId = validation.data.userId || adminUser.id;
 
       // Crear el producto
       const newProduct = await tx.product.create({
         data: { 
           ...validation.data, 
           userId,
-          companyId: "cmnnzkgvl0000dpy8cj69hkg7",  // ID real de la empresa DIFIORI
+          companyId: company.id,
           isLimited: false,
           priceIncludesTax: true,
         },

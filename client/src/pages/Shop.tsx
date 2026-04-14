@@ -29,7 +29,28 @@ export default function Shop() {
           ))
         ) : (
           <div className="col-span-full py-40 text-center">
-             <p className="text-foreground/40 font-serif italic text-2xl">No hay productos disponibles en este momento.</p>
+             <p className="text-foreground/40 font-serif italic text-2xl mb-8">No hay productos disponibles en este momento.</p>
+             {/* Botón temporal para ejecutar seed */}
+             <button
+               onClick={async () => {
+                 try {
+                   const response = await fetch('/api/external/products/seed', {
+                     method: 'POST',
+                     headers: {
+                       'Content-Type': 'application/json',
+                     },
+                   });
+                   const result = await response.json();
+                   alert(result.message || 'Seed ejecutado');
+                   window.location.reload();
+                 } catch (error) {
+                   alert('Error ejecutando seed: ' + error.message);
+                 }
+               }}
+               className="bg-accent text-white px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-xl"
+             >
+               Cargar Productos de Ejemplo
+             </button>
           </div>
         )}
       </div>

@@ -80,13 +80,13 @@ export function Logo({ className, variant = "light", size = "md" }: LogoProps) {
           x="200"
           y="125"
           textAnchor="middle"
-          fill={color}
+          fill={variant === "light" ? "#666666" : "#0D0717"}
           style={{
             fontFamily: "Montserrat, sans-serif",
             fontWeight: 700,
-            fontSize: "12px",
+            fontSize: "16px",
             letterSpacing: "0.2em",
-            opacity: 0.8
+            opacity: 1
           }}
         >
           FLORES • REGALOS • EVENTOS

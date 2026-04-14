@@ -6,6 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { IntroScreen } from "@/components/IntroScreen";
 import Home from "@/pages/Home";
 import HomeV2 from "@/pages/v2/HomeV2";
+import Shop from "@/pages/Shop";
 import Admin from "@/pages/Admin";
 import NotFound from "@/pages/not-found";
 import ProductDetails from "@/pages/ProductDetails";
@@ -18,6 +19,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/shop" component={Shop} />
       <Route path="/v2" component={HomeV2} />
       <Route path="/product/:id" component={ProductDetails} />
       <Route path="/checkout" component={Checkout} />

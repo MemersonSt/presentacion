@@ -86,9 +86,9 @@ export default function Home() {
 
           <main className="flex-1 w-full overflow-hidden">
             {/* Catálogo General Section */}
-            <div id="catalogo" className="flex items-center gap-6 mb-12 opacity-30">
+            <div id="catalogo" className="flex items-center gap-6 mb-12 opacity-60">
               <div className="h-[1px] flex-1 bg-foreground"></div>
-              <h2 className="text-foreground font-black uppercase tracking-[0.5em] text-[10px] whitespace-nowrap">
+              <h2 className="text-foreground font-black uppercase tracking-[0.5em] text-sm whitespace-nowrap">
                 Catálogo {activeCategory ? `- ${activeCategory}` : 'de Arreglos Florales'}
               </h2>
               <div className="h-[1px] flex-1 bg-foreground"></div>
@@ -106,7 +106,7 @@ export default function Home() {
                 ))
               ) : (
                 <div className="col-span-full py-20 text-center">
-                  <p className="text-foreground/40 font-serif italic text-xl">
+                  <p className="text-foreground/60 font-serif italic text-2xl">
                     No se encontraron productos en esta categoría.
                   </p>
                 </div>
@@ -114,9 +114,11 @@ export default function Home() {
             </div>
             
             <div className="mt-24 text-center">
-              <button className="bg-transparent border-2 border-primary hover:bg-primary/20 text-foreground px-16 py-6 rounded-3xl font-black text-xs uppercase tracking-widest transition-all shadow-xl hover:scale-105 duration-500">
-                Ver Colección Completa
-              </button>
+              <Link href="/shop">
+                <button className="bg-transparent border-2 border-primary hover:bg-primary/20 text-foreground px-16 py-6 rounded-3xl font-black text-xs uppercase tracking-widest transition-all shadow-xl hover:scale-105 duration-500">
+                  Ver Colección Completa
+                </button>
+              </Link>
             </div>
           </main>
         </motion.section>
@@ -133,13 +135,13 @@ export default function Home() {
            <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-1 h-20 bg-gradient-to-b from-transparent to-primary/20" />
            
            <div className="text-center mb-20">
-              <h2 className="text-4xl md:text-6xl font-serif text-foreground mb-4 italic">Lo que dicen de nosotros</h2>
-              <p className="text-foreground/50 italic font-serif text-xl">Tu satisfacción es nuestra mayor recompensa.</p>
+              <h2 className="text-5xl md:text-7xl font-serif text-foreground mb-4 italic">Lo que dicen de nosotros</h2>
+              <p className="text-foreground/70 italic font-serif text-2xl">Tu satisfacción es nuestra mayor recompensa.</p>
            </div>
             <div className="text-center mb-10">
                <button 
                  onClick={() => setShowForm(!showForm)}
-                 className="inline-flex items-center gap-3 bg-accent text-white px-8 py-4 rounded-full font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl"
+                 className="inline-flex items-center gap-3 bg-accent text-white px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-xl"
                >
                  {showForm ? "Cerrar Formulario" : "Escribir una reseña"}
                </button>
@@ -223,7 +225,7 @@ export default function Home() {
                    </motion.div>
                  ))
                ) : (
-                  <div className="col-span-full text-center py-20 italic font-serif text-foreground/40 text-xl">
+                  <div className="col-span-full text-center py-20 italic font-serif text-foreground/60 text-2xl">
                     Aún no hay reseñas. ¡Sé el primero en compartir tu experiencia!
                   </div>
                )}
@@ -256,8 +258,8 @@ export default function Home() {
               </div>
               
               <div>
-                 <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground mb-10 opacity-70">La Maison</h4>
-                 <ul className="space-y-5 text-sm text-foreground/40 font-bold uppercase tracking-widest text-[9px]">
+                 <h4 className="text-sm font-black uppercase tracking-[0.4em] text-foreground mb-10">La Maison</h4>
+                 <ul className="space-y-5 text-base text-foreground/60 font-bold uppercase tracking-widest text-xs">
                     <li className="hover:text-accent cursor-pointer transition-all duration-500 hover:translate-x-2">Tienda</li>
                     <li className="hover:text-accent cursor-pointer transition-all duration-500 hover:translate-x-2">Contacto</li>
                     <li className="hover:text-accent cursor-pointer transition-all duration-500 hover:translate-x-2">Preguntas Frecuentes</li>
@@ -266,8 +268,8 @@ export default function Home() {
               </div>
 
               <div>
-                 <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground mb-10 opacity-70">Soporte</h4>
-                 <ul className="space-y-5 text-sm text-foreground/40 font-bold uppercase tracking-widest text-[9px]">
+                 <h4 className="text-sm font-black uppercase tracking-[0.4em] text-foreground mb-10">Soporte</h4>
+                 <ul className="space-y-5 text-base text-foreground/60 font-bold uppercase tracking-widest text-xs">
                     <li className="hover:text-accent cursor-pointer transition-all duration-500 hover:translate-x-2">Envíos y Entregas</li>
                     <li className="hover:text-accent cursor-pointer transition-all duration-500 hover:translate-x-2">Cuidado de Flores</li>
                     <li className="hover:text-accent cursor-pointer transition-all duration-500 hover:translate-x-2">Política de Privacidad</li>
@@ -276,26 +278,26 @@ export default function Home() {
               </div>
 
               <div>
-                 <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground mb-10 opacity-70">Contacto Directo</h4>
+                 <h4 className="text-sm font-black uppercase tracking-[0.4em] text-foreground mb-10">Contacto Directo</h4>
                  <div className="space-y-8">
                     <div className="flex items-center gap-5 group">
                        <div className="p-4 bg-accent/10 rounded-2xl group-hover:bg-accent transition-colors duration-500"><MessageSquare className="w-4 h-4 text-accent group-hover:text-white transition-colors duration-500"/></div>
-                       <div className="text-[10px] font-black uppercase">
-                          <span className="block opacity-30 mb-1">WhatsApp</span>
+                       <div className="text-xs font-black uppercase">
+                          <span className="block opacity-60 mb-1">WhatsApp</span>
                           <a href={`https://wa.me/${(company?.phone || "+593 99 798 4583").replace(/[^0-9]/g, "")}`} className="hover:text-accent transition-colors duration-500">{company?.phone || "+593 99 798 4583"}</a>
                        </div>
                     </div>
                     <div className="flex items-center gap-5 group">
                        <div className="p-4 bg-accent/10 rounded-2xl group-hover:bg-accent transition-colors duration-500"><Phone className="w-4 h-4 text-accent group-hover:text-white transition-colors duration-500"/></div>
-                       <div className="text-[10px] font-black uppercase">
-                          <span className="block opacity-30 mb-1">Llamadas</span>
+                       <div className="text-xs font-black uppercase">
+                          <span className="block opacity-60 mb-1">Llamadas</span>
                           <span className="group-hover:text-accent transition-colors duration-500">{company?.phone || "+593 99 798 4583"}</span>
                        </div>
                     </div>
                     <div className="flex items-center gap-5 group">
                        <div className="p-4 bg-accent/10 rounded-2xl group-hover:bg-accent transition-colors duration-500"><Mail className="w-4 h-4 text-accent group-hover:text-white transition-colors duration-500"/></div>
-                       <div className="text-[10px] font-black uppercase">
-                          <span className="block opacity-30 mb-1">Email</span>
+                       <div className="text-xs font-black uppercase">
+                          <span className="block opacity-60 mb-1">Email</span>
                           <span className="break-all group-hover:text-accent transition-colors duration-500">{company?.email || "ventas@difiori.com.ec"}</span>
                        </div>
                     </div>
@@ -304,10 +306,10 @@ export default function Home() {
            </div>
 
            <div className="pt-12 border-t border-primary/10 flex flex-col md:flex-row justify-between items-center gap-10">
-              <p className="text-[9px] font-black uppercase tracking-[0.6em] text-foreground/20">
+              <p className="text-xs font-black uppercase tracking-[0.6em] text-foreground/40">
                  © 2026 DIFIORI Ecuador. Todos los derechos reservados.
               </p>
-              <div className="flex gap-8 text-[9px] font-black uppercase tracking-[0.4em] text-foreground/20">
+              <div className="flex gap-8 text-xs font-black uppercase tracking-[0.4em] text-foreground/40">
                  <span className="hover:text-accent cursor-pointer transition-colors duration-500">Guayaquil, Ecuador</span>
               </div>
            </div>

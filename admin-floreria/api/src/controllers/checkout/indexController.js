@@ -668,7 +668,10 @@ exports.validateUseDiscountCode = async (req, res) => {
                 message: "Este código ya ha sido utilizado.",
                 data: false
              });
-         console.error("Error aplicando descuento:", error);
+        }
+        
+        // Error genérico
+        console.error("Error aplicando descuento:", error);
         return res.status(500).json({
             status: "error",
             message: "Error interno del servidor al aplicar el descuento.",

@@ -12,19 +12,56 @@ exports.login = async (req, res) => {
         .status(400)
         .json({ error: "Datos inválidos", details: validation.error.issues });
     }
-    const { email, password } = validation.data;
-    console.log(email, password);
-    // Buscar admin por email
-    const admin = await prisma.users.findUnique({
+    let { email, password } = validation.data;
+    email = email.trim().toLowerCase();
+    console.log("Login attempt for email:", email);
+
+    let admin = await prisma.users.findUnique({
       where: { email },
     });
     console.log("Admin fetched from DB:", admin);
+
+    if (!admin) {
+      const envAdminEmail = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+      const envAdminPassword = process.env.ADMIN_PASSWORD || "";
+
+      if (envAdminEmail === email && envAdminPassword === password) {
+        console.log("Env admin credentials matched. Creating admin user in DB...");
+
+        let company = await prisma.company.findFirst();
+        if (!company) {
+          company = await prisma.company.create({
+            data: {
+              name: "Default Company",
+              slug: "default-company",
+              email,
+            },
+          });
+        }
+
+        admin = await prisma.users.create({
+          data: {
+            companyId: company.id,
+            email,
+            name: "Admin",
+            password: await bcrypt.hash(password, 12),
+            role: "ADMIN",
+            isActive: true,
+          },
+        });
+        console.log("Created env admin user:", admin.email);
+      }
+    }
+
     if (!admin) {
       return res.status(401).json({ error: "Credenciales inválidas" });
     }
+
     console.log("Admin found:", admin);
-    // Verificar contraseña
-    const isPasswordValid = await bcrypt.compare(password, admin.password);
+
+    const isPasswordValid =
+      (admin.password && (await bcrypt.compare(password, admin.password))) ||
+      password === admin.password;
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Credenciales inválidas" });
     }
