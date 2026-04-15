@@ -22,6 +22,31 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
+// Proxy para el Backend (API Admin) - PRIORIDAD ALTA
+app.use("/api/external", async (req, res) => {
+  const backendUrl = `http://localhost:4001${req.originalUrl}`;
+  try {
+    const response = await fetch(backendUrl, {
+      method: req.method,
+      headers: {      
+        "Content-Type": req.get("Content-Type") || "application/json",
+      },
+      body: ["POST", "PUT", "PATCH"].includes(req.method) ? JSON.stringify(req.body) : undefined,
+    });
+
+    if (response.headers.get("content-type")?.includes("application/json")) {
+      const data = await response.json();
+      return res.status(response.status).json(data);
+    }
+    
+    const text = await response.text();
+    return res.status(response.status).send(text);
+  } catch (error) {
+    console.error(`Proxy Error (Store -> Backend):`, error);
+    return res.status(500).json({ status: "error", message: "Error conectando con el servidor de productos" });
+  }
+});
+
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "numeric",

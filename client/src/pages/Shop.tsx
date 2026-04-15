@@ -44,7 +44,8 @@ export default function Shop() {
                    alert(result.message || 'Seed ejecutado');
                    window.location.reload();
                  } catch (error) {
-                   alert('Error ejecutando seed: ' + error.message);
+                   const message = error instanceof Error ? error.message : String(error);
+                   alert('Error ejecutando seed: ' + message);
                  }
                }}
                className="bg-accent text-white px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-xl"

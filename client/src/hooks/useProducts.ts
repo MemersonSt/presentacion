@@ -5,7 +5,13 @@ const API_URL = "/api/external/products";
 const IMG_BASE_URL = "http://localhost:4001"; // En producción esto debería ser una variable de entorno
 
 function getImageUrl(imagePath: string | null | undefined): string {
-  if (!imagePath) return "/assets/product1.png";
+  // Placeholder neutral en caso de que no haya imagen
+  const PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='500' viewBox='0 0 400 500'%3E%3Crect width='400' height='500' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='20' fill='%239ca3af'%3ESin imagen disponible%3C/text%3E%3C/svg%3E";
+
+  if (!imagePath || imagePath.trim() === "" || imagePath === "/assets/product1.png") {
+    return PLACEHOLDER;
+  }
+  
   if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) return imagePath;
   const path = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
   return `${IMG_BASE_URL}${path}`;

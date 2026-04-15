@@ -49,12 +49,12 @@ export default defineConfig({
     },
     proxy: {
       "/api/external": {
-        target: "http://127.0.0.1:4001",
+        target: "http://localhost:4001",
         changeOrigin: true,
         secure: false,
       },
       "/uploads": {
-        target: "http://127.0.0.1:4001",
+        target: "http://localhost:4001",
         changeOrigin: true,
         secure: false,
       },

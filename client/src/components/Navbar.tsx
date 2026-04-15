@@ -47,13 +47,13 @@ export function Navbar() {
                   href={link.href}
                   className={cn(
                     "text-xs uppercase font-bold tracking-[0.25em] transition-all duration-500 relative group",
-                    scrolled ? "text-foreground/70 hover:text-foreground" : "text-white/80 hover:text-white"
+                    (scrolled || location !== "/") ? "text-foreground/70 hover:text-foreground" : "text-white/80 hover:text-white"
                   )}
                 >
                   {link.label}
                   <span className={cn(
                     "absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-[1px] transition-all duration-500 group-hover:w-full",
-                    scrolled ? "bg-accent/40" : "bg-white/60"
+                    (scrolled || location !== "/") ? "bg-accent/40" : "bg-white/60"
                   )}></span>
                 </a>
               ))}
@@ -64,7 +64,7 @@ export function Navbar() {
               <Link href="/" className="group flex items-center">
                  <Logo 
                    size={scrolled ? "sm" : "md"} 
-                   variant={scrolled ? "dark" : "light"}
+                   variant={(scrolled || location !== "/") ? "dark" : "light"}
                    className="transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]" 
                  />
               </Link>
@@ -78,25 +78,25 @@ export function Navbar() {
                   href={link.href}
                   className={cn(
                     "text-xs uppercase font-bold tracking-[0.25em] transition-all duration-500 relative group hidden xl:block",
-                    scrolled ? "text-foreground/70 hover:text-foreground" : "text-white/80 hover:text-white"
+                    (scrolled || location !== "/") ? "text-foreground/70 hover:text-foreground" : "text-white/80 hover:text-white"
                   )}
                 >
                   {link.label}
                   <span className={cn(
                     "absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-[1px] transition-all duration-500 group-hover:w-full",
-                    scrolled ? "bg-accent/40" : "bg-white/60"
+                    (scrolled || location !== "/") ? "bg-accent/40" : "bg-white/60"
                   )}></span>
                 </a>
               ))}
 
-              <div className="flex items-center gap-6 border-l pl-8 transition-colors duration-500" style={{ borderLeftColor: scrolled ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)' }}>
-                <button className={cn("transition-all hover:scale-110", scrolled ? "text-foreground/80 hover:text-accent" : "text-white/90 hover:text-white")}>
+              <div className="flex items-center gap-6 border-l pl-8 transition-colors duration-500" style={{ borderLeftColor: (scrolled || location !== "/") ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)' }}>
+                <button className={cn("transition-all hover:scale-110", (scrolled || location !== "/") ? "text-foreground/80 hover:text-accent" : "text-white/90 hover:text-white")}>
                   <Search className="w-5 h-5" strokeWidth={1.5} />
                 </button>
                 <Link href="/checkout">
                   <button className={cn(
                     "relative transition-all hover:scale-110 flex items-center gap-2",
-                    scrolled ? "text-foreground/80 hover:text-accent" : "text-white/90 hover:text-white"
+                    (scrolled || location !== "/") ? "text-foreground/80 hover:text-accent" : "text-white/90 hover:text-white"
                   )}>
                     <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
                     <span className="text-xs font-medium tracking-widest">({cartItemCount})</span>
@@ -110,20 +110,20 @@ export function Navbar() {
           {/* Mobile Layout */}
           <div className="lg:hidden flex items-center justify-between">
             <button 
-              className={cn("p-1 transition-colors", scrolled ? "text-foreground" : "text-white")}
+              className={cn("p-1 transition-colors", (scrolled || location !== "/") ? "text-foreground" : "text-white")}
               onClick={() => setIsOpen(!isOpen)}
             >
               <Menu className="w-6 h-6" strokeWidth={1.5} />
             </button>
 
             <Link href="/" className="flex items-center absolute left-1/2 -translate-x-1/2">
-               <Logo size="sm" variant={scrolled ? "dark" : "light"} />
+               <Logo size="sm" variant={(scrolled || location !== "/") ? "dark" : "light"} />
             </Link>
 
             <Link href="/checkout">
               <button className={cn(
                 "relative p-1 transition-colors hover:scale-110",
-                scrolled ? "text-foreground" : "text-white"
+                (scrolled || location !== "/") ? "text-foreground" : "text-white"
               )}>
                 <ShoppingBag className="w-6 h-6" strokeWidth={1.5} />
                 {cartItemCount > 0 && (

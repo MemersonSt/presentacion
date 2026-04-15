@@ -1,5 +1,6 @@
 const cloudinary = require('../../lib/cloudinary');
 const streamifier = require('streamifier');
+const fs = require('fs');
 
 exports.uploadFile = async (req, res) => {
   try {
