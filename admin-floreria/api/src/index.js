@@ -85,16 +85,6 @@ const discountsRoutes = require("./routes/discounts/index");
 app.use("/api/discounts", featureMiddleware("discounts"), discountsRoutes);
 const couponsRoutes = require("./routes/coupons/index");
 app.use("/api/coupons", authMiddleware, couponsRoutes);
-const discountIdRoutes = require("./routes/discounts/index");
-app.use("/api/discounts", featureMiddleware("discounts"), discountIdRoutes);
-const typeDiscountRoutes = require("./routes/discounts/index");
-app.use("/api/discounts", featureMiddleware("discounts"), typeDiscountRoutes);
-const updateDiscountRoutes = require("./routes/discounts/index");
-app.use("/api/discounts", featureMiddleware("discounts"), updateDiscountRoutes);
-const createDiscountRoutes = require("./routes/discounts/index");
-app.use("/api/discounts", featureMiddleware("discounts"), createDiscountRoutes);
-const deleteDiscount = require("./routes/discounts/index");
-app.use("/api/discounts", featureMiddleware("discounts"), deleteDiscount)
 // Productos públicos para la tienda
 const externalProductsRoutes = require("./routes/external/products");
 const externalCmsRoutes = require("./routes/external/cms");

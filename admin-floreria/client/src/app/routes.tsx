@@ -1,5 +1,4 @@
 import ProtectRoutes from "@/core/guards/protect-routes";
-import FiltersPage from "@/features/filters/pages/filters-page";
 import Loading from "@/shared/components/loading";
 import { useUserStore } from "@/store/use-user-store";
 import { lazy, Suspense } from "react";
@@ -27,9 +26,6 @@ const PromotionForm = lazy(() => import("@/features/promotions/pages/PromotionFo
 
 // CMS pages
 const CmsHomeDashboard = lazy(() => import("@/features/modules/cms/pages/CmsHomeDashboard"));
-const CmsStoreDashboard = lazy(() => import("@/features/modules/cms/pages/CmsStoreDashboard"));
-const CmsAboutDashboard = lazy(() => import("@/features/modules/cms/pages/CmsAboutDashboard"));
-const CmsContactDashboard = lazy(() => import("@/features/modules/cms/pages/CmsContactDashboard"));
 
 // Loyalty pages
 // const LoyaltyDashboard = lazy(() => import("@/features/modules/loyalty/dashboard/LoyaltyDashboard"));
@@ -100,14 +96,6 @@ export default function Routes() {
           element: (
             <Suspense fallback={<Loading />}>
               <AdminDashboard />
-            </Suspense>
-          ),
-        },
-        {
-          path: "filters",
-          element: (
-            <Suspense fallback={<Loading />}>
-              <FiltersPage />
             </Suspense>
           ),
         },
@@ -202,30 +190,6 @@ export default function Routes() {
               element: (
                 <Suspense fallback={<Loading />}>
                   <CmsHomeDashboard />
-                </Suspense>
-              ),
-            },
-            {
-              path: "store",
-              element: (
-                <Suspense fallback={<Loading />}>
-                  <CmsStoreDashboard />
-                </Suspense>
-              ),
-            },
-            {
-              path: "about",
-              element: (
-                <Suspense fallback={<Loading />}>
-                  <CmsAboutDashboard />
-                </Suspense>
-              ),
-            },
-            {
-              path: "contact",
-              element: (
-                <Suspense fallback={<Loading />}>
-                  <CmsContactDashboard />
                 </Suspense>
               ),
             },

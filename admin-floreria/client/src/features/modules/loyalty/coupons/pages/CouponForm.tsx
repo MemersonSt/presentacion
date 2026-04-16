@@ -72,7 +72,7 @@ export default function CouponForm() {
     setGeneratingCode(true);
     try {
       const response = await couponsApi.generateCode("LOYALTY");
-      setFormData({ ...formData, code: response.data.code });
+      setFormData({ ...formData, code: response.data.data.code });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.log("Error generating code:", message);

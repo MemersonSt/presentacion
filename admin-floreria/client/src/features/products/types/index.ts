@@ -40,15 +40,4 @@ export interface FormData {
   isActive: boolean;
   featured: boolean;
   hasVariants: boolean;
-  // IDs para persistir relación en product_filters
-  selectedFilterCategoryId?: string;
-  selectedFilterOptionId?: string;
-  // Múltiples filtros del producto
-  productFilters?: Array<{ categoryId: string; optionId: string }>; 
-}
-
-export interface IFilters{
-  productId: string;
-  categoryId: string;
-  optionId: string;
 }

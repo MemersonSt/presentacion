@@ -98,7 +98,7 @@ export const useCoupons = () => {
     try {
       setLoading(true);
       const response = await couponsApi.getAll();
-      setCoupons(response.data);
+      setCoupons(response.data.data || []);
     } catch (err) {
       setError(err);
     } finally {
