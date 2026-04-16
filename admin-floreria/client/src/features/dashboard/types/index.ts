@@ -1,8 +1,11 @@
 interface Stats {
   totalProducts: number;
-  totalOrders: number;
-  pendingOrders: number;
-  totalRevenue: number;
+  totalOrders: number;       // pedidos este mes
+  todayOrders: number;       // pedidos hoy
+  pendingOrders: number;     // status PENDING
+  inProgressOrders: number;  // CONFIRMED + PREPARING + READY
+  totalRevenue: number;      // ingresos pagados este mes
+  todayRevenue: number;      // ingresos pagados hoy
   revenueChange: {
     value: number;
     direction: "increase" | "decrease";
@@ -15,16 +18,17 @@ interface Stats {
 
 interface RecentOrder {
   id: string;
+  orderNumber: string;
   customerName: string;
-  totalAmount: number;
+  total: number;
+  totalAmount?: number;
+  paymentStatus: string;
   status: string;
   createdAt: string;
   orderItems: Array<{
     id: string;
     quantity: number;
-    product: {
-      name: string;
-    };
+    product: { name: string };
   }>;
 }
 

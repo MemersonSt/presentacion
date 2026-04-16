@@ -13,7 +13,7 @@ interface DashboardSectionProps {
 // Layout principal del dashboard
 function DashboardLayout({ children, className = "" }: DashboardLayoutProps) {
   return (
-    <div className={`flex flex-col gap-6 py-6 px-4 lg:px-6 @container/main ${className}`}>
+    <div className={`flex flex-col gap-6 @container/main ${className}`}>
       {children}
     </div>
   );
