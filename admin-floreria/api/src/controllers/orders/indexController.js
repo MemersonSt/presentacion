@@ -179,11 +179,38 @@ exports.getAllOrders = async (req, res) => {
 exports.createOrder = async (req, res) => {
   try {
     const data = req.body;
-    const order = await prisma.order.create({
-      data,
-    });
+    const order = await prisma.order.create({ data });
     return res.status(201).json({ order });
   } catch (error) {
     return res.status(500).json({ error: "Error al crear orden" });
+  }
+};
+
+exports.bulkUpdateStatus = async (req, res) => {
+  try {
+    const { orderIds, status } = req.body;
+
+    if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
+      return res.status(400).json({ status: "error", message: "orderIds es requerido y debe ser un array no vacío." });
+    }
+
+    const validStatuses = ["PENDING", "CONFIRMED", "PREPARING", "READY", "DELIVERED", "CANCELLED"];
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({ status: "error", message: "Status inválido." });
+    }
+
+    const result = await prisma.order.updateMany({
+      where: { id: { in: orderIds } },
+      data: { status },
+    });
+
+    return res.status(200).json({
+      status: "success",
+      message: `${result.count} órdenes actualizadas correctamente`,
+      count: result.count,
+    });
+  } catch (error) {
+    console.error("Bulk update status error:", error);
+    return res.status(500).json({ status: "error", message: "Error al actualizar órdenes en masa." });
   }
 };

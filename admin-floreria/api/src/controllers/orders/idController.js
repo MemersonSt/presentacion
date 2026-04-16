@@ -120,6 +120,35 @@ exports.updateStateOrderById = async (req, res) => {
   }
 };
 
+exports.updatePaymentStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { paymentStatus } = req.body;
+
+    const validStatuses = ["PENDING", "PAID", "FAILED", "CANCELLED"];
+    if (!paymentStatus || !validStatuses.includes(paymentStatus)) {
+      return res.status(400).json({ status: "error", message: "paymentStatus inválido." });
+    }
+
+    const order = await prisma.order.update({
+      where: { id },
+      data: {
+        paymentStatus,
+        paidAt: paymentStatus === "PAID" ? new Date() : undefined,
+      },
+    });
+
+    return res.status(200).json({
+      status: "success",
+      message: "Estado de pago actualizado",
+      data: { order },
+    });
+  } catch (error) {
+    console.error("Update payment status error:", error);
+    return res.status(500).json({ status: "error", message: "Error al actualizar estado de pago." });
+  }
+};
+
 exports.deleteOrderById = async (req, res) => {
   try {
     const { id } = req.params;

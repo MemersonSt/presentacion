@@ -36,7 +36,7 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="gap-4 md:gap-6 py-4 md:py-6 px-4 lg:px-6">
+    <div className="gap-4 md:gap-6">
       {/* Header */}
       <div className="flex justify-between items-center gap-2 mt-1">
         <div>

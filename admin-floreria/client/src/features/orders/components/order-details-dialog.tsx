@@ -3,9 +3,30 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/shared/components/ui/dialog";
 import { Badge } from "@/shared/components/ui/badge";
+import { Button } from "@/shared/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Home,
+  Truck,
+  User,
+  MessageSquare,
+  Package,
+  CheckCircle,
+  CreditCard,
+} from "lucide-react";
 import type { Order } from "../types";
 import { LocalDate } from "@/core/utils/date";
 
@@ -15,6 +36,11 @@ interface OrderDetailsDialogProps {
   onClose: () => void;
   getStatusColor: (s: string) => string;
   getStatusText: (s: string) => string;
+  getPaymentStatusColor: (s: string) => string;
+  getPaymentStatusText: (s: string) => string;
+  onUpdatePaymentStatus: (id: string, paymentStatus: string) => void;
+  onChangeStatus: (id: string, status: string) => void;
+  statusOptions: { value: string; label: string }[];
 }
 
 export function OrderDetailsDialog({
@@ -23,327 +49,352 @@ export function OrderDetailsDialog({
   onClose,
   getStatusColor,
   getStatusText,
+  getPaymentStatusColor,
+  getPaymentStatusText,
+  onUpdatePaymentStatus,
+  onChangeStatus,
+  statusOptions,
 }: OrderDetailsDialogProps) {
+  if (!order) return null;
+
+  const total = order.total || order.totalAmount || 0;
+  const hasDiscounts = Number(order.total_discount_amount || 0) > 0;
+  const hasNotes =
+    order.description || order.notes || order.deliveryNotes || order.orderNotes;
+
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        {order && (
-          <>
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-primary">
-                Pedido #{order.orderNumber}
-              </DialogTitle>
-              <DialogDescription className="text-sm text-gray-600">
-                {new LocalDate(order.createdAt).toLocaleDateString("es-ES", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-lg border-b pb-1">
-                    Información del Cliente
-                  </h3>
-                  <div className="grid grid-cols-1 gap-1 text-sm">
-                    <span>
-                      <b>Nombre:</b> {order.customerName}
-                    </span>
-                    <span>
-                      <b>Apellido:</b> {order.customerLastName}
-                    </span>
-                    <span>
-                      <b>Email:</b> {order.customerEmail}
-                    </span>
-                    {order.customerPhone && (
-                      <span>
-                        <b>Teléfono:</b> {order.customerPhone}
-                      </span>
-                    )}
-                    <span>
-                      <b>Provincia:</b> {order.customerProvince}
-                    </span>
-                    <span>
-                      <b>Ciudad:</b> {order.billingCity}
-                    </span>
-                    <span>
-                      <b>Dirección principal:</b>{" "}
-                      {order.billingPrincipalAddress}
-                    </span>
-                    <span>
-                      <b>Dirección secundaria:</b> {order.billingSecondAddress}
-                    </span>
-                    <span>
-                      <b>Referencia:</b> {order.customerReference}
-                    </span>
-                    <span>
-                      <b>Contacto:</b> {order.billingContactName}
-                    </span>
-                    <span>
-                      <b>Courier:</b> {order.Courier}
-                    </span>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-lg border-b pb-1">
-                    Estado y Totales
-                  </h3>
-                  <Badge className={getStatusColor(order.status)}>
-                    {getStatusText(order.status)}
-                  </Badge>
-                  <div className="grid grid-cols-1 gap-1 text-sm mt-2">
-                    <span>
-                      <b>Total:</b> ${order.totalAmount?.toFixed(2)}
-                    </span>
-                    {Number(order.estimatedDiscountAmount || 0) > 0 && (
-                      <span>
-                        <b>Descuento:</b> -${Number(order.estimatedDiscountAmount || 0).toFixed(2)}
-                        {order.discountCode ? ` (${order.discountCode})` : ""}
-                      </span>
-                    )}
-                    {order.pendingAmount !== undefined &&
-                      order.pendingAmount > 0 && (
-                        <span>
-                          <b>Pendiente:</b> ${order.pendingAmount.toFixed(2)}
-                        </span>
-                      )}
-                    <span>
-                      <b>Estado:</b> {getStatusText(order.status)}
-                    </span>
-                    {order.subtotal !== undefined && (
-                      <span>
-                        <b>Subtotal:</b> ${Number(order.subtotal || 0).toFixed(2)}
-                      </span>
-                    )}
-                    {order.tax !== undefined && (
-                      <span>
-                        <b>Impuesto:</b> ${Number(order.tax || 0).toFixed(2)}
-                      </span>
-                    )}
-                    {order.shipping !== undefined && (
-                      <span>
-                        <b>Reserva:</b> ${Number(order.shipping || 0).toFixed(2)}
-                      </span>
-                    )}
-                    {/* <span><b>Estado de pago:</b> {order.paymentStatus}</span> */}
-                    {/* <span><b>Notas de entrega:</b> {order.deliveryNotes || '-'}</span> */}
-                    {/* <span><b>Notas de pedido:</b> {order.orderNotes || '-'}</span> */}
-                  </div>
-                </div>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0">
+        {/* ── Header ─────────────────────────────────────── */}
+        <div className="bg-linear-to-r from-gray-900 to-gray-700 text-white px-6 py-5 rounded-t-lg">
+          <DialogHeader>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <DialogTitle className="text-2xl font-bold text-white">
+                  Pedido #{order.orderNumber}
+                </DialogTitle>
+                <p className="text-gray-300 text-sm mt-0.5">
+                  {new LocalDate(order.createdAt).toLocaleDateString("es-ES", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
               </div>
-              {order.description && (
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-lg border-b pb-1">
-                    Notas Especiales
-                  </h3>
-                  <p className="text-gray-600 bg-blue-50 p-3 rounded">
-                    {order.description}
-                  </p>
-                </div>
-              )}
-              {/**
-               * El campo de notas es usado para instrucciones de delivery o retiro
-               * Si en el futuro se agrega un campo específico para esto, se puede eliminar este bloque
-               * o adaptarlo según sea necesario.
-               */}
-              {order.notes && (
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-lg border-b pb-1">
-                    Notas del Pedido
-                  </h3>
-                  <p className="text-gray-600">{order.notes}</p>
-                </div>
-              )}
-              <div className="space-y-3">
-                <h3 className="font-semibold text-lg border-b pb-1">
-                  Productos Ordenados
-                </h3>
-                <div className="space-y-3">
-                  {order.orderItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex justify-between items-start p-3 bg-white rounded border"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-medium text-gray-900">
-                            {item.product.name}
-                          </span>
-                          {item.variantName && (
-                            <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-300 text-xs">
-                              {item.variantName}
-                            </Badge>
-                          )}
-                          {item.discounts_percents && (
-                            <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-300 text-xs">
-                              -{item.discounts_percents}% descuento
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center flex-wrap gap-2 text-xs text-gray-600 mt-2">
-                          <span className="bg-gray-100 px-2 py-1 rounded">
-                            Cant: {item.quantity}
-                          </span>
-                          <span className="bg-green-100 px-2 py-1 rounded">
-                            Unit: ${item.price.toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-right min-w-[80px]">
-                        <p className="font-bold text-green-600 text-sm">
-                          ${(item.price * item.quantity).toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="border-t pt-4 bg-gray-50 p-4 rounded-lg space-y-2">
-                {/* Cálculo del precio original (subtotal + descuentos) */}
-                {(() => {
-                  const originalPrice = order.subtotal + Number(order.total_discount_amount || 0);
-                  const hasDiscounts = Number(order.total_discount_amount || 0) > 0;
-                  
-                  return (
-                    <>
-                      {hasDiscounts && (
-                        <div className="flex justify-between items-center text-sm bg-gray-100 p-2 rounded">
-                          <span className="text-gray-700 font-medium">Precio original productos:</span>
-                          <span className="font-medium text-gray-800">${originalPrice.toFixed(2)}</span>
-                        </div>
-                      )}
-                      
-                      {/* Desglose de cada tipo de descuento */}
-                      {Number(order.product_discounted_amount || 0) > 0 && (
-                        <div className="bg-green-50 border border-green-200 p-2 rounded space-y-1">
-                          <div className="flex justify-between items-center text-sm">
-                            <div className="flex items-center gap-2">
-                              <Badge className="bg-green-600 text-white text-xs">
-                                PROMOCIÓN
-                              </Badge>
-                              <span className="text-green-900 font-medium">Descuento por promociones activas</span>
-                            </div>
-                            <span className="font-bold text-green-700">
-                              -${Number(order.product_discounted_amount).toFixed(2)}
-                            </span>
-                          </div>
-                          <p className="text-xs text-green-800 ml-1">
-                            Productos con descuento promocional aplicado automáticamente
-                          </p>
-                        </div>
-                      )}
-                      
-                      {Number(order.coupon_discounted_amount || 0) > 0 && (
-                        <div className="bg-purple-50 border border-purple-200 p-2 rounded space-y-1">
-                          <div className="flex justify-between items-center text-sm">
-                            <div className="flex items-center gap-2">
-                              <Badge className="bg-purple-600 text-white text-xs">
-                                CUPÓN
-                              </Badge>
-                              <span className="text-purple-900 font-medium">
-                                Cupón: {order.couponDiscountCode}
-                                {order.discount_coupon_percent ? ` (${order.discount_coupon_percent}% dto)` : ''}
-                              </span>
-                            </div>
-                            <span className="font-bold text-purple-700">
-                              -${Number(order.coupon_discounted_amount).toFixed(2)}
-                            </span>
-                          </div>
-                          <p className="text-xs text-purple-800 ml-1">
-                            Descuento aplicado por cupón de fidelización
-                          </p>
-                        </div>
-                      )}
-                      
-                      {Number(order.code_discounted_amount || 0) > 0 && (
-                        <div className="bg-blue-50 border border-blue-200 p-2 rounded space-y-1">
-                          <div className="flex justify-between items-center text-sm">
-                            <div className="flex items-center gap-2">
-                              <Badge className="bg-blue-600 text-white text-xs">
-                                CÓDIGO
-                              </Badge>
-                              <span className="text-blue-900 font-medium">
-                                Código de descuento
-                                {order.discount_code_percent ? ` (${order.discount_code_percent}% dto)` : ''}
-                              </span>
-                            </div>
-                            <span className="font-bold text-blue-700">
-                              -${Number(order.code_discounted_amount).toFixed(2)}
-                            </span>
-                          </div>
-                          <p className="text-xs text-blue-800 ml-1">
-                            Código de descuento aplicado en el checkout
-                          </p>
-                        </div>
-                      )}
-                      
-                      {hasDiscounts && (
-                        <div className="flex justify-between items-center text-sm bg-green-100 p-2 rounded border-2 border-green-300">
-                          <span className="font-bold text-green-900">Total ahorrado:</span>
-                          <span className="font-bold text-green-700 text-base">
-                            -${Number(order.total_discount_amount).toFixed(2)}
-                          </span>
-                        </div>
-                      )}
-                      
-                      <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
-                        <span className="text-gray-700 font-medium">Subtotal después de descuentos:</span>
-                        <span className="font-semibold text-gray-900">${order.subtotal.toFixed(2)}</span>
-                      </div>
-                      
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600">IVA (15%):</span>
-                        <span className="font-medium">${order.tax.toFixed(2)}</span>
-                      </div>
-                      
-                      {Number(order.shipping || 0) > 0 && (
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-gray-600">Costo de envío:</span>
-                          <span className="font-medium">${order.shipping.toFixed(2)}</span>
-                        </div>
-                      )}
-                      
-                      <div className="flex justify-between items-center border-t-2 pt-3 mt-2 bg-white p-3 rounded">
-                        <span className="text-xl font-bold">Total a pagar:</span>
-                        <span className="text-2xl font-bold text-green-600">
-                          ${(order.total || order.totalAmount || 0).toFixed(2)}
-                        </span>
-                      </div>
-                      
-                      {order.cashOnDelivery && (
-                        <div className="border-2 border-amber-300 bg-amber-50 p-3 rounded-lg mt-2 space-y-2">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge className="bg-amber-600 text-white">
-                              PAGO CONTRAENTREGA
-                            </Badge>
-                          </div>
-                          <div className="flex justify-between items-center text-sm">
-                            <span className="text-amber-800 font-medium">Reserva pagada online:</span>
-                            <span className="font-semibold text-amber-900">$7.00</span>
-                          </div>
-                          <div className="flex justify-between items-center text-sm pt-2 border-t border-amber-300">
-                            <span className="text-amber-900 font-bold">Pendiente (pago al recibir):</span>
-                            <span className="font-bold text-amber-900 text-lg">
-                              ${((order.total || order.totalAmount || 0) - 7).toFixed(2)}
-                            </span>
-                          </div>
-                          <p className="text-xs text-amber-800 mt-1">
-                            El cliente pagará el monto pendiente cuando reciba su pedido
-                          </p>
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
+              <div className="flex flex-col items-end gap-2 shrink-0">
+                <Badge className={`text-sm px-3 py-1 ${getStatusColor(order.status)}`}>
+                  {getStatusText(order.status)}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className={`text-xs px-2 py-0.5 border ${getPaymentStatusColor(order.paymentStatus)}`}
+                >
+                  {getPaymentStatusText(order.paymentStatus)}
+                  {order.paidAt && (
+                    <span className="ml-1 opacity-70">
+                      · {new LocalDate(order.paidAt).toLocaleDateString()}
+                    </span>
+                  )}
+                </Badge>
               </div>
             </div>
-          </>
-        )}
+          </DialogHeader>
+        </div>
+
+        <div className="p-6 space-y-5">
+          {/* ── Acciones operativas ──────────────────────── */}
+          {(order.status !== "DELIVERED" && order.status !== "CANCELLED") || (order.paymentStatus !== "PAID" && !order.clientTransactionId) ? (
+            <div className="flex flex-wrap items-center gap-3 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+              <span className="text-sm font-medium text-blue-800">Acciones:</span>
+
+              {order.status !== "DELIVERED" && order.status !== "CANCELLED" && (
+                <Select onValueChange={(v) => onChangeStatus(order.id, v)}>
+                  <SelectTrigger className="w-44 h-8 text-sm bg-white">
+                    <SelectValue placeholder="Cambiar estado..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Cambiar a:</SelectLabel>
+                      {statusOptions
+                        .filter((o) => o.value !== "ALL" && o.value !== order.status)
+                        .map((o) => (
+                          <SelectItem key={o.value} value={o.value}>
+                            {o.label}
+                          </SelectItem>
+                        ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              )}
+
+              {order.paymentStatus !== "PAID" && !order.clientTransactionId && (
+                <Button
+                  size="sm"
+                  className="h-8 bg-green-600 hover:bg-green-700 text-white gap-1.5"
+                  onClick={() => onUpdatePaymentStatus(order.id, "PAID")}
+                >
+                  <CheckCircle className="h-3.5 w-3.5" />
+                  Confirmar pago
+                </Button>
+              )}
+            </div>
+          ) : null}
+
+          {/* ── Cliente + Entrega ────────────────────────── */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Cliente */}
+            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Cliente
+              </h3>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+                  <User className="h-5 w-5 text-gray-500" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">
+                    {order.customerName} {order.customerLastName}
+                  </p>
+                  {order.billingContactName &&
+                    order.billingContactName !== `${order.customerName} ${order.customerLastName}` && (
+                      <p className="text-xs text-gray-500">
+                        Contacto: {order.billingContactName}
+                      </p>
+                    )}
+                </div>
+              </div>
+              <div className="space-y-2 text-sm text-gray-700">
+                <InfoRow icon={<Mail className="h-4 w-4" />} value={order.customerEmail} />
+                {order.customerPhone && (
+                  <InfoRow icon={<Phone className="h-4 w-4" />} value={order.customerPhone} />
+                )}
+              </div>
+            </div>
+
+            {/* Entrega */}
+            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Entrega
+              </h3>
+              <div className="space-y-2 text-sm text-gray-700">
+                {(order.customerProvince || order.billingCity) && (
+                  <InfoRow
+                    icon={<MapPin className="h-4 w-4" />}
+                    value={[order.customerProvince, order.billingCity].filter(Boolean).join(" · ")}
+                  />
+                )}
+                {order.billingPrincipalAddress && (
+                  <InfoRow icon={<Home className="h-4 w-4" />} value={order.billingPrincipalAddress} />
+                )}
+                {order.billingSecondAddress && (
+                  <InfoRow icon={<Home className="h-4 w-4 opacity-40" />} value={order.billingSecondAddress} />
+                )}
+                {order.customerReference && (
+                  <InfoRow
+                    icon={<span className="text-xs font-bold text-gray-400">Ref</span>}
+                    value={order.customerReference}
+                  />
+                )}
+                {order.Courier && (
+                  <InfoRow icon={<Truck className="h-4 w-4" />} value={order.Courier} />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Método de pago ───────────────────────────── */}
+          {order.clientTransactionId && (
+            <div className="flex items-center gap-2 px-4 py-3 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-800">
+              <CreditCard className="h-4 w-4 shrink-0" />
+              <span>Pago con tarjeta (PayPhone)</span>
+              {order.payPhoneAuthCode && (
+                <span className="ml-auto text-xs text-blue-500 font-mono">
+                  Auth: {order.payPhoneAuthCode}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* ── Notas ────────────────────────────────────── */}
+          {hasNotes && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 space-y-2">
+              <h3 className="flex items-center gap-2 text-xs font-semibold text-yellow-700 uppercase tracking-wider">
+                <MessageSquare className="h-4 w-4" />
+                Notas
+              </h3>
+              {order.description && <p className="text-sm text-yellow-900">{order.description}</p>}
+              {order.notes && <p className="text-sm text-yellow-900">{order.notes}</p>}
+              {order.orderNotes && order.orderNotes !== order.notes && (
+                <p className="text-sm text-yellow-900">{order.orderNotes}</p>
+              )}
+              {order.deliveryNotes && (
+                <p className="text-sm text-yellow-900">
+                  <span className="font-medium">Entrega: </span>
+                  {order.deliveryNotes}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* ── Productos ────────────────────────────────── */}
+          <div className="space-y-2">
+            <h3 className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              <Package className="h-4 w-4" />
+              Productos ({order.orderItems.length})
+            </h3>
+            <div className="space-y-2">
+              {order.orderItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between gap-3 px-4 py-3 bg-white border rounded-xl"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-medium text-gray-900 text-sm truncate">
+                        {item.product.name}
+                      </span>
+                      {item.variantName && (
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs shrink-0">
+                          {item.variantName}
+                        </Badge>
+                      )}
+                      {item.discounts_percents && (
+                        <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 text-xs shrink-0">
+                          -{item.discounts_percents}%
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {item.quantity} × ${item.price.toFixed(2)}
+                    </p>
+                  </div>
+                  <p className="font-bold text-green-700 text-sm shrink-0">
+                    ${(item.price * item.quantity).toFixed(2)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Resumen financiero ───────────────────────── */}
+          <div className="bg-gray-50 rounded-xl overflow-hidden">
+            <div className="px-4 py-3 space-y-2 text-sm">
+              {hasDiscounts && (
+                <>
+                  <FinRow
+                    label="Precio sin descuentos"
+                    value={`$${(order.subtotal + Number(order.total_discount_amount || 0)).toFixed(2)}`}
+                    muted
+                  />
+                  {Number(order.product_discounted_amount || 0) > 0 && (
+                    <FinRow
+                      label={<span className="flex items-center gap-1.5"><Badge className="bg-green-600 text-white text-xs px-1.5">Promoción</Badge></span>}
+                      value={`-$${Number(order.product_discounted_amount).toFixed(2)}`}
+                      accent="green"
+                    />
+                  )}
+                  {Number(order.coupon_discounted_amount || 0) > 0 && (
+                    <FinRow
+                      label={
+                        <span className="flex items-center gap-1.5">
+                          <Badge className="bg-purple-600 text-white text-xs px-1.5">Cupón</Badge>
+                          <span className="text-gray-600">{order.couponDiscountCode}</span>
+                        </span>
+                      }
+                      value={`-$${Number(order.coupon_discounted_amount).toFixed(2)}`}
+                      accent="purple"
+                    />
+                  )}
+                  {Number(order.code_discounted_amount || 0) > 0 && (
+                    <FinRow
+                      label={<span className="flex items-center gap-1.5"><Badge className="bg-blue-600 text-white text-xs px-1.5">Código</Badge></span>}
+                      value={`-$${Number(order.code_discounted_amount).toFixed(2)}`}
+                      accent="blue"
+                    />
+                  )}
+                  <div className="border-t border-dashed border-gray-200 pt-2 mt-1" />
+                </>
+              )}
+
+              <FinRow label="Subtotal" value={`$${order.subtotal.toFixed(2)}`} />
+              <FinRow label="IVA (15%)" value={`$${order.tax.toFixed(2)}`} />
+              {Number(order.shipping || 0) > 0 && (
+                <FinRow label="Reserva (envío)" value={`$${Number(order.shipping).toFixed(2)}`} />
+              )}
+            </div>
+
+            {/* Total */}
+            <div className="flex items-center justify-between px-4 py-4 bg-gray-900 text-white">
+              <span className="font-bold text-base">Total</span>
+              <span className="font-bold text-2xl text-green-400">${total.toFixed(2)}</span>
+            </div>
+
+            {/* Contraentrega */}
+            {order.cashOnDelivery && (
+              <div className="px-4 py-3 bg-amber-50 border-t-2 border-amber-300 space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-amber-800">Reserva pagada online</span>
+                  <span className="font-semibold text-amber-900">$7.00</span>
+                </div>
+                <div className="flex justify-between font-bold">
+                  <span className="text-amber-900">Pendiente al recibir</span>
+                  <span className="text-amber-900 text-base">${(total - 7).toFixed(2)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/* ── Helpers internos ──────────────────────────────────────── */
+
+function InfoRow({
+  icon,
+  value,
+}: {
+  icon: React.ReactNode;
+  value: string;
+}) {
+  return (
+    <div className="flex items-start gap-2.5">
+      <span className="text-gray-400 mt-0.5 shrink-0">{icon}</span>
+      <span className="text-gray-700 leading-snug">{value}</span>
+    </div>
+  );
+}
+
+function FinRow({
+  label,
+  value,
+  muted,
+  accent,
+}: {
+  label: React.ReactNode;
+  value: string;
+  muted?: boolean;
+  accent?: "green" | "purple" | "blue";
+}) {
+  const valueColor =
+    accent === "green"
+      ? "text-green-700 font-semibold"
+      : accent === "purple"
+      ? "text-purple-700 font-semibold"
+      : accent === "blue"
+      ? "text-blue-700 font-semibold"
+      : muted
+      ? "text-gray-400 line-through"
+      : "text-gray-800";
+
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className={muted ? "text-gray-400" : "text-gray-600"}>{label}</span>
+      <span className={valueColor}>{value}</span>
+    </div>
   );
 }
