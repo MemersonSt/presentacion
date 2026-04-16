@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Seo } from "@/components/Seo";
 
 type ResultStatus = "loading" | "success" | "failed" | "cancelled" | "error";
 
@@ -59,6 +60,12 @@ export default function PaymentResult() {
   if (status === "loading") {
     return (
       <div className="min-h-screen bg-[#3D2852] flex items-center justify-center">
+        <Seo
+          title="Resultado de pago | DIFIORI"
+          description="Resultado del proceso de pago."
+          path="/payment-result"
+          robots="noindex, nofollow"
+        />
         <div className="text-center text-white">
           <Loader2 className="w-16 h-16 animate-spin mx-auto mb-4 text-[#5A3F73]" />
           <p className="font-bold text-lg">Confirmando tu pago...</p>
@@ -71,6 +78,12 @@ export default function PaymentResult() {
   if (status === "success") {
     return (
       <div className="min-h-screen bg-[#3D2852] flex items-center justify-center px-6">
+        <Seo
+          title="Pago exitoso | DIFIORI"
+          description="Resultado del proceso de pago."
+          path="/payment-result"
+          robots="noindex, nofollow"
+        />
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -103,6 +116,12 @@ export default function PaymentResult() {
   if (status === "cancelled") {
     return (
       <div className="min-h-screen bg-[#3D2852] flex items-center justify-center px-6">
+        <Seo
+          title="Pago cancelado | DIFIORI"
+          description="Resultado del proceso de pago."
+          path="/payment-result"
+          robots="noindex, nofollow"
+        />
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -126,6 +145,12 @@ export default function PaymentResult() {
   // failed o error
   return (
     <div className="min-h-screen bg-[#3D2852] flex items-center justify-center px-6">
+      <Seo
+        title="Error de pago | DIFIORI"
+        description="Resultado del proceso de pago."
+        path="/payment-result"
+        robots="noindex, nofollow"
+      />
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}

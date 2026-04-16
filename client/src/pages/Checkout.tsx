@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
 
 import { CartDialog } from "@/components/CartDialog";
+import { Seo } from "@/components/Seo";
 
 const SECTORS = [
   { name: "Norte (Urdesa, Alborada, Sauces)", price: 0 },
@@ -214,6 +215,12 @@ export default function Checkout() {
   if (orderStatus === "success") {
     return (
       <div className="min-h-screen bg-[#3D2852] flex items-center justify-center px-6">
+        <Seo
+          title="Checkout | DIFIORI"
+          description="Proceso de checkout de DIFIORI."
+          path="/checkout"
+          robots="noindex, nofollow"
+        />
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -252,6 +259,12 @@ export default function Checkout() {
 
   return (
     <div className="min-h-screen bg-[#3D2852] pt-32 pb-20 px-6">
+      <Seo
+        title="Checkout | DIFIORI"
+        description="Proceso de checkout de DIFIORI."
+        path="/checkout"
+        robots="noindex, nofollow"
+      />
       <CartDialog />
       <div className="container mx-auto max-w-5xl">
         <div className="flex flex-col items-center text-center mb-16">

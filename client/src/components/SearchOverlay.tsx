@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, ArrowRight, ShoppingBag, Sparkles } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
+import { getProductPath } from "@shared/catalog";
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -32,9 +33,9 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
     }
   }, [isOpen]);
 
-  const handleSelectProduct = (id: number) => {
+  const handleSelectProduct = (productPath: string) => {
     onClose();
-    setLocation(`/product/${id}`);
+    setLocation(productPath);
   };
 
   return (
@@ -85,11 +86,11 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    onClick={() => handleSelectProduct(product.id)}
+                    onClick={() => handleSelectProduct(getProductPath(product))}
                     className="flex gap-6 items-center p-6 bg-white/5 rounded-[2.5rem] border border-white/5 hover:border-[#5A3F73]/40 hover:bg-white/10 transition-all cursor-pointer group relative overflow-hidden"
                   >
                     <div className="w-24 h-28 rounded-2xl overflow-hidden shrink-0 border border-white/10">
-                      <img src={product.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                      <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                     </div>
                     <div className="flex-1">
                       <p className="text-[#5A3F73] font-black text-[9px] uppercase tracking-widest mb-1">{product.category}</p>

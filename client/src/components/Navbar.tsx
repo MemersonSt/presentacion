@@ -1,11 +1,15 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { ShoppingBag, Menu, X, MessageSquare, Search, User } from "lucide-react";
-import { useState, useEffect } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import { Logo } from "@/components/Logo";
-import { SearchOverlay } from "@/components/SearchOverlay";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
+import { DEFAULT_COMPANY } from "@/lib/site";
+
+const SearchOverlay = lazy(() =>
+  import("@/components/SearchOverlay").then((module) => ({ default: module.SearchOverlay })),
+);
 
 export function Navbar() {
   const [location] = useLocation();
@@ -14,7 +18,7 @@ export function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 30);
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -22,18 +26,20 @@ export function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const leftLinks = [
-    { href: "#mas-vendidos", label: "Más Vendidos" },
-    { href: "#catalogo", label: "Catálogo" },
+    { href: "/#catalogo", label: "Catálogo" },
+    { href: "/#faq", label: "Preguntas" },
   ];
 
   const rightLinks = [
-    { href: "#testimonios", label: "Testimonios" },
-    { href: "#contacto", label: "Contacto" },
+    { href: "/#testimonios", label: "Testimonios" },
+    { href: "/#contacto", label: "Contacto" },
   ];
 
   return (
     <>
-      <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <Suspense fallback={null}>
+        {isSearchOpen && <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />}
+      </Suspense>
       <nav className={cn(
         "fixed w-full top-0 z-50 transition-all duration-1000",
         scrolled ? "bg-white/90 backdrop-blur-3xl border-b border-primary/10 shadow-[0_10px_30px_rgba(0,0,0,0.03)] py-3 lg:py-4" : "bg-transparent py-6 lg:py-8"
@@ -192,7 +198,7 @@ export function Navbar() {
         transition={{ delay: 1, duration: 1.5, ease: [0.23, 1, 0.32, 1] }}
         whileHover={{ scale: 1.1, y: -10 }}
         whileTap={{ scale: 0.9 }}
-        href="https://wa.me/5930997984583" 
+        href={`https://wa.me/${DEFAULT_COMPANY.phoneDigits}`}
         target="_blank" 
         rel="noopener noreferrer"
         className="fixed bottom-8 right-8 z-[100] bg-accent w-[60px] h-[60px] rounded-full shadow-[0_20px_50px_rgba(90,63,115,0.4)] hover:shadow-[0_30px_60px_rgba(90,63,115,0.6)] transition-all duration-700 flex items-center justify-center group border border-white/10"
@@ -217,4 +223,3 @@ export function Navbar() {
     </>
   );
 }
-

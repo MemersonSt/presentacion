@@ -1,15 +1,22 @@
 import React, { useState } from "react";
+import { Link } from "wouter";
 import { useCategories } from "@/hooks/useCategories";
 import { cn } from "@/lib/utils";
 import { ChevronDown, Filter, Sparkles, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { BEST_SELLERS_CATEGORY_NAME, getCategoryPath } from "@shared/catalog";
 
 interface CategorySidebarProps {
-  activeCategory: string | null;
-  setActiveCategory: (cat: string | null) => void;
+  activeCategory?: string | null;
+  setActiveCategory?: (cat: string | null) => void;
+  variant?: "filter" | "link";
 }
 
-export function CategorySidebar({ activeCategory, setActiveCategory }: CategorySidebarProps) {
+export function CategorySidebar({
+  activeCategory = null,
+  setActiveCategory,
+  variant = "filter",
+}: CategorySidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { data: categories, isLoading } = useCategories();
 
@@ -22,6 +29,21 @@ export function CategorySidebar({ activeCategory, setActiveCategory }: CategoryS
   }
 
   const allCategories = categories || [];
+  const isFilter = variant === "filter";
+  const mobileOptions = [
+    { label: "Todas las Colecciones", href: "/shop", value: null },
+    { label: BEST_SELLERS_CATEGORY_NAME, href: getCategoryPath(BEST_SELLERS_CATEGORY_NAME), value: BEST_SELLERS_CATEGORY_NAME },
+    ...allCategories.map((name) => ({
+      label: name,
+      href: getCategoryPath(name),
+      value: name,
+    })),
+  ];
+
+  const handleFilterSelection = (value: string | null) => {
+    setActiveCategory?.(value);
+    setIsOpen(false);
+  };
 
   return (
     <div className="w-full lg:w-72 flex flex-col gap-6">
@@ -46,44 +68,33 @@ export function CategorySidebar({ activeCategory, setActiveCategory }: CategoryS
               exit={{ opacity: 0, y: -10 }}
               className="absolute top-full left-0 w-full bg-white shadow-2xl border border-primary/20 rounded-2xl mt-3 z-40 overflow-hidden"
             >
-              <button 
-                className={cn(
-                  "w-full text-left p-5 hover:bg-primary/10 transition-colors font-bold text-xs uppercase tracking-widest border-b border-primary/5",
-                  activeCategory === null ? "text-accent bg-primary/5" : "text-foreground/60"
-                )}
-                onClick={() => {
-                  setActiveCategory(null);
-                  setIsOpen(false);
-                }}
-              >
-                Todas las Colecciones
-              </button>
-              <button 
-                className={cn(
-                  "w-full text-left p-5 hover:bg-primary/10 transition-colors font-bold text-xs uppercase tracking-widest border-b border-primary/5",
-                  activeCategory === "Más Vendidos" ? "text-accent bg-primary/5" : "text-foreground/60"
-                )}
-                onClick={() => {
-                  setActiveCategory("Más Vendidos");
-                  setIsOpen(false);
-                }}
-              >
-                Más Vendidos
-              </button>
-              {allCategories.map((name) => (
-                <button 
-                  key={name} 
-                  className={cn(
-                    "w-full text-left p-5 hover:bg-primary/10 transition-colors font-bold text-xs uppercase tracking-widest border-b border-primary/5 last:border-0",
-                    activeCategory === name ? "text-accent bg-primary/5" : "text-foreground/60"
-                  )}
-                  onClick={() => {
-                    setActiveCategory(name);
-                    setIsOpen(false);
-                  }}
-                >
-                  {name}
-                </button>
+              {mobileOptions.map((option, index) => (
+                isFilter ? (
+                  <button
+                    key={option.label}
+                    className={cn(
+                      "w-full text-left p-5 hover:bg-primary/10 transition-colors font-bold text-xs uppercase tracking-widest border-b border-primary/5",
+                      index === mobileOptions.length - 1 && "last:border-0",
+                      activeCategory === option.value ? "text-accent bg-primary/5" : "text-foreground/60"
+                    )}
+                    onClick={() => handleFilterSelection(option.value)}
+                  >
+                    {option.label}
+                  </button>
+                ) : (
+                  <Link
+                    key={option.label}
+                    href={option.href}
+                    onClick={() => setIsOpen(false)}
+                    className={cn(
+                      "block w-full text-left p-5 hover:bg-primary/10 transition-colors font-bold text-xs uppercase tracking-widest border-b border-primary/5",
+                      index === mobileOptions.length - 1 && "last:border-0",
+                      activeCategory === option.value ? "text-accent bg-primary/5" : "text-foreground/60"
+                    )}
+                  >
+                    {option.label}
+                  </Link>
+                )
               ))}
             </motion.div>
           )}
@@ -97,55 +108,46 @@ export function CategorySidebar({ activeCategory, setActiveCategory }: CategoryS
           Colecciones
         </h3>
         <div className="flex flex-col gap-2">
-          <button 
-            className={cn(
-              "w-full text-left px-5 py-4 rounded-2xl transition-all duration-300 font-black text-[9px] uppercase tracking-widest flex items-center justify-between group relative overflow-hidden",
-              activeCategory === null
-                ? "bg-primary/20 text-accent shadow-sm" 
-                : "text-foreground/40 hover:bg-primary/10 hover:text-foreground/80 border border-transparent"
-            )}
-            onClick={() => setActiveCategory(null)}
-          >
-            <span className="relative z-10">Todas las Colecciones</span>
-            <div className={cn(
-              "w-1 h-1 rounded-full transition-all duration-500 relative z-10",
-              activeCategory === null ? "bg-accent scale-150" : "bg-primary group-hover:scale-125"
-            )}></div>
-          </button>
-          
-          <button 
-            className={cn(
-              "w-full text-left px-5 py-4 rounded-2xl transition-all duration-300 font-black text-[9px] uppercase tracking-widest flex items-center justify-between group relative overflow-hidden",
-              activeCategory === "Más Vendidos"
-                ? "bg-primary/20 text-accent shadow-sm" 
-                : "text-foreground/40 hover:bg-primary/10 hover:text-foreground/80 border border-transparent"
-            )}
-            onClick={() => setActiveCategory("Más Vendidos")}
-          >
-            <span className="relative z-10">Más Vendidos</span>
-            <div className={cn(
-              "w-1 h-1 rounded-full transition-all duration-500 relative z-10",
-              activeCategory === "Más Vendidos" ? "bg-accent scale-150" : "bg-primary group-hover:scale-125"
-            )}></div>
-          </button>
-          
-          {allCategories.map((name) => (
-            <button 
-              key={name} 
-              className={cn(
-                "w-full text-left px-5 py-4 rounded-2xl transition-all duration-300 font-black text-[9px] uppercase tracking-widest flex items-center justify-between group relative overflow-hidden",
-                activeCategory === name 
-                  ? "bg-primary/20 text-accent shadow-sm" 
-                  : "text-foreground/40 hover:bg-primary/10 hover:text-foreground/80 border border-transparent"
-              )}
-              onClick={() => setActiveCategory(name)}
-            >
-              <span className="relative z-10">{name}</span>
-              <div className={cn(
-                "w-1 h-1 rounded-full transition-all duration-500 relative z-10",
-                activeCategory === name ? "bg-accent scale-150" : "bg-primary group-hover:scale-125"
-              )}></div>
-            </button>
+          {mobileOptions.map((option) => (
+            isFilter ? (
+              <button
+                key={option.label}
+                className={cn(
+                  "w-full text-left px-5 py-4 rounded-2xl transition-all duration-300 font-black text-[9px] uppercase tracking-widest flex items-center justify-between group relative overflow-hidden",
+                  activeCategory === option.value
+                    ? "bg-primary/20 text-accent shadow-sm"
+                    : "text-foreground/40 hover:bg-primary/10 hover:text-foreground/80 border border-transparent"
+                )}
+                onClick={() => setActiveCategory?.(option.value)}
+              >
+                <span className="relative z-10">{option.label}</span>
+                <div
+                  className={cn(
+                    "w-1 h-1 rounded-full transition-all duration-500 relative z-10",
+                    activeCategory === option.value ? "bg-accent scale-150" : "bg-primary group-hover:scale-125"
+                  )}
+                ></div>
+              </button>
+            ) : (
+              <Link
+                key={option.label}
+                href={option.href}
+                className={cn(
+                  "w-full text-left px-5 py-4 rounded-2xl transition-all duration-300 font-black text-[9px] uppercase tracking-widest flex items-center justify-between group relative overflow-hidden",
+                  activeCategory === option.value
+                    ? "bg-primary/20 text-accent shadow-sm"
+                    : "text-foreground/40 hover:bg-primary/10 hover:text-foreground/80 border border-transparent"
+                )}
+              >
+                <span className="relative z-10">{option.label}</span>
+                <div
+                  className={cn(
+                    "w-1 h-1 rounded-full transition-all duration-500 relative z-10",
+                    activeCategory === option.value ? "bg-accent scale-150" : "bg-primary group-hover:scale-125"
+                  )}
+                ></div>
+              </Link>
+            )
           ))}
         </div>
       </div>

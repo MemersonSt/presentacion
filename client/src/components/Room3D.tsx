@@ -13,7 +13,7 @@ import {
     Sphere,
     Cylinder
 } from "@react-three/drei";
-import { Suspense, useState, useMemo, useRef } from "react";
+import { Suspense, useEffect, useState, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -165,9 +165,13 @@ function Scene({ color }: { color: string }) {
     );
 }
 
-export default function Room3D() {
-    const [color, setColor] = useState("#E6E6E6");
+export default function Room3D({ color: initialColor = "#E6E6E6" }: { color?: string } = {}) {
+    const [color, setColor] = useState(initialColor);
     const colors = ["#E6E6E6", "#5A3F73", "#f43f5e", "#d946ef", "#8b5cf6", "#3b82f6"];
+
+    useEffect(() => {
+        setColor(initialColor);
+    }, [initialColor]);
 
     return (
         <motion.div
