@@ -42,14 +42,14 @@ COPY --chown=nodejs:nodejs . .
 RUN mkdir -p logs uploads && chown -R nodejs:nodejs logs uploads
 
 # Exponer puerto
-EXPOSE 4001
+EXPOSE 4000
 
 # Cambiar a usuario no-root
 USER nodejs
 
 # Variables de entorno por defecto
 ENV NODE_ENV=production
-ENV PORT=4001
+ENV PORT=4000
 ENV HOSTNAME="0.0.0.0"
 
 # Health check
