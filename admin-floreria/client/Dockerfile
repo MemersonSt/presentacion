@@ -5,7 +5,6 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 # Verificar que el .env existe
-RUN if [ -f .env ]; then echo "✅ .env encontrado"; cat .env; else echo "⚠️ .env no encontrado"; fi
 RUN npm run build
 
 # Stage 2: Production con Nginx
