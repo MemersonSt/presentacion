@@ -254,26 +254,6 @@ export default function HomeHeroEditor({ lang }: HomeHeroEditorProps) {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label>Link Mujeres</Label>
-            <Input
-              value={form.link_women || ""}
-              onChange={(e) => setForm({ ...form, link_women: e.target.value })}
-              placeholder="/store"
-            />
-          </div>
-
-          <div>
-            <Label>Link Hombres</Label>
-            <Input
-              value={form.link_men || ""}
-              onChange={(e) => setForm({ ...form, link_men: e.target.value })}
-              placeholder="/store"
-            />
-          </div>
-        </div>
-
         {/* Tipo de fondo */}
         <div className="border-t pt-4 mt-4">
           <Label htmlFor="backgroundType" className="text-base font-semibold mb-3 block">

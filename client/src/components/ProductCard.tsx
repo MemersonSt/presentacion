@@ -4,6 +4,8 @@ import { Link } from "wouter";
 import { ShoppingBag, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCart } from "@/context/CartContext";
+import { DEFAULT_COMPANY } from "@/lib/site";
+import { getProductPath } from "@shared/catalog";
 
 interface ProductCardProps {
   product: Product;
@@ -23,7 +25,7 @@ export function ProductCard({ product }: ProductCardProps) {
       className="group bg-white rounded-[2.5rem] overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 border border-primary/20 flex flex-col justify-between"
       itemScope itemType="https://schema.org/Product"
     >
-      <Link href={`/product/${product.id}`} className="block relative aspect-[4/5] overflow-hidden">
+      <Link href={getProductPath(product)} className="block relative aspect-[4/5] overflow-hidden">
         <img 
           itemProp="image"
           src={product.image} 
@@ -66,7 +68,7 @@ export function ProductCard({ product }: ProductCardProps) {
             Comprar Ahora
           </button>
           <a 
-            href={`https://wa.me/593987654321?text=Hola!%20Me%20interesa%20el%20producto%20${encodeURIComponent(product.name)}`}
+            href={`https://wa.me/${DEFAULT_COMPANY.phoneDigits}?text=Hola!%20Me%20interesa%20el%20producto%20${encodeURIComponent(product.name)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="w-full bg-accent/10 hover:bg-accent text-accent hover:text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all border border-accent/20 flex items-center justify-center gap-2"

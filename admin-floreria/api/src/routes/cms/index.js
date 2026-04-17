@@ -13,6 +13,6 @@ router.get('/limited-products', companyController.getFeaturedProducts); // Mocki
 // Endpoint para crear el Hero de la página de inicio
 router.post('/home', companyController.createHomeHero);
 // Endpoint para actualizar el Hero de la página de inicio
-router.put('/home/:id', companyController.updateHomeHero);
+router.put('/home/:lang', companyController.updateHomeHero);
 
 module.exports = router;

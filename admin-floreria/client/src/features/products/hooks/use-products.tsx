@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { FormData, IFilters, Product, Variant } from "../types";
+import type { FormData, Product, Variant } from "../types";
 import productsService from "../api/products-service";
 import { useUserStore } from "@/store/use-user-store";
 
@@ -17,34 +17,24 @@ export default function useProducts() {
     image: "",
     category: "",
     stock: 0,
-    price: 0, // Precio base para productos sin variantes
+    price: 0,
     isActive: true,
     featured: false,
     hasVariants: false,
-    selectedFilterCategoryId: undefined,
-    selectedFilterOptionId: undefined,
-    productFilters: [],
   });
-  
+
   const [variants, setVariants] = useState<Array<Variant>>([]);
 
   const fetchProducts = async () => {
     try {
       const params = new URLSearchParams();
-
       if (search) params.append("search", search);
 
-      console.log("Fetching products with params:", params.toString());
-
       const response = await productsService.get(params);
-
-      const { status, message, data } = response; // o response.data si usas Axios
+      const { status, message, data } = response;
 
       if (status === "success" && data) {
-        console.log("Fetched products:", data);
         setProducts(data || []);
-        // Puedes guardar la paginación si la necesitas:
-        // setPagination(data.pagination);
       } else {
         toast.error(message || "Error al cargar productos");
       }
@@ -80,15 +70,6 @@ export default function useProducts() {
           userId: user?.id,
         },
         ...(formData.hasVariants && { variants }),
-        ...(formData.productFilters && {
-          productFilters: [
-            {
-              categoryId: formData.selectedFilterCategoryId!,
-              optionId: formData.selectedFilterOptionId!,
-            },
-            ...formData.productFilters
-          ],
-        }),
       };
 
       if (editingProduct) {
@@ -96,18 +77,18 @@ export default function useProducts() {
         if (response.status === "success") {
           toast.success(response.message);
           setEditingProduct(null);
-          setShowModal(false); // ✅ Cerrar modal
+          setShowModal(false);
           resetForm();
-          await fetchProducts(); // ✅ Recargar productos
+          await fetchProducts();
         }
       } else {
         const response = await productsService.create(data);
         if (response.status === "success") {
           toast.success(response.message);
           setEditingProduct(null);
-          setShowModal(false); // ✅ Cerrar modal
+          setShowModal(false);
           resetForm();
-          await fetchProducts(); // ✅ Recargar productos
+          await fetchProducts();
         }
       }
     } catch (error) {
@@ -119,22 +100,12 @@ export default function useProducts() {
   const handleNew = () => {
     setEditingProduct(null);
     resetForm();
-    setShowModal(true); // ✅ Abrir modal
+    setShowModal(true);
   };
 
-  const handleEdit = async (product: Product) => {
-    const filtersresponse = await productsService.getProductFilters(product.id);
-
-    const main_category = filtersresponse.data.find(
-      (f: IFilters) => f.categoryId === product.category
-    );
-
-    const filters = filtersresponse.data.filter(
-      (f: IFilters) => f.categoryId !== product.category
-    );
-    
+  const handleEdit = (product: Product) => {
     setEditingProduct(product);
-    setShowModal(true); // ✅ Abrir modal
+    setShowModal(true);
     setFormData({
       name: product.name,
       description: product.description || "",
@@ -145,16 +116,8 @@ export default function useProducts() {
       isActive: product.isActive,
       featured: product.featured,
       hasVariants: product.hasVariants,
-      selectedFilterCategoryId: main_category?.categoryId,
-      selectedFilterOptionId: main_category?.optionId,
-      productFilters:
-        filters?.map((pf: IFilters) => ({
-          categoryId: pf.categoryId,
-          optionId: pf.optionId,
-        })) || [],
     });
 
-    // Cargar variantes si existen
     if (product.variants && product.variants.length > 0) {
       setVariants(
         product.variants.map((variant, index) => ({
@@ -171,10 +134,6 @@ export default function useProducts() {
   };
 
   const handleDelete = async (id: string) => {
-    // if (!confirm("¿Estás seguro de que quieres eliminar este producto?")) {
-    //   return;
-    // }
-
     try {
       const response = await productsService.remove(id);
 
@@ -201,19 +160,15 @@ export default function useProducts() {
       isActive: true,
       featured: false,
       hasVariants: false,
-      selectedFilterCategoryId: undefined,
-      selectedFilterOptionId: undefined,
-      productFilters: [],
     });
     setVariants([]);
   };
 
-  // Funciones para manejar variantes
   const addVariant = () => {
     const newVariant = {
       name: "",
       price: 0,
-      isDefault: variants.length === 0, // Primera variante es default por defecto
+      isDefault: variants.length === 0,
       sortOrder: variants.length,
     };
     setVariants([...variants, newVariant]);
@@ -227,7 +182,6 @@ export default function useProducts() {
     const newVariants = [...variants];
     newVariants[index] = { ...newVariants[index], [field]: value };
 
-    // Si se marca como default, desmarcar las demás
     if (field === "isDefault" && value === true) {
       newVariants.forEach((variant, i) => {
         if (i !== index) variant.isDefault = false;
@@ -240,7 +194,6 @@ export default function useProducts() {
   const removeVariant = (index: number) => {
     const newVariants = variants.filter((_, i) => i !== index);
 
-    // Si se eliminó la variante default y quedan más, marcar la primera como default
     if (variants[index].isDefault && newVariants.length > 0) {
       newVariants[0].isDefault = true;
     }
@@ -253,7 +206,6 @@ export default function useProducts() {
     const [removed] = newVariants.splice(fromIndex, 1);
     newVariants.splice(toIndex, 0, removed);
 
-    // Actualizar sortOrder
     newVariants.forEach((variant, index) => {
       variant.sortOrder = index;
     });

@@ -1,22 +1,35 @@
 import { useQuery } from "@tanstack/react-query";
 import { Product, INITIAL_PRODUCTS } from "../data/mock";
+import { resolveApiUrl } from "@/lib/api";
 
 const API_URL = "/api/external/products";
-const IMG_BASE_URL = "http://localhost:4001"; // En producción esto debería ser una variable de entorno
+const VITE_ASSET_BASE_URL = import.meta?.env?.VITE_ASSET_BASE_URL;
+const IMG_BASE_URL = (VITE_ASSET_BASE_URL || "").replace(/\/$/, "");
+export const productsQueryKey = (category?: string) => ["products", category || "all"] as const;
 
 function getImageUrl(imagePath: string | null | undefined): string {
-  if (!imagePath) return "/assets/product1.png";
+  // Placeholder neutral en caso de que no haya imagen
+  const PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='500' viewBox='0 0 400 500'%3E%3Crect width='400' height='500' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='20' fill='%239ca3af'%3ESin imagen disponible%3C/text%3E%3C/svg%3E";
+
+  if (!imagePath || imagePath.trim() === "" || imagePath === "/assets/product1.png") {
+    return PLACEHOLDER;
+  }
+  
   if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) return imagePath;
   const path = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
-  return `${IMG_BASE_URL}${path}`;
+  if (IMG_BASE_URL) return `${IMG_BASE_URL}${path}`;
+  if (typeof window !== "undefined") return `${window.location.origin}${path}`;
+  return path;
 }
 
-async function fetchProducts(category?: string): Promise<Product[]> {
+export async function fetchProducts(category?: string, baseUrl?: string): Promise<Product[]> {
   try {
     const params = new URLSearchParams();
     if (category && category !== "all") params.set("category", category);
 
-    const res = await fetch(`${API_URL}?${params.toString()}`);
+    const query = params.toString();
+    const endpoint = query ? `${API_URL}?${query}` : API_URL;
+    const res = await fetch(resolveApiUrl(endpoint, baseUrl));
     if (!res.ok) throw new Error("Error al cargar productos");
 
     const json = await res.json();
@@ -51,7 +64,7 @@ async function fetchProducts(category?: string): Promise<Product[]> {
  */
 export function useProducts(category?: string) {
   return useQuery<Product[], Error>({
-    queryKey: ["products", category],
+    queryKey: productsQueryKey(category),
     queryFn: () => fetchProducts(category),
     staleTime: 1000 * 60 * 2, // 2 minutos de caché
     retry: 1,
@@ -66,7 +79,7 @@ export function useFeaturedProducts() {
     queryKey: ["products", "featured"],
     queryFn: async () => {
       try {
-        const res = await fetch(`${API_URL}?featured=true`);
+        const res = await fetch(resolveApiUrl(`${API_URL}?featured=true`));
         if (!res.ok) throw new Error("Error al cargar productos destacados");
         const json = await res.json();
 

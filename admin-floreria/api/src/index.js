@@ -15,7 +15,7 @@ const app = express();
 const PORT = process.env.PORT;
 
 // Middlewares
-
+app.use('/assets', express.static(path.join(__dirname, '../../../client/public/assets')));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
@@ -66,14 +66,6 @@ const uploadRoutes = require("./routes/upload/index");
 app.use("/api/upload", authMiddleware, uploadRoutes);
 const checkoutRoutes = require("./routes/checkout/index");
 app.use("/api/checkout", checkoutRoutes);
-const checkoutSaveEmail = require("./routes/checkout/index");
-app.use("api/checkout/saveEmailSuscription", checkoutSaveEmail);
-const checkoutGetPercentDiscount = require("./routes/checkout/index");
-app.use("api/checkout/get-percent-discount", checkoutGetPercentDiscount);
-const checkoutValidateUseCodeDiscount = require("./routes/checkout/index");
-app.use("api/checkout/validate-use-discount-code", checkoutValidateUseCodeDiscount)
-const checkoutGetCouponDiscount = require("./routes/checkout/index");
-app.use("api/checkout/get-coupon-discount", checkoutGetCouponDiscount)
 const chartDataRoutes = require("./routes/chart-data/index");
 app.use("/api/chart-data", chartDataRoutes);
 const orderIdRoutes = require("./routes/orders/id");
@@ -93,20 +85,6 @@ const discountsRoutes = require("./routes/discounts/index");
 app.use("/api/discounts", featureMiddleware("discounts"), discountsRoutes);
 const couponsRoutes = require("./routes/coupons/index");
 app.use("/api/coupons", authMiddleware, couponsRoutes);
-const discountIdRoutes = require("./routes/discounts/index");
-app.use("/api/discounts", featureMiddleware("discounts"), discountIdRoutes);
-const typeDiscountRoutes = require("./routes/discounts/index");
-app.use("/api/discounts", featureMiddleware("discounts"), typeDiscountRoutes);
-const updateDiscountRoutes = require("./routes/discounts/index");
-app.use("/api/discounts", featureMiddleware("discounts"), updateDiscountRoutes);
-const createDiscountRoutes = require("./routes/discounts/index");
-app.use("/api/discounts", featureMiddleware("discounts"), createDiscountRoutes);
-const deleteDiscount = require("./routes/discounts/index");
-app.use("/api/discounts", featureMiddleware("discounts"), deleteDiscount)
-// Rutas externas para integración con webs (sin authMiddleware)
-const externalRoutes = require("./routes/external/index");
-app.use("/api/external", externalRoutes);
-
 // Productos públicos para la tienda
 const externalProductsRoutes = require("./routes/external/products");
 const externalCmsRoutes = require("./routes/external/cms");
@@ -120,7 +98,15 @@ app.use("/api/external/reviews", externalReviewsRoutes);
 
 // Órdenes desde la tienda pública
 const storeOrdersRoutes = require("./routes/external/store-orders");
+const abandonedOrdersRoutes = require("./routes/external/abandoned-orders");
+const payphoneRoutes = require("./routes/external/payphone");
 app.use("/api/external/store-orders", storeOrdersRoutes);
+app.use("/api/external/store-orders/abandoned", abandonedOrdersRoutes);
+app.use("/api/external/payphone", payphoneRoutes);
+
+// Rutas externas genéricas (viejas)
+const externalRoutes = require("./routes/external/index");
+app.use("/api/external", externalRoutes);
 
 // Rutas admin para gestión de API keys
 const companyRoutes = require("./routes/admin/company");

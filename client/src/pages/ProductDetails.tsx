@@ -1,15 +1,34 @@
 import React, { useState } from "react";
-import { useRoute } from "wouter";
+import { Link, useLocation, useRoute } from "wouter";
 import { ShoppingBag, MessageSquare, Truck, ShieldCheck, Clock, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useProducts } from "@/hooks/useProducts";
+import { Seo } from "@/components/Seo";
+import { DEFAULT_COMPANY, absoluteUrl } from "@/lib/site";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { getCategoryPath, getProductIdFromSlug, getProductPath, slugify } from "@shared/catalog";
 
 export default function ProductDetails() {
-  const [match, params] = useRoute("/product/:id");
+  const [canonicalMatch, canonicalParams] = useRoute("/producto/:slug");
+  const [legacyMatch, legacyParams] = useRoute("/product/:id");
+  const [, setLocation] = useLocation();
   const { data: allProducts = [], isLoading } = useProducts();
-  
-  const product = allProducts.find(p => p.id === params?.id);
+
+  const routeValue = canonicalMatch ? canonicalParams?.slug || "" : legacyParams?.id || "";
+  const routePath = canonicalMatch ? `/producto/${routeValue}` : `/product/${routeValue}`;
+  const legacyProductId = legacyMatch ? legacyParams?.id : getProductIdFromSlug(routeValue);
+  const product = allProducts.find((item) => {
+    if (!routeValue) return false;
+    if (legacyProductId && String(item.id) === String(legacyProductId)) return true;
+    return slugify(item.name) === routeValue;
+  });
   const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
 
   // Update selected image when product is loaded
@@ -17,19 +36,132 @@ export default function ProductDetails() {
     if (product) setSelectedImage(product.image);
   }, [product]);
 
+  React.useEffect(() => {
+    if (!product) return;
+
+    const canonicalPath = getProductPath(product);
+    if (routePath !== canonicalPath) {
+      setLocation(canonicalPath, { replace: true });
+    }
+  }, [product, routePath, setLocation]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
+        <Seo
+          title="Cargando producto | DIFIORI"
+          description="Cargando información del producto."
+          path={routePath}
+          robots="noindex, nofollow"
+        />
         <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
-  if (!product) return <div className="pt-40 text-center text-foreground font-serif text-2xl">Producto no encontrado</div>;
+  if (!product) {
+    return (
+      <div className="pt-40 text-center text-foreground font-serif text-2xl">
+        <Seo
+          title="Producto no encontrado | DIFIORI"
+          description="La ficha del producto solicitado no está disponible."
+          path={routePath}
+          robots="noindex, nofollow"
+        />
+        Producto no encontrado
+      </div>
+    );
+  }
+
+  const priceValue = product.price.replace(/[^0-9.]/g, "");
+  const productPath = getProductPath(product);
+  const categoryPath = getCategoryPath(product.category);
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.description,
+    image: [absoluteUrl(product.image), ...(product.additionalImages || []).map((image) => absoluteUrl(image))],
+    category: product.category,
+    brand: {
+      "@type": "Brand",
+      name: "DIFIORI",
+    },
+    offers: {
+      "@type": "Offer",
+      url: `https://difiori.com${productPath}`,
+      priceCurrency: "USD",
+      price: priceValue,
+      availability: "https://schema.org/InStock",
+    },
+    breadcrumb: {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Inicio",
+          item: "https://difiori.com/",
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Catálogo",
+          item: "https://difiori.com/shop",
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: product.category,
+          item: `https://difiori.com${categoryPath}`,
+        },
+        {
+          "@type": "ListItem",
+          position: 4,
+          name: product.name,
+          item: `https://difiori.com${productPath}`,
+        },
+      ],
+    },
+  };
 
   return (
     <div className="min-h-screen bg-background pt-40 pb-20 px-6">
+      <Seo
+        title={`${product.name} | Arreglos Florales en Guayaquil | DIFIORI`}
+        description={product.description}
+        path={productPath}
+        image={product.image}
+        type="product"
+        schema={productSchema}
+      />
       <div className="container mx-auto">
+        <Breadcrumb className="mb-10">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <Link href="/" className="transition-colors hover:text-foreground">
+                Inicio
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <Link href="/shop" className="transition-colors hover:text-foreground">
+                Catálogo
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <Link href={categoryPath} className="transition-colors hover:text-foreground">
+                {product.category}
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{product.name}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
         <div className="grid lg:grid-cols-2 gap-16 items-start">
           {/* Photos Section */}
           <div className="space-y-8 flex flex-col items-center lg:items-start">
@@ -59,7 +191,7 @@ export default function ProductDetails() {
                     selectedImage === img ? "border-accent shadow-lg" : "border-primary/10"
                   )}
                 >
-                  <img src={img} className="w-full h-full object-cover" alt={`view-${i}`} />
+                  <img src={img} className="w-full h-full object-cover" alt={`${product.name} vista ${i + 1}`} />
                 </button>
               ))}
             </div>
@@ -109,7 +241,7 @@ export default function ProductDetails() {
                 Comprar ahora
               </button>
               <a 
-                href={`https://wa.me/593987654321?text=Hola!%20Deseo%20ordenar%20el%20arreglo:%20${product.name}`} 
+                href={`https://wa.me/${DEFAULT_COMPANY.phoneDigits}?text=Hola!%20Deseo%20ordenar%20el%20arreglo:%20${encodeURIComponent(product.name)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 bg-white border-2 border-accent/40 text-accent hover:bg-accent hover:text-white py-6 rounded-3xl font-black text-xs uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3 shadow-xl"

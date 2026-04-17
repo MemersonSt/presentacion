@@ -121,12 +121,25 @@ exports.features = async (req, res) => {
     // const tenantId = null; // Deshabilitado temporalmente
     console.log(`Me Controller: Resolved tenant ID: ${tenantId} for domain: ${tenantDomain}`);
 
-    if (!tenantId) {
-      console.warn(`Me Controller: Tenant no encontrado para el dominio: ${tenantDomain}`);
+    let finalTenantId = tenantId;
+    
+    // 🧪 Fallback para desarrollo: si no se encuentra el tenant por dominio (ej: localhost)
+    // intentamos usar el primer tenant disponible en la base de datos.
+    if (!finalTenantId) {
+      console.warn(`Me Controller: Tenant no encontrado para el dominio: ${tenantDomain}. Buscando el primero disponible (Fallback Dev)...`);
+      const firstTenant = await prisma.tenants.findFirst({ select: { id: true } });
+      if (firstTenant) {
+        finalTenantId = firstTenant.id;
+        console.log(`Me Controller: Usando Tenant ID de fallback: ${finalTenantId}`);
+      }
+    }
+
+    if (!finalTenantId) {
+      console.error(`Me Controller: No se pudo encontrar ningún Tenant.`);
       return res.status(404).json({ status: "error", message: "Tenant no encontrado para esta sesión.", data: null });
     }
 
-    const features = await getAvailableFeatures(tenantId);
+    const features = await getAvailableFeatures(finalTenantId);
 
     return res.status(200).json({
       status: "success",

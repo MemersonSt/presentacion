@@ -1,9 +1,12 @@
-import React, { useState, useRef } from "react";
-import { ShoppingBag, ChevronLeft, CreditCard, Truck, User, Upload, CheckCircle, Loader2 } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { ShoppingBag, ChevronLeft, CreditCard, Truck, User, CheckCircle, Loader2, ArrowRight } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
+
+import { CartDialog } from "@/components/CartDialog";
+import { Seo } from "@/components/Seo";
 
 const SECTORS = [
   { name: "Norte (Urdesa, Alborada, Sauces)", price: 0 },
@@ -17,7 +20,7 @@ const SECTORS = [
 type OrderStatus = "idle" | "loading" | "success" | "error";
 
 export default function Checkout() {
-  const { items, cartTotal, clearCart } = useCart();
+  const { items, cartTotal, clearCart, updateQuantity, removeItem, isCartOpen, setIsCartOpen } = useCart();
   const [, setLocation] = useLocation();
   const [paymentMethod, setPaymentMethod] = useState("Transferencia");
   const [sector, setSector] = useState(SECTORS[0]);
@@ -40,6 +43,44 @@ export default function Checkout() {
   const dateTimeRef = useRef<HTMLInputElement>(null);
   const addressRef = useRef<HTMLInputElement>(null);
   const cardMessageRef = useRef<HTMLTextAreaElement>(null);
+
+  // --- Lógica de Carrito Abandonado ---
+  const abandonmentSent = useRef(false);
+
+  useEffect(() => {
+    const handleAbandonment = () => {
+      if (abandonmentSent.current || orderStatus === "success" || items.length === 0) return;
+
+      const customerName = senderNameRef.current?.value;
+      const phone = phoneRef.current?.value;
+
+      // Si han ingresado al menos el nombre o el teléfono, disparamos la alerta
+      if (customerName || phone) {
+        fetch("/api/external/store-orders/abandoned", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            customerName: customerName || "Cliente anónimo",
+            phone: phone || "No proporcionado",
+            items,
+            total: finalTotal
+          }),
+          keepalive: true, // Importante para que la petición se complete al cerrar la pestaña
+        });
+        abandonmentSent.current = true;
+      }
+    };
+
+    // Alerta tras 2 minutos de inactividad o al intentar cerrar
+    const timer = setTimeout(handleAbandonment, 120000); 
+    window.addEventListener("beforeunload", handleAbandonment);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("beforeunload", handleAbandonment);
+    };
+  }, [items, orderStatus]);
+  // -------------------------------------
 
   const cartSubtotal = cartTotal;
   const shippingCost = sector.price;
@@ -96,30 +137,60 @@ export default function Checkout() {
 
     setErrorMsg("");
     setOrderStatus("loading");
+    abandonmentSent.current = true;
 
     const firstItem = items[0];
+    const orderPayload = {
+      productId: firstItem?.product.id,
+      productName: firstItem?.product.name,
+      productPrice: firstItem?.product.price,
+      quantity: firstItem?.quantity || 1,
+      receiverName,
+      senderName,
+      phone,
+      deliveryDateTime,
+      exactAddress,
+      sector: sector.name,
+      shippingCost: sector.price,
+      cardMessage,
+      total: cartSubtotal + shippingCost,
+      couponCode: appliedCoupon?.code || null,
+    };
 
     try {
+      // --- Pago con Tarjeta: redirigir a PayPhone ---
+      if (paymentMethod === "Tarjeta") {
+        const callbackBase = `${window.location.origin}/payment-result`;
+        const res = await fetch("/api/external/payphone/prepare", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...orderPayload,
+            callbackUrl: callbackBase,
+            cancellationUrl: `${window.location.origin}/checkout`,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.status === "success") {
+          // Guardar clientTransactionId en localStorage por si el redirect pierde params
+          localStorage.setItem("pp_clientTxId", data.data.clientTransactionId);
+          clearCart();
+          window.location.href = data.data.paymentUrl;
+        } else {
+          setErrorMsg(data.message || "No se pudo iniciar el pago con tarjeta. Intenta con transferencia.");
+          setOrderStatus("error");
+          abandonmentSent.current = false;
+        }
+        return;
+      }
+
+      // --- Pago por Transferencia: flujo directo ---
       const res = await fetch("/api/external/store-orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId: firstItem?.product.id,
-          productName: firstItem?.product.name,
-          productPrice: firstItem?.product.price,
-          quantity: firstItem?.quantity || 1,
-          receiverName,
-          senderName,
-          phone,
-          deliveryDateTime,
-          exactAddress,
-          sector: sector.name,
-          shippingCost: sector.price,
-          cardMessage,
-          paymentMethod,
-          total: cartSubtotal + shippingCost, // Enviamos el total sin descuento manual, el backend lo recalcula con el couponCode
-          couponCode: appliedCoupon?.code || null,
-        }),
+        body: JSON.stringify({ ...orderPayload, paymentMethod }),
       });
 
       const data = await res.json();
@@ -131,10 +202,12 @@ export default function Checkout() {
       } else {
         setErrorMsg(data.message || "Hubo un error al procesar tu orden. Contáctanos por WhatsApp.");
         setOrderStatus("error");
+        abandonmentSent.current = false;
       }
     } catch {
-      setErrorMsg("No se pudo conectar con el servidor. Contáctanos por WhatsApp: +593 xx xxx xxxx");
+      setErrorMsg("No se pudo conectar con el servidor. Contáctanos por WhatsApp.");
       setOrderStatus("error");
+      abandonmentSent.current = false;
     }
   };
 
@@ -142,6 +215,12 @@ export default function Checkout() {
   if (orderStatus === "success") {
     return (
       <div className="min-h-screen bg-[#3D2852] flex items-center justify-center px-6">
+        <Seo
+          title="Checkout | DIFIORI"
+          description="Proceso de checkout de DIFIORI."
+          path="/checkout"
+          robots="noindex, nofollow"
+        />
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -180,16 +259,44 @@ export default function Checkout() {
 
   return (
     <div className="min-h-screen bg-[#3D2852] pt-32 pb-20 px-6">
+      <Seo
+        title="Checkout | DIFIORI"
+        description="Proceso de checkout de DIFIORI."
+        path="/checkout"
+        robots="noindex, nofollow"
+      />
+      <CartDialog />
       <div className="container mx-auto max-w-5xl">
-        <Link href="/" className="inline-flex items-center gap-2 text-[#E6E6E6]/60 font-bold mb-10 hover:translate-x-[-10px] transition-transform hover:text-white">
-          <ChevronLeft className="w-5 h-5" /> Regresar a la tienda
-        </Link>
+        <div className="flex flex-col items-center text-center mb-16">
+          <Link href="/#catalogo" className="inline-flex items-center gap-2 text-[#E6E6E6]/60 font-bold mb-6 hover:text-white transition-colors group">
+            <ChevronLeft className="w-5 h-5 group-hover:translate-x-[-5px] transition-transform" /> Seguir comprando
+          </Link>
+          
+          <motion.div 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsCartOpen(true)}
+            className="cursor-pointer bg-[#2A1B38]/60 backdrop-blur-3xl p-8 px-12 rounded-[3.5rem] border-2 border-[#5A3F73]/40 shadow-2xl flex flex-col items-center group relative overflow-hidden"
+          >
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#5A3F73] to-transparent opacity-50" />
+            <ShoppingBag className="w-12 h-12 text-[#5A3F73] mb-4 group-hover:scale-110 transition-transform" />
+            <h2 className="text-3xl font-serif font-bold text-white mb-1">
+              {items.length === 0 ? "Tu carrito está vacío" : `Tienes ${items.length} ${items.length === 1 ? 'producto' : 'productos'}`}
+            </h2>
+            <p className="text-[#5A3F73] font-black text-xs uppercase tracking-widest flex items-center gap-2">
+              Haz clic para ver/cambiar tu pedido <ArrowRight className="w-3 h-3" />
+            </p>
+            {items.length > 0 && (
+              <div className="absolute top-6 right-8 bg-[#5A3F73] text-white text-[10px] font-black w-6 h-6 rounded-full flex items-center justify-center shadow-lg">
+                {items.reduce((acc, item) => acc + item.quantity, 0)}
+              </div>
+            )}
+          </motion.div>
+        </div>
         
         <div className="flex flex-col lg:flex-row gap-16">
           {/* Columna izquierda */}
           <div className="flex-1 space-y-10">
-            <h1 className="text-4xl font-serif font-bold text-[#E6E6E6] mb-8 tracking-tight">FINALIZAR COMPRA</h1>
-            
             {/* Datos de Entrega */}
             <div className="bg-[#2A1B38]/60 backdrop-blur-3xl p-10 rounded-[3rem] shadow-2xl border border-[#5A3F73]/30 space-y-8">
                <h3 className="text-xl font-bold text-[#5A3F73] flex items-center gap-3">
@@ -257,11 +364,10 @@ export default function Checkout() {
                      exit={{ opacity: 0, height: 0, marginTop: 0 }}
                      className="overflow-hidden"
                    >
-                     <div className="bg-[#3D2852]/30 border border-dashed border-[#5A3F73] rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-[#3D2852]/50 transition-colors group relative">
-                       <Upload className="w-8 h-8 text-[#5A3F73] mb-3 group-hover:scale-110 transition-transform" />
-                       <span className="text-[#E6E6E6]/80 text-sm font-bold mb-1">Cargar comprobante</span>
-                       <span className="text-[#E6E6E6]/40 text-xs">Arrastra o haz clic para subir captura (PNG, JPG)</span>
-                       <input type="file" title="" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*,.pdf" />
+                     <div className="bg-[#3D2852]/30 border border-dashed border-[#5A3F73] rounded-2xl p-8 flex flex-col items-center justify-center text-center">
+                       <CreditCard className="w-8 h-8 text-[#5A3F73] mb-3" />
+                       <span className="text-[#E6E6E6]/80 text-sm font-bold mb-1">Pago seguro con PayPhone</span>
+                       <span className="text-[#E6E6E6]/40 text-xs">Al confirmar serás redirigido a la pasarela de pago para ingresar los datos de tu tarjeta</span>
                      </div>
                    </motion.div>
                  )}
@@ -394,7 +500,7 @@ export default function Checkout() {
                       Procesando...
                     </>
                   ) : (
-                    "CONFIRMAR ORDEN 🌸"
+                    `PAGAR $${finalTotal.toFixed(2)} 🌸`
                   )}
                 </button>
                 <p className="text-center text-[10px] text-[#E6E6E6]/20 mt-6 flex items-center justify-center gap-2 font-bold uppercase tracking-widest">

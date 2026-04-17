@@ -16,16 +16,15 @@ export const useLoyaltyStats = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [customers, coupons, campaigns, automations] = await Promise.all([
+        const [customers, campaigns, automations] = await Promise.all([
           customersApi.getStats(),
-          couponsApi.getStats(),
           campaignsApi.getStats(),
           automationsApi.getStats(),
         ]);
 
         setStats({
           customers: customers.data,
-          coupons: coupons.data,
+          coupons: null, // No stats for coupons currently
           campaigns: campaigns.data,
           automations: automations.data,
         });
@@ -99,7 +98,7 @@ export const useCoupons = () => {
     try {
       setLoading(true);
       const response = await couponsApi.getAll();
-      setCoupons(response.data);
+      setCoupons(response.data.data || []);
     } catch (err) {
       setError(err);
     } finally {

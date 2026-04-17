@@ -1,4 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { resolveApiUrl } from "@/lib/api";
+import { TESTIMONIALS } from "@/data/mock";
 
 export interface Review {
   id?: string;
@@ -10,16 +12,24 @@ export interface Review {
 }
 
 const API_URL = "/api/external/reviews";
+export const reviewsQueryKey = ["reviews"] as const;
+
+export async function fetchReviews(baseUrl?: string): Promise<Review[]> {
+  try {
+    const res = await fetch(resolveApiUrl(API_URL, baseUrl));
+    if (!res.ok) throw new Error("Error al cargar reseñas");
+    const json = await res.json();
+    return json.data;
+  } catch (error) {
+    console.warn("Error fetching reviews from API, using fallback data:", error);
+    return TESTIMONIALS;
+  }
+}
 
 export function useReviews() {
   return useQuery<Review[], Error>({
-    queryKey: ["reviews"],
-    queryFn: async () => {
-      const res = await fetch(API_URL);
-      if (!res.ok) throw new Error("Error al cargar reseñas");
-      const json = await res.json();
-      return json.data;
-    },
+    queryKey: reviewsQueryKey,
+    queryFn: () => fetchReviews(),
     staleTime: 1000 * 60 * 5, // 5 minutos de caché
   });
 }

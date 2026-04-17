@@ -1,10 +1,33 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { serveStatic } from "./static";
+import { getProdTemplate, serveStatic } from "./static";
 import { createServer } from "http";
+import { INITIAL_PRODUCTS } from "../client/src/data/mock";
+import {
+  BEST_SELLERS_CATEGORY_NAME,
+  BEST_SELLERS_CATEGORY_SLUG,
+  findCategoryNameBySlug,
+  getCategoryPath,
+  getProductIdFromSlug,
+  getProductPath,
+  slugify,
+} from "../shared/catalog";
+import { createAppQueryClient } from "../client/src/lib/queryClient";
+import { renderApp } from "../client/src/server-entry";
+import { DEFAULT_SEO_STATE, renderSeoTags } from "../client/src/components/Seo";
+import { categoriesQueryKey, fetchCategories } from "../client/src/hooks/useCategories";
+import { companyQueryKey, fetchCompany } from "../client/src/hooks/useCompany";
+import { cmsHomeHeroQueryKey, fetchHomeHero } from "../client/src/hooks/useCMS";
+import { productsQueryKey, fetchProducts } from "../client/src/hooks/useProducts";
+import { reviewsQueryKey, fetchReviews } from "../client/src/hooks/useReviews";
+import type { Product } from "../client/src/data/mock";
+import type { QueryClient } from "@tanstack/react-query";
+import type { ViteDevServer } from "vite";
 
 const app = express();
 const httpServer = createServer(app);
+const BACKEND_ORIGIN = (process.env.BACKEND_URL || "http://localhost:4001").replace(/\/$/, "");
+const SITE_URL = (process.env.SITE_URL || process.env.VITE_SITE_URL || "https://difiori.com").replace(/\/$/, "");
 
 declare module "http" {
   interface IncomingMessage {
@@ -21,6 +44,312 @@ app.use(
 );
 
 app.use(express.urlencoded({ extended: false }));
+
+function buildBackendUrl(originalUrl: string) {
+  return `${BACKEND_ORIGIN}${originalUrl}`;
+}
+
+function buildSiteUrl(path: string) {
+  return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+function buildRequestOrigin(req: Request) {
+  return `${req.protocol}://${req.get("host")}`;
+}
+
+function escapeXml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function serializeForScript(value: unknown) {
+  return JSON.stringify(value)
+    .replace(/</g, "\\u003c")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+}
+
+function injectHtml(
+  template: string,
+  {
+    head,
+    appHtml = "",
+    stateScript = "",
+  }: {
+    head: string;
+    appHtml?: string;
+    stateScript?: string;
+  },
+) {
+  return template
+    .replace("<!--app-head-->", head)
+    .replace("<!--app-html-->", appHtml)
+    .replace("<!--app-state-->", stateScript);
+}
+
+function shouldSsrPath(path: string) {
+  return (
+    path === "/" ||
+    path === "/shop" ||
+    path.startsWith("/categoria/") ||
+    path.startsWith("/producto/")
+  );
+}
+
+async function prefetchSsrRouteData(queryClient: QueryClient, path: string, baseUrl: string) {
+  if (path === "/") {
+    await Promise.all([
+      queryClient.prefetchQuery({
+        queryKey: productsQueryKey(),
+        queryFn: () => fetchProducts(undefined, baseUrl),
+      }),
+      queryClient.prefetchQuery({
+        queryKey: categoriesQueryKey,
+        queryFn: () => fetchCategories(baseUrl),
+      }),
+      queryClient.prefetchQuery({
+        queryKey: companyQueryKey,
+        queryFn: () => fetchCompany(baseUrl),
+      }),
+      queryClient.prefetchQuery({
+        queryKey: reviewsQueryKey,
+        queryFn: () => fetchReviews(baseUrl),
+      }),
+      queryClient.prefetchQuery({
+        queryKey: cmsHomeHeroQueryKey,
+        queryFn: () => fetchHomeHero(baseUrl),
+      }),
+    ]);
+
+    return 200;
+  }
+
+  if (path === "/shop") {
+    await Promise.all([
+      queryClient.prefetchQuery({
+        queryKey: productsQueryKey(),
+        queryFn: () => fetchProducts(undefined, baseUrl),
+      }),
+      queryClient.prefetchQuery({
+        queryKey: categoriesQueryKey,
+        queryFn: () => fetchCategories(baseUrl),
+      }),
+    ]);
+
+    return 200;
+  }
+
+  if (path.startsWith("/categoria/")) {
+    await queryClient.prefetchQuery({
+      queryKey: categoriesQueryKey,
+      queryFn: () => fetchCategories(baseUrl),
+    });
+
+    const categories = queryClient.getQueryData<string[]>(categoriesQueryKey) || [];
+    const slug = decodeURIComponent(path.replace("/categoria/", ""));
+    const categoryName = findCategoryNameBySlug(categories, slug);
+
+    if (!categoryName) {
+      return 404;
+    }
+
+    const categoryFilter = slug === BEST_SELLERS_CATEGORY_SLUG ? undefined : categoryName;
+    await queryClient.prefetchQuery({
+      queryKey: productsQueryKey(categoryFilter),
+      queryFn: () => fetchProducts(categoryFilter, baseUrl),
+    });
+
+    return 200;
+  }
+
+  if (path.startsWith("/producto/")) {
+    await queryClient.prefetchQuery({
+      queryKey: productsQueryKey(),
+      queryFn: () => fetchProducts(undefined, baseUrl),
+    });
+
+    const slug = decodeURIComponent(path.replace("/producto/", ""));
+    const products = queryClient.getQueryData<Product[]>(productsQueryKey()) || [];
+    const productId = getProductIdFromSlug(slug);
+    const product = products.find((item) => {
+      if (productId && String(item.id) === String(productId)) return true;
+      return slugify(item.name) === slug;
+    });
+
+    return product ? 200 : 404;
+  }
+
+  return 200;
+}
+
+async function proxyToBackend(req: Request, res: Response) {
+  const backendUrl = buildBackendUrl(req.originalUrl);
+
+  try {
+    const response = await fetch(backendUrl, {
+      method: req.method,
+      headers: {
+        "Content-Type": req.get("Content-Type") || "application/json",
+      },
+      body: ["POST", "PUT", "PATCH"].includes(req.method) ? JSON.stringify(req.body) : undefined,
+    });
+
+    response.headers.forEach((value, key) => {
+      if (["content-length", "transfer-encoding", "connection"].includes(key.toLowerCase())) {
+        return;
+      }
+
+      res.setHeader(key, value);
+    });
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+    return res.status(response.status).send(buffer);
+  } catch (error) {
+    console.error(`Proxy Error (Store -> Backend):`, error);
+    return res.status(500).json({ status: "error", message: "Error conectando con el servidor de productos" });
+  }
+}
+
+function sendGone(res: Response, path: string) {
+  res.setHeader("X-Robots-Tag", "noindex, nofollow");
+  return res.status(410).type("text/html").send(`<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Contenido retirado | DIFIORI</title>
+  </head>
+  <body>
+    <main style="font-family: sans-serif; max-width: 40rem; margin: 4rem auto; line-height: 1.6; padding: 0 1.5rem;">
+      <h1>Contenido retirado</h1>
+      <p>La ruta <strong>${escapeXml(path)}</strong> fue eliminada y ya no está disponible.</p>
+    </main>
+  </body>
+</html>`);
+}
+
+type PublicProduct = {
+  id: string;
+  name: string;
+  category: string;
+  isBestSeller: boolean;
+};
+
+async function fetchPublicProducts(): Promise<PublicProduct[]> {
+  try {
+    const response = await fetch(buildBackendUrl("/api/external/products"));
+
+    if (!response.ok) {
+      throw new Error(`Unexpected status ${response.status}`);
+    }
+
+    const payload = await response.json();
+    if (payload.status !== "success" || !Array.isArray(payload.data)) {
+      throw new Error("Invalid payload");
+    }
+
+    return payload.data
+      .map((product: { id?: string | number; name?: string; category?: string; isBestSeller?: boolean }) => ({
+        id: String(product.id || "").trim(),
+        name: String(product.name || "").trim(),
+        category: String(product.category || "General").trim(),
+        isBestSeller: Boolean(product.isBestSeller),
+      }))
+      .filter((product: PublicProduct) => product.id && product.name);
+  } catch (error) {
+    console.warn("Could not fetch live products for sitemap, falling back to mock data.", error);
+    return INITIAL_PRODUCTS.map((product) => ({
+      id: String(product.id),
+      name: product.name,
+      category: product.category,
+      isBestSeller: product.isBestSeller,
+    }));
+  }
+}
+
+app.use((req, res, next) => {
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    return next();
+  }
+
+  if (req.path === "/v2" || req.path === "/v2/") {
+    return res.redirect(301, "/");
+  }
+
+  if (req.path.startsWith("/v2/product/")) {
+    const productId = req.path.split("/").filter(Boolean).pop();
+    return res.redirect(301, productId ? `/product/${encodeURIComponent(productId)}` : "/shop");
+  }
+
+  if (req.path.startsWith("/v2") || req.path === "/admin" || req.path.startsWith("/admin/")) {
+    return sendGone(res, req.path);
+  }
+
+  return next();
+});
+
+app.get("/product/:id", async (req, res, next) => {
+  try {
+    const products = await fetchPublicProducts();
+    const product = products.find((item) => item.id === req.params.id);
+
+    if (product) {
+      return res.redirect(301, getProductPath(product));
+    }
+  } catch (error) {
+    console.warn("Could not redirect legacy product URL.", error);
+  }
+
+  return next();
+});
+
+app.get("/robots.txt", (_req, res) => {
+  res.type("text/plain");
+  res.send([
+    "User-agent: *",
+    "Allow: /",
+    "Disallow: /checkout",
+    "Disallow: /payment-result",
+    "Disallow: /admin",
+    "Disallow: /v2",
+    `Sitemap: ${buildSiteUrl("/sitemap.xml")}`,
+  ].join("\n"));
+});
+
+app.get("/sitemap.xml", async (_req, res) => {
+  const today = new Date().toISOString().slice(0, 10);
+  const products = await fetchPublicProducts();
+  const categoryUrls = Array.from(new Set([
+    getCategoryPath(BEST_SELLERS_CATEGORY_NAME),
+    ...products.map((product) => getCategoryPath(product.category)),
+  ]));
+  const urls = Array.from(new Set([
+    "/",
+    "/shop",
+    ...categoryUrls,
+    ...products.map((product) => getProductPath(product)),
+  ]));
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls
+  .map((path) => `  <url>
+    <loc>${escapeXml(buildSiteUrl(path))}</loc>
+    <lastmod>${today}</lastmod>
+  </url>`)
+  .join("\n")}
+</urlset>`;
+
+  res.type("application/xml");
+  res.send(xml);
+});
+
+app.use("/api/external", proxyToBackend);
+app.use("/uploads", proxyToBackend);
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -62,6 +391,50 @@ app.use((req, res, next) => {
 (async () => {
   await registerRoutes(httpServer, app);
 
+  let vite: ViteDevServer | undefined;
+  if (process.env.NODE_ENV === "production") {
+    serveStatic(app);
+  } else {
+    const { setupVite } = await import("./vite");
+    vite = await setupVite(httpServer, app);
+  }
+
+  app.get("/{*path}", async (req, res, next) => {
+    try {
+      const template =
+        process.env.NODE_ENV === "production"
+          ? await getProdTemplate()
+          : await (await import("./vite")).getDevTemplate(vite!, req.originalUrl);
+
+      if (!shouldSsrPath(req.path)) {
+        const page = injectHtml(template, { head: renderSeoTags(DEFAULT_SEO_STATE) });
+        return res.status(200).type("text/html").send(page);
+      }
+
+      const queryClient = createAppQueryClient();
+      const requestOrigin = buildRequestOrigin(req);
+      const statusCode = await prefetchSsrRouteData(queryClient, req.path, requestOrigin);
+      const { appHtml, dehydratedState, seo } = renderApp({
+        path: req.originalUrl,
+        queryClient,
+      });
+
+      const page = injectHtml(template, {
+        head: renderSeoTags(seo),
+        appHtml,
+        stateScript: `<script>window.__REACT_QUERY_STATE__ = ${serializeForScript(dehydratedState)}</script>`,
+      });
+
+      return res.status(statusCode).type("text/html").send(page);
+    } catch (error) {
+      if (vite) {
+        vite.ssrFixStacktrace(error as Error);
+      }
+
+      return next(error);
+    }
+  });
+
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
@@ -74,16 +447,6 @@ app.use((req, res, next) => {
 
     return res.status(status).json({ message });
   });
-
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (process.env.NODE_ENV === "production") {
-    serveStatic(app);
-  } else {
-    const { setupVite } = await import("./vite");
-    await setupVite(httpServer, app);
-  }
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 5000 if not specified.

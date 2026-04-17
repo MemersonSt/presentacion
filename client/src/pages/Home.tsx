@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import { ArrowRight, Sparkles, Star, Instagram, Facebook, Mail, MessageSquare, Phone } from "lucide-react";
 import { Link } from "wouter";
@@ -7,17 +7,18 @@ import { CategorySidebar } from "@/components/CategorySidebar";
 import { cn } from "@/lib/utils";
 import { ProductCard } from "@/components/ProductCard";
 import { Logo } from "@/components/Logo";
-import { FAQS, CARE_GUIDE, INITIAL_PRODUCTS } from "@/data/mock";
-import { useProducts, useFeaturedProducts } from "@/hooks/useProducts";
+import { FAQS } from "@/data/mock";
+import { useProducts } from "@/hooks/useProducts";
 import { useCompany } from "@/hooks/useCompany";
 import { useReviews, useCreateReview } from "@/hooks/useReviews";
+import { Seo } from "@/components/Seo";
+import { DEFAULT_COMPANY, absoluteUrl } from "@/lib/site";
 
 export default function Home() {
   const { data: dbReviews = [], isLoading: isLoadingReviews } = useReviews();
   const createReviewMutation = useCreateReview();
   
   const [newReview, setNewReview] = useState({ name: "", content: "", stars: 5 });
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
 
   const handleAddReview = async (e: React.FormEvent) => {
@@ -35,15 +36,7 @@ export default function Home() {
 
   // Productos y Datos desde la API real
   const { data: allProducts = [], isLoading: isLoadingAll } = useProducts();
-  const { data: featuredProducts = [], isLoading: isLoadingFeatured } = useFeaturedProducts();
   const { data: company } = useCompany();
-
-  const bestSellers = featuredProducts.length > 0 ? featuredProducts : allProducts.filter(p => p.isBestSeller);
-  const catalogProducts = activeCategory === "Más Vendidos"
-    ? allProducts.filter(p => p.isBestSeller)
-    : activeCategory
-      ? allProducts.filter(p => p.category === activeCategory)
-      : allProducts;
 
   const sectionVariants: Variants = {
     hidden: { opacity: 0, y: 50 },
@@ -54,8 +47,50 @@ export default function Home() {
     }
   };
 
+  const companyPhoneDisplay = company?.phone || DEFAULT_COMPANY.phoneDisplay;
+  const companyPhoneDigits = companyPhoneDisplay.replace(/[^0-9]/g, "") || DEFAULT_COMPANY.phoneDigits;
+  const companyEmail = company?.email || DEFAULT_COMPANY.email;
+  const homeSchema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Florist",
+        "@id": "https://difiori.com/#organization",
+        name: "DIFIORI",
+        url: "https://difiori.com/",
+        image: absoluteUrl("/opengraph.jpg"),
+        telephone: `+${companyPhoneDigits}`,
+        email: companyEmail,
+        priceRange: "$$",
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: "Guayaquil",
+          addressCountry: "EC",
+        },
+        areaServed: ["Guayaquil", "Samborondón", "Durán", "Vía a la Costa"],
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: FAQS.map((faq) => ({
+          "@type": "Question",
+          name: faq.question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: faq.answer,
+          },
+        })),
+      },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-background selection:bg-accent selection:text-white overflow-clip scroll-smooth">
+      <Seo
+        title="Floristería en Guayaquil | Arreglos Florales y Regalos a Domicilio | DIFIORI"
+        description="Compra arreglos florales, ramos de rosas y regalos a domicilio en Guayaquil con DIFIORI. Entregas en Guayaquil, Samborondón, Durán y Vía a la Costa."
+        path="/"
+        schema={homeSchema}
+      />
       <h1 className="sr-only">DIFIORI Floristería Guayaquil - Arreglos Florales, Ramos de Rosas y Regalos a Domicilio</h1>
       
       {/* 1. Header is in App.tsx/Navbar.tsx */}
@@ -81,7 +116,7 @@ export default function Home() {
           className="flex flex-col lg:flex-row gap-16 pt-10 mb-40 relative z-20"
         >
           <aside className="lg:sticky lg:top-32 h-fit lg:w-64 shrink-0">
-            <CategorySidebar activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
+            <CategorySidebar variant="link" />
           </aside>
 
           <main className="flex-1 w-full overflow-hidden">
@@ -89,7 +124,7 @@ export default function Home() {
             <div id="catalogo" className="flex items-center gap-6 mb-12 opacity-60">
               <div className="h-[1px] flex-1 bg-foreground"></div>
               <h2 className="text-foreground font-black uppercase tracking-[0.5em] text-sm whitespace-nowrap">
-                Catálogo {activeCategory ? `- ${activeCategory}` : 'de Arreglos Florales'}
+                Catálogo de Arreglos Florales
               </h2>
               <div className="h-[1px] flex-1 bg-foreground"></div>
             </div>
@@ -100,8 +135,8 @@ export default function Home() {
                 Array(6).fill(0).map((_, i) => (
                   <div key={i} className="h-80 bg-primary/5 animate-pulse rounded-[3rem]" />
                 ))
-              ) : catalogProducts.length > 0 ? (
-                catalogProducts.map((product) => (
+              ) : allProducts.length > 0 ? (
+                allProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))
               ) : (
@@ -232,10 +267,36 @@ export default function Home() {
             </div>
         </motion.section>
 
+        <motion.section
+          id="faq"
+          variants={sectionVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="mb-40"
+        >
+          <div className="text-center mb-16">
+            <h2 className="text-5xl md:text-7xl font-serif text-foreground mb-4 italic">Preguntas frecuentes</h2>
+            <p className="text-foreground/60 font-serif italic text-2xl">
+              Información clave sobre entregas, pagos y tiempos de atención.
+            </p>
+          </div>
+
+          <div className="grid gap-6 max-w-4xl mx-auto">
+            {FAQS.map((faq) => (
+              <article key={faq.question} className="bg-white border border-primary/10 rounded-[2rem] p-8 shadow-lg">
+                <h3 className="text-xl font-serif text-foreground mb-3">{faq.question}</h3>
+                <p className="text-foreground/70 leading-relaxed">{faq.answer}</p>
+              </article>
+            ))}
+          </div>
+        </motion.section>
+
       </div>
 
       {/* FOOTER MULTI-SECTION PROFESSIONAL */}
       <motion.footer 
+        id="contacto"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 1.5 }}
@@ -284,21 +345,21 @@ export default function Home() {
                        <div className="p-4 bg-accent/10 rounded-2xl group-hover:bg-accent transition-colors duration-500"><MessageSquare className="w-4 h-4 text-accent group-hover:text-white transition-colors duration-500"/></div>
                        <div className="text-xs font-black uppercase">
                           <span className="block opacity-60 mb-1">WhatsApp</span>
-                          <a href={`https://wa.me/${(company?.phone || "+593 99 798 4583").replace(/[^0-9]/g, "")}`} className="hover:text-accent transition-colors duration-500">{company?.phone || "+593 99 798 4583"}</a>
+                          <a href={`https://wa.me/${companyPhoneDigits}`} className="hover:text-accent transition-colors duration-500">{companyPhoneDisplay}</a>
                        </div>
                     </div>
                     <div className="flex items-center gap-5 group">
                        <div className="p-4 bg-accent/10 rounded-2xl group-hover:bg-accent transition-colors duration-500"><Phone className="w-4 h-4 text-accent group-hover:text-white transition-colors duration-500"/></div>
                        <div className="text-xs font-black uppercase">
                           <span className="block opacity-60 mb-1">Llamadas</span>
-                          <span className="group-hover:text-accent transition-colors duration-500">{company?.phone || "+593 99 798 4583"}</span>
+                          <span className="group-hover:text-accent transition-colors duration-500">{companyPhoneDisplay}</span>
                        </div>
                     </div>
                     <div className="flex items-center gap-5 group">
                        <div className="p-4 bg-accent/10 rounded-2xl group-hover:bg-accent transition-colors duration-500"><Mail className="w-4 h-4 text-accent group-hover:text-white transition-colors duration-500"/></div>
                        <div className="text-xs font-black uppercase">
                           <span className="block opacity-60 mb-1">Email</span>
-                          <span className="break-all group-hover:text-accent transition-colors duration-500">{company?.email || "ventas@difiori.com.ec"}</span>
+                          <span className="break-all group-hover:text-accent transition-colors duration-500">{companyEmail}</span>
                        </div>
                     </div>
                  </div>

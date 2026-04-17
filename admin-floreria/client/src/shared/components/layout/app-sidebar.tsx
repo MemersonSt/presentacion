@@ -5,17 +5,11 @@ import {
   IconInnerShadowTop,
   IconPackage,
   IconShoppingCart,
-  IconGift,
-  IconUsers,
   IconTag,
-  IconMail,
-  IconClock,
-  IconFileText,
   IconHome,
   IconAppWindow,
-  IconShoppingBag,
-  IconInfoCircle,
 } from "@tabler/icons-react";
+
 
 import { NavMain } from "@/shared/components/layout/nav-main";
 import { NavUser } from "@/shared/components/layout/nav-user";
@@ -47,11 +41,6 @@ const navItems = {
       icon: IconDashboard,
     },
     {
-      title: "Filtros",
-      url: "/app/filters",
-      icon: IconInnerShadowTop,
-    },
-    {
       title: "Productos",
       url: "/app/products",
       icon: IconPackage,
@@ -79,21 +68,6 @@ const navItems = {
           title: "Principal",
           url: "/app/cms/home",
           icon: IconHome,
-        },
-        {
-          title: "Tienda",
-          url: "/app/cms/store",
-          icon: IconShoppingBag,
-        },
-        {
-          title: "About",
-          url: "/app/cms/about",
-          icon: IconInfoCircle,
-        },
-        {
-          title: "Contact",
-          url: "/app/cms/contact",
-          icon: IconMail,
         },
       ],
     },

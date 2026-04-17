@@ -1,10 +1,15 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { ShoppingBag, Menu, X, MessageSquare, Search, User } from "lucide-react";
-import { useState, useEffect } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import { Logo } from "@/components/Logo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
+import { DEFAULT_COMPANY } from "@/lib/site";
+
+const SearchOverlay = lazy(() =>
+  import("@/components/SearchOverlay").then((module) => ({ default: module.SearchOverlay })),
+);
 
 export function Navbar() {
   const [location] = useLocation();
@@ -13,24 +18,28 @@ export function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 30);
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const { cartItemCount, setIsCartOpen } = useCart();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const leftLinks = [
-    { href: "#mas-vendidos", label: "Más Vendidos" },
-    { href: "#catalogo", label: "Catálogo" },
+    { href: "/#catalogo", label: "Catálogo" },
+    { href: "/#faq", label: "Preguntas" },
   ];
 
   const rightLinks = [
-    { href: "#testimonios", label: "Testimonios" },
-    { href: "#contacto", label: "Contacto" },
+    { href: "/#testimonios", label: "Testimonios" },
+    { href: "/#contacto", label: "Contacto" },
   ];
 
   return (
     <>
+      <Suspense fallback={null}>
+        {isSearchOpen && <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />}
+      </Suspense>
       <nav className={cn(
         "fixed w-full top-0 z-50 transition-all duration-1000",
         scrolled ? "bg-white/90 backdrop-blur-3xl border-b border-primary/10 shadow-[0_10px_30px_rgba(0,0,0,0.03)] py-3 lg:py-4" : "bg-transparent py-6 lg:py-8"
@@ -47,13 +56,13 @@ export function Navbar() {
                   href={link.href}
                   className={cn(
                     "text-xs uppercase font-bold tracking-[0.25em] transition-all duration-500 relative group",
-                    scrolled ? "text-foreground/70 hover:text-foreground" : "text-white/80 hover:text-white"
+                    (scrolled || location !== "/") ? "text-foreground/70 hover:text-foreground" : "text-white/80 hover:text-white"
                   )}
                 >
                   {link.label}
                   <span className={cn(
                     "absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-[1px] transition-all duration-500 group-hover:w-full",
-                    scrolled ? "bg-accent/40" : "bg-white/60"
+                    (scrolled || location !== "/") ? "bg-accent/40" : "bg-white/60"
                   )}></span>
                 </a>
               ))}
@@ -64,7 +73,7 @@ export function Navbar() {
               <Link href="/" className="group flex items-center">
                  <Logo 
                    size={scrolled ? "sm" : "md"} 
-                   variant={scrolled ? "dark" : "light"}
+                   variant={(scrolled || location !== "/") ? "dark" : "light"}
                    className="transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]" 
                  />
               </Link>
@@ -78,28 +87,31 @@ export function Navbar() {
                   href={link.href}
                   className={cn(
                     "text-xs uppercase font-bold tracking-[0.25em] transition-all duration-500 relative group hidden xl:block",
-                    scrolled ? "text-foreground/70 hover:text-foreground" : "text-white/80 hover:text-white"
+                    (scrolled || location !== "/") ? "text-foreground/70 hover:text-foreground" : "text-white/80 hover:text-white"
                   )}
                 >
                   {link.label}
                   <span className={cn(
                     "absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-[1px] transition-all duration-500 group-hover:w-full",
-                    scrolled ? "bg-accent/40" : "bg-white/60"
+                    (scrolled || location !== "/") ? "bg-accent/40" : "bg-white/60"
                   )}></span>
                 </a>
               ))}
 
-              <div className="flex items-center gap-6 border-l pl-8 transition-colors duration-500" style={{ borderLeftColor: scrolled ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)' }}>
-                <button className={cn("transition-all hover:scale-110", scrolled ? "text-foreground/80 hover:text-accent" : "text-white/90 hover:text-white")}>
-                  <Search className="w-5 h-5" strokeWidth={1.5} />
+              <div className="flex items-center gap-8 border-l pl-8 transition-colors duration-500" style={{ borderLeftColor: (scrolled || location !== "/") ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)' }}>
+                <button 
+                  onClick={() => setIsSearchOpen(true)}
+                  className={cn("transition-all hover:scale-110", (scrolled || location !== "/") ? "text-foreground/80 hover:text-accent" : "text-white/90 hover:text-white")}
+                >
+                  <Search className="w-7 h-7" strokeWidth={2} />
                 </button>
                 <Link href="/checkout">
                   <button className={cn(
                     "relative transition-all hover:scale-110 flex items-center gap-2",
-                    scrolled ? "text-foreground/80 hover:text-accent" : "text-white/90 hover:text-white"
+                    (scrolled || location !== "/") ? "text-foreground/80 hover:text-accent" : "text-white/90 hover:text-white"
                   )}>
-                    <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
-                    <span className="text-xs font-medium tracking-widest">({cartItemCount})</span>
+                    <ShoppingBag className="w-7 h-7" strokeWidth={2} />
+                    <span className="text-sm font-black tracking-widest translate-y-[2px]">({cartItemCount})</span>
                   </button>
                 </Link>
               </div>
@@ -110,27 +122,35 @@ export function Navbar() {
           {/* Mobile Layout */}
           <div className="lg:hidden flex items-center justify-between">
             <button 
-              className={cn("p-1 transition-colors", scrolled ? "text-foreground" : "text-white")}
+              className={cn("p-1 transition-colors", (scrolled || location !== "/") ? "text-foreground" : "text-white")}
               onClick={() => setIsOpen(!isOpen)}
             >
-              <Menu className="w-6 h-6" strokeWidth={1.5} />
+              <Menu className="w-8 h-8" strokeWidth={2} />
             </button>
 
             <Link href="/" className="flex items-center absolute left-1/2 -translate-x-1/2">
-               <Logo size="sm" variant={scrolled ? "dark" : "light"} />
+               <Logo size="sm" variant={(scrolled || location !== "/") ? "dark" : "light"} />
             </Link>
 
-            <Link href="/checkout">
-              <button className={cn(
-                "relative p-1 transition-colors hover:scale-110",
-                scrolled ? "text-foreground" : "text-white"
-              )}>
-                <ShoppingBag className="w-6 h-6" strokeWidth={1.5} />
-                {cartItemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent text-[9px] text-white flex items-center justify-center rounded-full font-black shadow-sm">{cartItemCount}</span>
-                )}
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => setIsSearchOpen(true)}
+                className={cn("p-1 transition-colors", (scrolled || location !== "/") ? "text-foreground" : "text-white")}
+              >
+                <Search className="w-7 h-7" strokeWidth={2} />
               </button>
-            </Link>
+              <Link href="/checkout">
+                <button className={cn(
+                  "relative p-1 transition-colors hover:scale-110",
+                  (scrolled || location !== "/") ? "text-foreground" : "text-white"
+                )}>
+                  <ShoppingBag className="w-7 h-7" strokeWidth={2} />
+                  {cartItemCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent text-[10px] text-white flex items-center justify-center rounded-full font-black shadow-lg border-2 border-[#fff]">{cartItemCount}</span>
+                  )}
+                </button>
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -178,7 +198,7 @@ export function Navbar() {
         transition={{ delay: 1, duration: 1.5, ease: [0.23, 1, 0.32, 1] }}
         whileHover={{ scale: 1.1, y: -10 }}
         whileTap={{ scale: 0.9 }}
-        href="https://wa.me/5930997984583" 
+        href={`https://wa.me/${DEFAULT_COMPANY.phoneDigits}`}
         target="_blank" 
         rel="noopener noreferrer"
         className="fixed bottom-8 right-8 z-[100] bg-accent w-[60px] h-[60px] rounded-full shadow-[0_20px_50px_rgba(90,63,115,0.4)] hover:shadow-[0_30px_60px_rgba(90,63,115,0.6)] transition-all duration-700 flex items-center justify-center group border border-white/10"
@@ -203,4 +223,3 @@ export function Navbar() {
     </>
   );
 }
-

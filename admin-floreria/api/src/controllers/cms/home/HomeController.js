@@ -6,7 +6,7 @@ exports.getHomeHero = async (req, res) => {
     const hero = await prisma.home_hero.findFirst({
       where: { lang },
     });
-    res.status(200).json(hero);
+    res.status(200).json({ data: hero });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al obtener el Hero" });
@@ -36,13 +36,21 @@ exports.createHomeHero = async (req, res) => {
 
 exports.updateHomeHero = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { lang: langParam } = req.params;
     const { title, description, nameLink, images, lang, link_women, link_men, backgroundType, videoUrl } = req.body;
 
-    const hero = await prisma.home_hero.update({
-      where: { id: parseInt(id) },
-      data: { title, description, nameLink, images, lang, link_women, link_men, backgroundType, videoUrl },
-    });
+    const existing = await prisma.home_hero.findFirst({ where: { lang: langParam } });
+    let hero;
+    if (existing) {
+      hero = await prisma.home_hero.update({
+        where: { id: existing.id },
+        data: { title, description, nameLink, images, lang: langParam, link_women, link_men, backgroundType, videoUrl, updatedAt: new Date() },
+      });
+    } else {
+      hero = await prisma.home_hero.create({
+        data: { title, description, nameLink, images, lang: langParam, link_women, link_men, backgroundType, videoUrl, updatedAt: new Date() },
+      });
+    }
 
     res.status(200).json({
       code: 200,

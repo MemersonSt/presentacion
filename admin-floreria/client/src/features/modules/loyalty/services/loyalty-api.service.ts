@@ -1,9 +1,10 @@
 import axios from 'axios';
 
-const LOYALTY_API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+const LOYALTY_API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4001/api';
 
 const loyaltyApi = axios.create({
   baseURL: LOYALTY_API_BASE_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -32,12 +33,12 @@ export const segmentsApi = {
 
 // Coupons
 export const couponsApi = {
-  getAll: () => loyaltyApi.get('/api/coupons'),
-  getOne: (id: string) => loyaltyApi.get(`/api/coupons/${id}`),
-  generateCode: (prefix?: string) => loyaltyApi.get('/api/coupons/generate-code', { params: { prefix } }),
-  create: (data: any) => loyaltyApi.post('/api/coupons', data),
-  update: (id: string, data: any) => loyaltyApi.put(`/api/coupons/${id}`, data),
-  delete: (id: string) => loyaltyApi.delete(`/api/coupons/${id}`),
+  getAll: () => loyaltyApi.get('/coupons'),
+  getOne: (id: string) => loyaltyApi.get(`/coupons/${id}`),
+  generateCode: (prefix?: string) => loyaltyApi.get('/coupons/generate-code', { params: { prefix } }),
+  create: (data: any) => loyaltyApi.post('/coupons', data),
+  update: (id: string, data: any) => loyaltyApi.put(`/coupons/${id}`, data),
+  delete: (id: string) => loyaltyApi.delete(`/coupons/${id}`),
 };
 
 // Templates
@@ -96,11 +97,11 @@ export const loyaltyApiHelpers = {
   // Coupons
   getCoupon: async (id: string) => {
     const response = await couponsApi.getOne(id);
-    return response.data;
+    return response.data.data;
   },
   updateCoupon: async (id: string, data: any) => {
     const response = await couponsApi.update(id, data);
-    return response.data;
+    return response.data.data;
   },
   deleteCoupon: async (id: string) => {
     const response = await couponsApi.delete(id);
