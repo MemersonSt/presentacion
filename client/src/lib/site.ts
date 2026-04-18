@@ -1,6 +1,4 @@
-const VITE_SITE_URL = import.meta?.env?.VITE_SITE_URL;
-
-export const SITE_URL = (VITE_SITE_URL || "https://difiori.com").replace(/\/$/, "");
+import { getPublicAppConfig } from "@/lib/runtime-config";
 
 export const DEFAULT_COMPANY = {
   name: "DIFIORI",
@@ -11,20 +9,30 @@ export const DEFAULT_COMPANY = {
   country: "Ecuador",
 };
 
-export const DEFAULT_SEO_IMAGE = `${SITE_URL}/opengraph.jpg`;
+export function getSiteUrl() {
+  return getPublicAppConfig().siteUrl;
+}
+
+export function getDefaultSeoImage() {
+  return `${getSiteUrl()}/opengraph.jpg`;
+}
+
+export const DEFAULT_SEO_IMAGE = getDefaultSeoImage();
 
 export function absoluteUrl(path?: string | null): string {
   if (!path || path.startsWith("data:")) {
-    return DEFAULT_SEO_IMAGE;
+    return getDefaultSeoImage();
   }
 
   if (path.startsWith("http://") || path.startsWith("https://")) {
     return path;
   }
 
-  return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  const siteUrl = getSiteUrl();
+  return `${siteUrl}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
 export function canonicalUrl(path = "/"): string {
-  return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  const siteUrl = getSiteUrl();
+  return `${siteUrl}${path.startsWith("/") ? path : `/${path}`}`;
 }

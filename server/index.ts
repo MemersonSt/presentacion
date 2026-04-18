@@ -31,6 +31,11 @@ import type { ViteDevServer } from "vite";
 const app = express();
 const httpServer = createServer(app);
 
+function normalizeUrl(value?: string | null) {
+  const normalized = String(value || "").trim();
+  return normalized ? normalized.replace(/\/$/, "") : "";
+}
+
 function hydratePayphoneEnvFromAdminEnv() {
   if (process.env.PAYPHONE_WEB_TOKEN && process.env.PAYPHONE_WEB_STORE_ID) return;
 
@@ -69,8 +74,13 @@ function hydratePayphoneEnvFromAdminEnv() {
 
 hydratePayphoneEnvFromAdminEnv();
 
-const BACKEND_ORIGIN = (process.env.BACKEND_URL || "http://localhost:4001").replace(/\/$/, "");
-const SITE_URL = (process.env.SITE_URL || process.env.VITE_SITE_URL || "https://difiori.com").replace(/\/$/, "");
+const BACKEND_ORIGIN = normalizeUrl(process.env.BACKEND_URL || "http://localhost:4001");
+const SITE_URL =
+  normalizeUrl(process.env.APP_PUBLIC_SITE_URL || process.env.SITE_URL || process.env.VITE_SITE_URL) ||
+  "https://difiori.com";
+const ASSET_BASE_URL =
+  normalizeUrl(process.env.APP_PUBLIC_ASSET_URL || process.env.ASSET_BASE_URL || process.env.VITE_ASSET_BASE_URL) ||
+  "";
 const PAYPHONE_WEB_TOKEN = process.env.PAYPHONE_WEB_TOKEN || process.env.PAYPHONE_TOKEN;
 const PAYPHONE_WEB_STORE_ID = process.env.PAYPHONE_WEB_STORE_ID || process.env.PAYPHONE_STORE_ID;
 
@@ -143,6 +153,13 @@ function injectHtml(
     .replace("<!--app-head-->", head)
     .replace("<!--app-html-->", appHtml)
     .replace("<!--app-state-->", stateScript);
+}
+
+function buildPublicConfigScript() {
+  return `<script>window.__APP_CONFIG__ = ${serializeForScript({
+    siteUrl: SITE_URL,
+    ...(ASSET_BASE_URL ? { assetBaseUrl: ASSET_BASE_URL } : {}),
+  })}</script>`;
 }
 
 function shouldSsrPath(path: string) {
@@ -626,7 +643,10 @@ app.use((req, res, next) => {
           : await (await import("./vite")).getDevTemplate(vite!, req.originalUrl);
 
       if (!shouldSsrPath(req.path)) {
-        const page = injectHtml(template, { head: renderSeoTags(DEFAULT_SEO_STATE) });
+        const page = injectHtml(template, {
+          head: renderSeoTags(DEFAULT_SEO_STATE),
+          stateScript: buildPublicConfigScript(),
+        });
         return res.status(200).type("text/html").send(page);
       }
 
@@ -641,7 +661,7 @@ app.use((req, res, next) => {
       const page = injectHtml(template, {
         head: renderSeoTags(seo),
         appHtml,
-        stateScript: `<script>window.__REACT_QUERY_STATE__ = ${serializeForScript(dehydratedState)}</script>`,
+        stateScript: `${buildPublicConfigScript()}<script>window.__REACT_QUERY_STATE__ = ${serializeForScript(dehydratedState)}</script>`,
       });
 
       return res.status(statusCode).type("text/html").send(page);

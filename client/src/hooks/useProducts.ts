@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { Product, INITIAL_PRODUCTS } from "../data/mock";
 import { resolveApiUrl } from "@/lib/api";
+import { getPublicAppConfig } from "@/lib/runtime-config";
 
 const API_URL = "/api/external/products";
-const VITE_ASSET_BASE_URL = import.meta?.env?.VITE_ASSET_BASE_URL;
-const IMG_BASE_URL = (VITE_ASSET_BASE_URL || "").replace(/\/$/, "");
 export const productsQueryKey = (category?: string) => ["products", category || "all"] as const;
 
 function getImageUrl(imagePath: string | null | undefined): string {
@@ -17,7 +16,8 @@ function getImageUrl(imagePath: string | null | undefined): string {
   
   if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) return imagePath;
   const path = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
-  if (IMG_BASE_URL) return `${IMG_BASE_URL}${path}`;
+  const { assetBaseUrl } = getPublicAppConfig();
+  if (assetBaseUrl) return `${assetBaseUrl}${path}`;
   if (typeof window !== "undefined") return `${window.location.origin}${path}`;
   return path;
 }
