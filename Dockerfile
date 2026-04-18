@@ -1,37 +1,36 @@
-# Stage 1: Build Image
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy specifically the dependency files to leverage layer caching
-COPY package.json package-lock.json* ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# Copy all source code
-COPY . .
+COPY client ./client
+COPY server ./server
+COPY shared ./shared
+COPY script ./script
+COPY components.json ./components.json
+COPY postcss.config.js ./postcss.config.js
+COPY tsconfig.json ./tsconfig.json
+COPY vite.config.ts ./vite.config.ts
+COPY vite-plugin-meta-images.ts ./vite-plugin-meta-images.ts
 
-# Run the project build script (builds client and server to /dist)
 RUN npm run build
 
-# Stage 2: Production Image
 FROM node:20-alpine AS runner
 
 WORKDIR /app
 
 ENV NODE_ENV=production
-# DEFAULT PORT for Cloud Run is 8080
 ENV PORT=8080
 
-# Copy necessary files for production
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json ./package.json
 
-# Install only production dependencies
-# Connect-pg-simple and others in the allowlist from build.ts should be here
-RUN npm install --omit=dev
+USER node
 
-# Inform Docker about the intended port
 EXPOSE 8080
 
-# Start the production server
 CMD ["node", "dist/index.cjs"]

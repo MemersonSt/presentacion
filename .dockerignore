@@ -8,3 +8,9 @@ README.md
 client/node_modules
 server/node_modules
 /tmp
+.replit
+.local
+admin-floreria
+diff.txt
+gitlog.txt
+skills-lock.json
