@@ -1,9 +1,8 @@
 import axios from "axios";
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+import { ADMIN_BACKEND_URL } from "@/core/config/public-env";
 
 const promotionsApi = axios.create({
-  baseURL: `${BACKEND_URL}/promotions`,
+  baseURL: `${ADMIN_BACKEND_URL}/promotions`,
   withCredentials: false,
 });
 

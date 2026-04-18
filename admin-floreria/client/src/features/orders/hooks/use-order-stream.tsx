@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useOrdersStore } from "../store/order-store";
 import ordersService from "../api/orders-service";
 import type { Order } from "../types";
+import { ADMIN_API_URL } from "@/core/config/public-env";
 
 interface OrderEvent {
   id: string;
@@ -20,7 +21,7 @@ interface UseOrderStreamOptions {
 
 export function useOrderStream({
   enabled = true,
-  apiBase = import.meta.env.VITE_API_URL,
+  apiBase = ADMIN_API_URL,
 }: UseOrderStreamOptions = {}) {
   const addOrder = useOrdersStore((s) => s.addOrder);
   // Opcional si luego agregas estos métodos:

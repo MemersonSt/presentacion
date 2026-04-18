@@ -1,14 +1,12 @@
 import axios from "axios";
+import { ADMIN_BACKEND_URL } from "@/core/config/public-env";
 import type {
   CreateSegmentPayload,
   UpdateSegmentPayload,
 } from "../interfaces/segments-interface";
 
-const LOYALTY_API_BASE_URL =
-  import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
-
 const loyaltyApi = axios.create({
-  baseURL: LOYALTY_API_BASE_URL,
+  baseURL: ADMIN_BACKEND_URL,
   headers: {
     "Content-Type": "application/json",
   },

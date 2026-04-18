@@ -1,4 +1,6 @@
-const IMG_URL = import.meta.env.VITE_URL_IMG;
+import { ADMIN_IMAGE_URL } from "@/core/config/public-env";
+
+const IMG_URL = ADMIN_IMAGE_URL;
 
 /**
  * Helper para obtener la URL completa de una imagen

@@ -1,7 +1,8 @@
 import axios from "axios";
+import { ADMIN_API_URL } from "@/core/config/public-env";
 
 const cmsApi = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4001/api',
+  baseURL: ADMIN_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },

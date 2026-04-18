@@ -1,12 +1,13 @@
 import axios from "axios";
 import { useUserStore } from "@/store/use-user-store";
+import { ADMIN_BACKEND_URL } from "@/core/config/public-env";
 
 /**
  * Servicio para el backend de ecommerce (NestJS)
  * Apunta a VITE_BACKEND_URL
  */
 const ecommerceService = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL,
+  baseURL: ADMIN_BACKEND_URL,
   withCredentials: true,
 });
 

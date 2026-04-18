@@ -1,9 +1,8 @@
 import axios from 'axios';
-
-const LOYALTY_API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4001/api';
+import { ADMIN_BACKEND_URL } from '@/core/config/public-env';
 
 const loyaltyApi = axios.create({
-  baseURL: LOYALTY_API_BASE_URL,
+  baseURL: ADMIN_BACKEND_URL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
