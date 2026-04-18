@@ -301,7 +301,7 @@ async function proxyToBackend(req: Request, res: Response) {
     await pipeline(Readable.fromWeb(response.body as any), res);
     return;
   } catch (error) {
-    console.error(`Proxy Error (Store -> Backend):`, error);
+    console.error(`Proxy Error (Store -> Backend) [${req.method} ${backendUrl}]:`, error);
     return res.status(500).json({ status: "error", message: "Error conectando con el servidor de productos" });
   }
 }
@@ -702,6 +702,7 @@ app.use((req, res, next) => {
     },
     () => {
       log(`serving on port ${port}`);
+      log(`web config: BACKEND_URL=${BACKEND_ORIGIN} SITE_URL=${SITE_URL}${ASSET_BASE_URL ? ` ASSET_BASE_URL=${ASSET_BASE_URL}` : ""}`);
     },
   );
 })();
