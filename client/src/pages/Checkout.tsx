@@ -62,8 +62,11 @@ export default function Checkout() {
 
       const customerName = senderNameRef.current?.value;
       const phone = phoneRef.current?.value;
+      const receiverName = receiverNameRef.current?.value;
+      const deliveryDateTime = dateTimeRef.current?.value;
+      const exactAddress = addressRef.current?.value;
+      const cardMessage = cardMessageRef.current?.value;
 
-      // Si han ingresado al menos el nombre o el teléfono, disparamos la alerta
       if (customerName || phone) {
         fetch("/api/external/store-orders/abandoned", {
           method: "POST",
@@ -71,24 +74,33 @@ export default function Checkout() {
           body: JSON.stringify({
             customerName: customerName || "Cliente anónimo",
             phone: phone || "No proporcionado",
+            senderName: customerName || "",
+            receiverName: receiverName || "",
+            exactAddress: exactAddress || "",
+            sector: sector.name,
+            paymentMethod,
+            deliveryDateTime: deliveryDateTime || "",
+            cardMessage: cardMessage || "",
+            couponCode: appliedCoupon?.code || "",
+            abandonedAt: new Date().toISOString(),
+            source: "CHECKOUT_WEB",
             items,
-            total: finalTotal
+            total: finalTotal,
           }),
-          keepalive: true, // Importante para que la petición se complete al cerrar la pestaña
+          keepalive: true,
         });
         abandonmentSent.current = true;
       }
     };
 
-    // Alerta tras 2 minutos de inactividad o al intentar cerrar
-    const timer = setTimeout(handleAbandonment, 120000); 
+    const timer = setTimeout(handleAbandonment, 120000);
     window.addEventListener("beforeunload", handleAbandonment);
 
     return () => {
       clearTimeout(timer);
       window.removeEventListener("beforeunload", handleAbandonment);
     };
-  }, [items, orderStatus]);
+  }, [items, orderStatus, sector.name, paymentMethod, appliedCoupon?.code, finalTotal]);
   // -------------------------------------
 
   const cartSubtotal = cartTotal;
@@ -561,3 +573,5 @@ function readFileAsDataUrl(file: File): Promise<string> {
     reader.readAsDataURL(file);
   });
 }
+
+

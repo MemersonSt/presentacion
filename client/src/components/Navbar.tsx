@@ -25,6 +25,11 @@ export function Navbar() {
   const { cartItemCount, setIsCartOpen } = useCart();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
+  useEffect(() => {
+    setIsOpen(false);
+    setIsSearchOpen(false);
+  }, [location]);
+
   const leftLinks = [
     { href: "/#catalogo", label: "Catálogo" },
     { href: "/#faq", label: "Preguntas" },

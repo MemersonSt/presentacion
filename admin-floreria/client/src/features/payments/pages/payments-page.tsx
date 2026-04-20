@@ -4,21 +4,47 @@ import ecommerceService from "@/core/api/ecommerce-service";
 import { Button } from "@/shared/components/ui/button";
 
 type PaymentSettings = {
-  paypalClientId: string;
-  paypalClientSecret: string;
-  paypalMerchantId: string;
-  paypalWebhookId: string;
   paypalEnvironment: "sandbox" | "live";
+  paypalSandboxClientId: string;
+  paypalSandboxClientSecret: string;
+  paypalSandboxMerchantId: string;
+  paypalSandboxWebhookId: string;
+  paypalLiveClientId: string;
+  paypalLiveClientSecret: string;
+  paypalLiveMerchantId: string;
+  paypalLiveWebhookId: string;
+  payphoneEnvironment: "sandbox" | "live";
+  payphoneSandboxStoreId: string;
+  payphoneSandboxToken: string;
+  payphoneSandboxWebhookToken: string;
+  payphoneLiveStoreId: string;
+  payphoneLiveToken: string;
+  payphoneLiveWebhookToken: string;
   transferInstructions: string;
+  ownerNotificationEmail: string;
+  ownerNotificationName: string;
 };
 
 const DEFAULT_SETTINGS: PaymentSettings = {
-  paypalClientId: "",
-  paypalClientSecret: "",
-  paypalMerchantId: "",
-  paypalWebhookId: "",
   paypalEnvironment: "sandbox",
+  paypalSandboxClientId: "",
+  paypalSandboxClientSecret: "",
+  paypalSandboxMerchantId: "",
+  paypalSandboxWebhookId: "",
+  paypalLiveClientId: "",
+  paypalLiveClientSecret: "",
+  paypalLiveMerchantId: "",
+  paypalLiveWebhookId: "",
+  payphoneEnvironment: "sandbox",
+  payphoneSandboxStoreId: "",
+  payphoneSandboxToken: "",
+  payphoneSandboxWebhookToken: "",
+  payphoneLiveStoreId: "",
+  payphoneLiveToken: "",
+  payphoneLiveWebhookToken: "",
   transferInstructions: "",
+  ownerNotificationEmail: "",
+  ownerNotificationName: "",
 };
 
 export default function PaymentsPage() {
@@ -37,7 +63,7 @@ export default function PaymentsPage() {
         });
       } catch (error) {
         console.error("Load payment settings error:", error);
-        toast.error("No se pudo cargar la configuración de pagos");
+        toast.error("No se pudo cargar la configuracion de pagos");
       } finally {
         setIsLoading(false);
       }
@@ -57,10 +83,10 @@ export default function PaymentsPage() {
     try {
       setIsSaving(true);
       await ecommerceService.put("/admin/company/payment-settings", form);
-      toast.success("Configuración de pagos guardada");
+      toast.success("Configuracion de pagos guardada");
     } catch (error) {
       console.error("Save payment settings error:", error);
-      toast.error("No se pudo guardar la configuración");
+      toast.error("No se pudo guardar la configuracion");
     } finally {
       setIsSaving(false);
     }
@@ -69,7 +95,7 @@ export default function PaymentsPage() {
   if (isLoading) {
     return (
       <div className="p-8">
-        <div className="text-sm text-gray-500">Cargando configuración de pagos...</div>
+        <div className="text-sm text-gray-500">Cargando configuracion de pagos...</div>
       </div>
     );
   }
@@ -77,45 +103,21 @@ export default function PaymentsPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-3xl font-bold text-gray-900">Configuración de Pagos</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Configuracion de Pagos</h1>
         <p className="mt-1 text-gray-600">
-          Deja listos los IDs y credenciales visibles del negocio para PayPal y transferencia.
+          Deja listo el admin para desarrollo y produccion: PayPal, PayPhone, transferencias y correo del dueno.
         </p>
       </header>
 
       <section className="rounded-xl border bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900">PayPal</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Estos campos quedan preparados para conectar el flujo web y mantener los datos centralizados en admin.
+          Guarda por separado las credenciales de sandbox y live para activar el entorno correcto.
         </p>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <Field
-            label="Client ID"
-            value={form.paypalClientId}
-            onChange={(value) => updateField("paypalClientId", value)}
-            placeholder="Abc123..."
-          />
-          <Field
-            label="Merchant ID"
-            value={form.paypalMerchantId}
-            onChange={(value) => updateField("paypalMerchantId", value)}
-            placeholder="XYZMERCHANT..."
-          />
-          <Field
-            label="Client Secret"
-            value={form.paypalClientSecret}
-            onChange={(value) => updateField("paypalClientSecret", value)}
-            placeholder="Secret..."
-          />
-          <Field
-            label="Webhook ID"
-            value={form.paypalWebhookId}
-            onChange={(value) => updateField("paypalWebhookId", value)}
-            placeholder="Webhook..."
-          />
           <label className="space-y-2 text-sm md:col-span-2">
-            <span className="font-medium text-gray-700">Entorno</span>
+            <span className="font-medium text-gray-700">Entorno activo de PayPal</span>
             <select
               value={form.paypalEnvironment}
               onChange={(e) => updateField("paypalEnvironment", e.target.value)}
@@ -125,13 +127,65 @@ export default function PaymentsPage() {
               <option value="live">Live</option>
             </select>
           </label>
+
+          <div className="md:col-span-2 pt-2">
+            <h3 className="text-sm font-semibold text-gray-800">Sandbox / Desarrollo</h3>
+          </div>
+          <Field label="Client ID" value={form.paypalSandboxClientId} onChange={(value) => updateField("paypalSandboxClientId", value)} placeholder="Abc123..." />
+          <Field label="Merchant ID" value={form.paypalSandboxMerchantId} onChange={(value) => updateField("paypalSandboxMerchantId", value)} placeholder="XYZMERCHANT..." />
+          <Field label="Client Secret" value={form.paypalSandboxClientSecret} onChange={(value) => updateField("paypalSandboxClientSecret", value)} placeholder="Secret..." />
+          <Field label="Webhook ID" value={form.paypalSandboxWebhookId} onChange={(value) => updateField("paypalSandboxWebhookId", value)} placeholder="Webhook..." />
+
+          <div className="md:col-span-2 pt-4">
+            <h3 className="text-sm font-semibold text-gray-800">Produccion / Live</h3>
+          </div>
+          <Field label="Client ID" value={form.paypalLiveClientId} onChange={(value) => updateField("paypalLiveClientId", value)} placeholder="Abc123..." />
+          <Field label="Merchant ID" value={form.paypalLiveMerchantId} onChange={(value) => updateField("paypalLiveMerchantId", value)} placeholder="XYZMERCHANT..." />
+          <Field label="Client Secret" value={form.paypalLiveClientSecret} onChange={(value) => updateField("paypalLiveClientSecret", value)} placeholder="Secret..." />
+          <Field label="Webhook ID" value={form.paypalLiveWebhookId} onChange={(value) => updateField("paypalLiveWebhookId", value)} placeholder="Webhook..." />
+        </div>
+      </section>
+
+      <section className="rounded-xl border bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-gray-900">PayPhone</h2>
+        <p className="mt-1 text-sm text-gray-500">
+          Dejamos centralizados los IDs y tokens de PayPhone para sandbox y live.
+        </p>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <label className="space-y-2 text-sm md:col-span-2">
+            <span className="font-medium text-gray-700">Entorno activo de PayPhone</span>
+            <select
+              value={form.payphoneEnvironment}
+              onChange={(e) => updateField("payphoneEnvironment", e.target.value)}
+              className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:border-blue-500"
+            >
+              <option value="sandbox">Sandbox</option>
+              <option value="live">Live</option>
+            </select>
+          </label>
+
+          <div className="md:col-span-2 pt-2">
+            <h3 className="text-sm font-semibold text-gray-800">Sandbox / Desarrollo</h3>
+          </div>
+          <Field label="Store ID" value={form.payphoneSandboxStoreId} onChange={(value) => updateField("payphoneSandboxStoreId", value)} placeholder="Store ID de sandbox" />
+          <Field label="Token API" value={form.payphoneSandboxToken} onChange={(value) => updateField("payphoneSandboxToken", value)} placeholder="Token de sandbox" />
+          <Field label="Webhook Token" value={form.payphoneSandboxWebhookToken} onChange={(value) => updateField("payphoneSandboxWebhookToken", value)} placeholder="Webhook token de sandbox" />
+          <div className="hidden md:block" />
+
+          <div className="md:col-span-2 pt-4">
+            <h3 className="text-sm font-semibold text-gray-800">Produccion / Live</h3>
+          </div>
+          <Field label="Store ID" value={form.payphoneLiveStoreId} onChange={(value) => updateField("payphoneLiveStoreId", value)} placeholder="Store ID de produccion" />
+          <Field label="Token API" value={form.payphoneLiveToken} onChange={(value) => updateField("payphoneLiveToken", value)} placeholder="Token de produccion" />
+          <Field label="Webhook Token" value={form.payphoneLiveWebhookToken} onChange={(value) => updateField("payphoneLiveWebhookToken", value)} placeholder="Webhook token de produccion" />
         </div>
       </section>
 
       <section className="rounded-xl border bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900">Transferencia / comprobantes</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Este texto puede usarse después para mostrar instrucciones al cliente cuando suba su comprobante.
+          Este texto se muestra al cliente para que pueda transferir y subir su comprobante.
         </p>
 
         <label className="mt-6 block space-y-2 text-sm">
@@ -140,15 +194,27 @@ export default function PaymentsPage() {
             value={form.transferInstructions}
             onChange={(e) => updateField("transferInstructions", e.target.value)}
             rows={6}
-            placeholder="Banco, cuenta, nombre del titular, mensaje de verificación, etc."
+            placeholder="Banco, cuenta, nombre del titular, mensaje de verificacion, etc."
             className="w-full rounded-lg border border-gray-200 bg-white px-3 py-3 text-sm outline-none focus:border-blue-500"
           />
         </label>
       </section>
 
+      <section className="rounded-xl border bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-gray-900">Notificaciones internas</h2>
+        <p className="mt-1 text-sm text-gray-500">
+          El carrito abandonado y otras alertas pueden llegar directo al responsable comercial.
+        </p>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <Field label="Nombre del responsable" value={form.ownerNotificationName} onChange={(value) => updateField("ownerNotificationName", value)} placeholder="Ventas DIFIORI" />
+          <Field label="Email del responsable" value={form.ownerNotificationEmail} onChange={(value) => updateField("ownerNotificationEmail", value)} placeholder="ventas@midominio.com" />
+        </div>
+      </section>
+
       <div className="flex justify-end">
         <Button onClick={handleSave} disabled={isSaving}>
-          {isSaving ? "Guardando..." : "Guardar configuración"}
+          {isSaving ? "Guardando..." : "Guardar configuracion"}
         </Button>
       </div>
     </div>

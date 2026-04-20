@@ -15,6 +15,40 @@ async function getCompanyForAdmin(adminId) {
   });
 }
 
+function sanitizePaymentSettings(input) {
+  const source = input && typeof input === "object" ? input : {};
+  const getString = (key) => {
+    const value = source[key];
+    return typeof value === "string" ? value.trim() : "";
+  };
+  const getEnvironment = (key, fallback = "sandbox") => {
+    const value = getString(key).toLowerCase();
+    return value === "live" ? "live" : fallback;
+  };
+
+  return {
+    paypalEnvironment: getEnvironment("paypalEnvironment"),
+    paypalSandboxClientId: getString("paypalSandboxClientId"),
+    paypalSandboxClientSecret: getString("paypalSandboxClientSecret"),
+    paypalSandboxMerchantId: getString("paypalSandboxMerchantId"),
+    paypalSandboxWebhookId: getString("paypalSandboxWebhookId"),
+    paypalLiveClientId: getString("paypalLiveClientId"),
+    paypalLiveClientSecret: getString("paypalLiveClientSecret"),
+    paypalLiveMerchantId: getString("paypalLiveMerchantId"),
+    paypalLiveWebhookId: getString("paypalLiveWebhookId"),
+    payphoneEnvironment: getEnvironment("payphoneEnvironment"),
+    payphoneSandboxStoreId: getString("payphoneSandboxStoreId"),
+    payphoneSandboxToken: getString("payphoneSandboxToken"),
+    payphoneSandboxWebhookToken: getString("payphoneSandboxWebhookToken"),
+    payphoneLiveStoreId: getString("payphoneLiveStoreId"),
+    payphoneLiveToken: getString("payphoneLiveToken"),
+    payphoneLiveWebhookToken: getString("payphoneLiveWebhookToken"),
+    transferInstructions: getString("transferInstructions"),
+    ownerNotificationEmail: getString("ownerNotificationEmail"),
+    ownerNotificationName: getString("ownerNotificationName"),
+  };
+}
+
 /**
  * Generar nueva API Key para la empresa
  * POST /api/admin/company/api-key
@@ -382,7 +416,7 @@ const updatePaymentSettings = async (req, res) => {
       ? company.settings
       : {};
 
-    const paymentSettings = req.body && typeof req.body === "object" ? req.body : {};
+    const paymentSettings = sanitizePaymentSettings(req.body);
     const mergedSettings = {
       ...currentSettings,
       paymentSettings,
@@ -427,3 +461,4 @@ module.exports = {
   getPaymentSettings,
   updatePaymentSettings,
 };
+
