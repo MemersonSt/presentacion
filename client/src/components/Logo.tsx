@@ -1,5 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
+import { useCompany } from "@/hooks/useCompany";
+import { getPublicAppConfig } from "@/lib/runtime-config";
 
 interface LogoProps {
   className?: string;
@@ -8,14 +10,28 @@ interface LogoProps {
 }
 
 export function Logo({ className, variant = "light", size = "md" }: LogoProps) {
+  const { data: company } = useCompany();
   const color = variant === "light" ? "#E6E6E6" : "#3D2852";
-  const accent = variant === "light" ? "#5A3F73" : "#5A3F73";
-  
   const sizes = {
     sm: "h-8",
     md: "h-14",
     lg: "h-20"
   };
+
+  const logoUrl = getCompanyLogoUrl(company?.logo);
+
+  if (logoUrl) {
+    return (
+      <div className={cn("flex flex-col", className || "items-center", sizes[size])}>
+        <img
+          src={logoUrl}
+          alt={company?.name || "Logo del negocio"}
+          className="h-full w-auto max-w-[240px] object-contain"
+          loading="eager"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={cn("flex flex-col", className || "items-center", sizes[size])}>
@@ -94,4 +110,17 @@ export function Logo({ className, variant = "light", size = "md" }: LogoProps) {
       </svg>
     </div>
   );
+}
+
+function getCompanyLogoUrl(logoPath?: string | null) {
+  if (!logoPath || !logoPath.trim()) return null;
+  if (logoPath.startsWith("http://") || logoPath.startsWith("https://") || logoPath.startsWith("data:")) {
+    return logoPath;
+  }
+
+  const normalizedPath = logoPath.startsWith("/") ? logoPath : `/${logoPath}`;
+  const { assetBaseUrl } = getPublicAppConfig();
+  if (assetBaseUrl) return `${assetBaseUrl}${normalizedPath}`;
+  if (typeof window !== "undefined") return `${window.location.origin}${normalizedPath}`;
+  return normalizedPath;
 }
