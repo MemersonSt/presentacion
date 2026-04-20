@@ -13,9 +13,9 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import {
-  BEST_SELLERS_CATEGORY_NAME,
   BEST_SELLERS_CATEGORY_SLUG,
   findCategoryNameBySlug,
+  formatCategoryDisplayName,
   getCategoryDescription,
   getCategoryPath,
 } from "@shared/catalog";
@@ -25,6 +25,7 @@ export default function CategoryPage() {
   const slug = params?.slug || "";
   const { data: categories = [], isLoading: isLoadingCategories } = useCategories();
   const categoryName = useMemo(() => findCategoryNameBySlug(categories, slug), [categories, slug]);
+  const categoryLabel = categoryName ? formatCategoryDisplayName(categoryName) : null;
   const isBestSellers = slug === BEST_SELLERS_CATEGORY_SLUG;
   const { data: allProducts = [], isLoading: isLoadingProducts } = useProducts(
     !isBestSellers && categoryName ? categoryName : undefined,
@@ -43,7 +44,7 @@ export default function CategoryPage() {
     ? {
         "@context": "https://schema.org",
         "@type": "CollectionPage",
-        name: categoryName,
+        name: categoryLabel,
         url: `https://difiori.com${categoryPath}`,
         description,
         breadcrumb: {
@@ -64,7 +65,7 @@ export default function CategoryPage() {
             {
               "@type": "ListItem",
               position: 3,
-              name: categoryName,
+              name: categoryLabel,
               item: `https://difiori.com${categoryPath}`,
             },
           ],
@@ -77,7 +78,7 @@ export default function CategoryPage() {
       <Seo
         title={
           categoryName
-            ? `${categoryName} en Guayaquil | Arreglos Florales DIFIORI`
+            ? `${categoryLabel} en Guayaquil | Arreglos Florales DIFIORI`
             : "Categoría no encontrada | DIFIORI"
         }
         description={categoryName ? description : "La categoría solicitada no está disponible."}
@@ -101,7 +102,7 @@ export default function CategoryPage() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>{categoryName || "Categoría"}</BreadcrumbPage>
+            <BreadcrumbPage>{categoryLabel || "Categoría"}</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -113,7 +114,7 @@ export default function CategoryPage() {
               <div className="w-10 h-[1px] bg-accent/30"></div>
               <span className="text-accent font-black uppercase tracking-[0.4em] text-[10px]">Colección DIFIORI</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-serif text-foreground mb-4 italic">{categoryName}</h1>
+            <h1 className="text-5xl md:text-7xl font-serif text-foreground mb-4 italic">{categoryLabel}</h1>
             <p className="text-foreground/60 text-lg md:text-xl leading-relaxed max-w-2xl">{description}</p>
           </div>
 

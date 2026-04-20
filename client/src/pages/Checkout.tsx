@@ -256,7 +256,7 @@ export default function Checkout() {
   // Pantalla de éxito
   if (orderStatus === "success") {
     return (
-      <div className="min-h-screen bg-[#3D2852] flex items-center justify-center px-6">
+      <div className="min-h-screen bg-[linear-gradient(180deg,#f6eef8_0%,#efe3f3_45%,#e6d6ec_100%)] flex items-center justify-center px-6">
         <Seo
           title="Checkout | DIFIORI"
           description="Proceso de checkout de DIFIORI."
@@ -314,7 +314,7 @@ export default function Checkout() {
   }
 
   return (
-    <div className="min-h-screen bg-[#3D2852] pt-32 pb-20 px-6">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#faf3fb_0%,#f3e8f5_42%,#e9dced_100%)] pt-32 pb-20 px-6">
       <Seo
         title="Checkout | DIFIORI"
         description="Proceso de checkout de DIFIORI."

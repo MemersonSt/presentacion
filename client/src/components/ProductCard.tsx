@@ -5,7 +5,7 @@ import { ShoppingBag, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCart } from "@/context/CartContext";
 import { DEFAULT_COMPANY } from "@/lib/site";
-import { getProductPath } from "@shared/catalog";
+import { formatCategoryDisplayName, getProductPath } from "@shared/catalog";
 
 interface ProductCardProps {
   product: Product;
@@ -13,6 +13,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const { buyNow } = useCart();
+  const categoryLabel = formatCategoryDisplayName(product.category);
 
   const handleBuyNow = () => {
     buyNow(product);
@@ -46,15 +47,16 @@ export function ProductCard({ product }: ProductCardProps) {
       
       <div className="p-8 text-center flex flex-col items-center flex-1">
         <span className="text-[10px] font-black text-accent uppercase tracking-[0.2em] mb-3">
-          {product.category}
+          {categoryLabel}
         </span>
         <h3 itemProp="name" className="text-2xl font-serif font-bold text-foreground mb-3 leading-tight">
           {product.name}
         </h3>
         
         <div className="flex flex-wrap justify-center gap-2 mb-6 opacity-60">
-           <span className="text-[9px] font-bold uppercase tracking-wider bg-muted px-3 py-1 rounded-full">{product.size}</span>
-           <span className="text-[9px] font-bold uppercase tracking-wider bg-muted px-3 py-1 rounded-full">🕒 {product.deliveryTime}</span>
+           {product.size && (
+             <span className="text-[9px] font-bold uppercase tracking-wider bg-muted px-3 py-1 rounded-full">{product.size}</span>
+           )}
         </div>
 
         <div itemProp="offers" itemScope itemType="https://schema.org/Offer">
