@@ -149,6 +149,45 @@ exports.updatePaymentStatus = async (req, res) => {
   }
 };
 
+exports.updatePaymentProof = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { paymentProofStatus, paymentVerificationNotes } = req.body;
+    const validStatuses = ["PENDING", "UPLOADED", "VERIFIED", "REJECTED"];
+
+    if (!paymentProofStatus || !validStatuses.includes(paymentProofStatus)) {
+      return res.status(400).json({
+        status: "error",
+        message: "paymentProofStatus inválido.",
+      });
+    }
+
+    const updateData = {
+      paymentProofStatus,
+      paymentVerificationNotes: paymentVerificationNotes || null,
+      paymentVerifiedAt: paymentProofStatus === "VERIFIED" ? new Date() : null,
+      paymentVerifiedBy: req.user?.adminId || null,
+    };
+
+    const order = await prisma.order.update({
+      where: { id },
+      data: updateData,
+    });
+
+    return res.status(200).json({
+      status: "success",
+      message: "Estado del comprobante actualizado",
+      data: { order },
+    });
+  } catch (error) {
+    console.error("Update payment proof error:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Error al actualizar el comprobante.",
+    });
+  }
+};
+
 exports.deleteOrderById = async (req, res) => {
   try {
     const { id } = req.params;

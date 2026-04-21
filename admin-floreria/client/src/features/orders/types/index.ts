@@ -74,6 +74,13 @@ export interface Order {
   clientTransactionId?: string | null;
   payPhoneTransactionId?: string | null;
   payPhoneAuthCode?: string | null;
+  paymentProofImageUrl?: string | null;
+  paymentProofFileName?: string | null;
+  paymentProofStatus?: string | null;
+  paymentProofUploadedAt?: string | null;
+  paymentVerifiedAt?: string | null;
+  paymentVerifiedBy?: string | null;
+  paymentVerificationNotes?: string | null;
   
   // Items
   orderItems: OrderItem[];

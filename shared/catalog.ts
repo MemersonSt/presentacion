@@ -8,6 +8,34 @@ export interface ProductLike {
 export const BEST_SELLERS_CATEGORY_NAME = "Más Vendidos";
 export const BEST_SELLERS_CATEGORY_SLUG = "mas-vendidos";
 
+const MOJIBAKE_REPLACEMENTS: Array<[string, string]> = [
+  ["Ã¡", "á"],
+  ["Ã©", "é"],
+  ["Ã­", "í"],
+  ["Ã³", "ó"],
+  ["Ãº", "ú"],
+  ["Ã", "Á"],
+  ["Ã‰", "É"],
+  ["Ã", "Í"],
+  ["Ã“", "Ó"],
+  ["Ãš", "Ú"],
+  ["Ã±", "ñ"],
+  ["Ã‘", "Ñ"],
+  ["Â¿", "¿"],
+  ["Â¡", "¡"],
+  ["Â©", "©"],
+];
+
+const CATEGORY_LABELS: Record<string, string> = {
+  "ramos-de-rosas": "Ramos de Rosas",
+  "flores-mixtas": "Flores Mixtas",
+  "desayunos-sorpresa": "Desayunos Sorpresa",
+  "regalos-con-vino": "Regalos con Vino",
+  cumpleanos: "Cumpleaños",
+  "amor-y-aniversario": "Amor y Aniversario",
+  [BEST_SELLERS_CATEGORY_SLUG]: BEST_SELLERS_CATEGORY_NAME,
+};
+
 const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   "ramos-de-rosas": "Ramos de rosas frescas con entrega a domicilio en Guayaquil para aniversarios, cumpleaños y ocasiones especiales.",
   "flores-mixtas": "Arreglos de flores mixtas con diseños elegantes y entrega a domicilio en Guayaquil.",
@@ -18,8 +46,43 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   [BEST_SELLERS_CATEGORY_SLUG]: "Selección de arreglos florales y regalos más vendidos en Guayaquil.",
 };
 
-export function slugify(value: string) {
+function repairMojibake(value: string) {
+  return MOJIBAKE_REPLACEMENTS.reduce(
+    (text, [broken, fixed]) => text.replaceAll(broken, fixed),
+    value,
+  );
+}
+
+export function normalizeDisplayText(value: string | null | undefined) {
+  if (!value) return "";
+  return repairMojibake(value).replace(/\s+/g, " ").trim();
+}
+
+function toReadableTitleCase(value: string) {
+  const smallWords = new Set(["a", "al", "con", "de", "del", "en", "la", "las", "para", "por", "y"]);
+
   return value
+    .toLocaleLowerCase("es")
+    .split(" ")
+    .map((word, index) => {
+      if (index > 0 && smallWords.has(word)) return word;
+      return word.charAt(0).toLocaleUpperCase("es") + word.slice(1);
+    })
+    .join(" ");
+}
+
+export function formatCategoryDisplayName(name: string | null | undefined) {
+  const normalized = normalizeDisplayText(name);
+  if (!normalized) return "General";
+
+  const knownLabel = CATEGORY_LABELS[getCategorySlug(normalized)];
+  if (knownLabel) return knownLabel;
+
+  return toReadableTitleCase(normalized);
+}
+
+export function slugify(value: string) {
+  return normalizeDisplayText(value)
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
@@ -28,19 +91,19 @@ export function slugify(value: string) {
 }
 
 export function getCategorySlug(name: string) {
-  if (name === BEST_SELLERS_CATEGORY_NAME) return BEST_SELLERS_CATEGORY_SLUG;
+  if (normalizeDisplayText(name) === BEST_SELLERS_CATEGORY_NAME) return BEST_SELLERS_CATEGORY_SLUG;
   return slugify(name);
 }
 
 export function getCategoryPath(nameOrSlug: string) {
   const slug = nameOrSlug.includes("/") ? nameOrSlug.split("/").pop() || nameOrSlug : nameOrSlug;
-  const normalized = slug === BEST_SELLERS_CATEGORY_NAME ? BEST_SELLERS_CATEGORY_SLUG : slugify(slug);
+  const normalized = normalizeDisplayText(slug) === BEST_SELLERS_CATEGORY_NAME ? BEST_SELLERS_CATEGORY_SLUG : slugify(slug);
   return `/categoria/${normalized}`;
 }
 
 export function getCategoryDescription(name: string) {
   const slug = getCategorySlug(name);
-  return CATEGORY_DESCRIPTIONS[slug] || `Colección de ${name.toLowerCase()} con entrega a domicilio en Guayaquil.`;
+  return CATEGORY_DESCRIPTIONS[slug] || `Colección de ${normalizeDisplayText(name).toLocaleLowerCase("es")} con entrega a domicilio en Guayaquil.`;
 }
 
 export function findCategoryNameBySlug(categories: string[], slug: string) {

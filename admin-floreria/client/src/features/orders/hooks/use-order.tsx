@@ -115,6 +115,46 @@ export default function useOrder() {
     }
   };
 
+  const updatePaymentProof = async (
+    orderId: string,
+    paymentProofStatus: string,
+    paymentVerificationNotes?: string,
+  ) => {
+    try {
+      const response = await ordersService.update_payment_proof(
+        orderId,
+        paymentProofStatus,
+        paymentVerificationNotes,
+      );
+      if (response.status === "success") {
+        setOrders(orders.map((o) =>
+          o.id === orderId
+            ? {
+                ...o,
+                paymentProofStatus,
+                paymentVerificationNotes: paymentVerificationNotes || null,
+                paymentVerifiedAt: paymentProofStatus === "VERIFIED" ? new Date().toISOString() : null,
+              }
+            : o
+        ));
+        if (selectedOrder?.id === orderId) {
+          setSelectedOrder({
+            ...selectedOrder,
+            paymentProofStatus,
+            paymentVerificationNotes: paymentVerificationNotes || null,
+            paymentVerifiedAt: paymentProofStatus === "VERIFIED" ? new Date().toISOString() : null,
+          });
+        }
+        toast.success("Comprobante actualizado");
+      } else {
+        toast.error("No se pudo actualizar el comprobante");
+      }
+    } catch (error) {
+      console.error("Update payment proof error:", error);
+      toast.error("Error de conexión");
+    }
+  };
+
   const bulkUpdateStatus = async (orderIds: string[], newStatus: string) => {
     try {
       const response = await ordersService.bulk_update_status(orderIds, newStatus);
@@ -206,6 +246,7 @@ export default function useOrder() {
     fetchWithCurrentFilters,
     updateOrderStatus,
     updatePaymentStatus,
+    updatePaymentProof,
     bulkUpdateStatus,
     getStatusColor,
     getStatusText,

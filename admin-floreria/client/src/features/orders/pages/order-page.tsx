@@ -28,6 +28,7 @@ export default function OrdersPage() {
     setSelectedOrder,
     updateOrderStatus,
     updatePaymentStatus,
+    updatePaymentProof,
     bulkUpdateStatus,
     getStatusColor,
     getStatusText,
@@ -215,6 +216,7 @@ export default function OrdersPage() {
         getPaymentStatusColor={getPaymentStatusColor}
         getPaymentStatusText={getPaymentStatusText}
         onUpdatePaymentStatus={updatePaymentStatus}
+        onUpdatePaymentProof={updatePaymentProof}
         onChangeStatus={updateOrderStatus}
         statusOptions={statusOptions}
       />

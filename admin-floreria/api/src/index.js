@@ -85,6 +85,8 @@ const discountsRoutes = require("./routes/discounts/index");
 app.use("/api/discounts", featureMiddleware("discounts"), discountsRoutes);
 const couponsRoutes = require("./routes/coupons/index");
 app.use("/api/coupons", authMiddleware, couponsRoutes);
+const abandonedCartsRoutes = require("./routes/abandoned-carts/index");
+app.use("/api/abandoned-carts", authMiddleware, abandonedCartsRoutes);
 // Productos públicos para la tienda
 const externalProductsRoutes = require("./routes/external/products");
 const externalCmsRoutes = require("./routes/external/cms");

@@ -9,24 +9,25 @@ module.exports = {
       env: {
         NODE_ENV: "development",
         PORT: 4002,
+        PAYPAL_ENVIRONMENT: process.env.PAYPAL_ENVIRONMENT || "sandbox",
+        PAYPHONE_ENVIRONMENT: process.env.PAYPHONE_ENVIRONMENT || "sandbox",
       },
       env_production: {
         NODE_ENV: "production",
         PORT: 4002,
+        PAYPAL_ENVIRONMENT: process.env.PAYPAL_ENVIRONMENT || "live",
+        PAYPHONE_ENVIRONMENT: process.env.PAYPHONE_ENVIRONMENT || "live",
       },
 
       out_file: "./logs/out.log",
       error_file: "./logs/error.log",
       log_date_format: "YYYY-MM-DD HH:mm Z",
-      // merge_logs: true, // Unir logs de todas las instancias
-
-      // autorestart: true, // Reiniciar automáticamente si la aplicación falla
-      watch: false, // Desactivar watch para evitar reinicios innecesarios
-      max_memory_restart: "3G", // Reiniciar si usa más de 3GB de RAM
-      min_uptime: "10s", // Tiempo mínimo para considerar que la app está estable
-      max_restarts: 10, // Número máximo de reinicios en el período de tiempo definido por min_uptime
-      kill_timeout: 5000, // 5 segundos
-      listen_timeout: 3000, // 3 segundos
+      watch: false,
+      max_memory_restart: "3G",
+      min_uptime: "10s",
+      max_restarts: 10,
+      kill_timeout: 5000,
+      listen_timeout: 3000,
     },
   ],
 };

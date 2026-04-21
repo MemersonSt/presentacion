@@ -20,6 +20,18 @@ const update_payment_status = async (id: string, paymentStatus: string) => {
   return response.data;
 };
 
+const update_payment_proof = async (
+  id: string,
+  paymentProofStatus: string,
+  paymentVerificationNotes?: string,
+) => {
+  const response = await ecommerceService.patch(`/orders/${id}/payment-proof`, {
+    paymentProofStatus,
+    paymentVerificationNotes,
+  });
+  return response.data;
+};
+
 const bulk_update_status = async (orderIds: string[], status: string) => {
   const response = await ecommerceService.patch("/orders/bulk-update", { orderIds, status });
   return response.data;
@@ -30,6 +42,7 @@ const ordersService = {
   get_order,
   update_order_status,
   update_payment_status,
+  update_payment_proof,
   bulk_update_status,
 };
 

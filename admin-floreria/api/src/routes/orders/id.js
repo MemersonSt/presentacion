@@ -14,6 +14,9 @@ router.patch("/:id/status", orderController.updateStateOrderById);
 // Actualizar estado de pago por ID
 router.patch("/:id/payment-status", orderController.updatePaymentStatus);
 
+// Actualizar estado del comprobante por ID
+router.patch("/:id/payment-proof", orderController.updatePaymentProof);
+
 // Eliminar orden por ID
 router.delete("/:id", orderController.deleteOrderById);
 

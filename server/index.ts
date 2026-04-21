@@ -585,6 +585,7 @@ ${urls
 });
 
 app.use("/api/external", proxyToBackend);
+app.use("/api/checkout", proxyToBackend);
 app.use("/uploads", proxyToBackend);
 
 export function log(message: string, source = "express") {

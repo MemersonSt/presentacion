@@ -1,5 +1,6 @@
 const express = require('express');
 const { db: prisma } = require('../../lib/prisma');
+const cloudinary = require('../../lib/cloudinary');
 const router = express.Router();
 
 /**
@@ -149,6 +150,81 @@ router.post('/', async (req, res) => {
     return res.status(500).json({
       status: 'error',
       message: 'Error al crear la orden',
+      detail: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  }
+});
+
+router.post('/:orderNumber/payment-proof', async (req, res) => {
+  try {
+    const { orderNumber } = req.params;
+    const { dataUrl, fileName, mimeType } = req.body || {};
+
+    if (!orderNumber) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'El número de orden es obligatorio.',
+      });
+    }
+
+    if (!dataUrl || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:')) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Debes enviar una imagen válida del comprobante.',
+      });
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { orderNumber },
+      select: {
+        id: true,
+        orderNumber: true,
+        paymentStatus: true,
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Orden no encontrada.',
+      });
+    }
+
+    const uploadResult = await cloudinary.uploader.upload(dataUrl, {
+      folder: 'difiori/payment-proofs',
+      resource_type: 'image',
+      public_id: `${order.orderNumber}-${Date.now()}`,
+      overwrite: true,
+    });
+
+    const updatedOrder = await prisma.order.update({
+      where: { id: order.id },
+      data: {
+        paymentProofImageUrl: uploadResult.secure_url,
+        paymentProofFileName: String(fileName || 'comprobante'),
+        paymentProofStatus: 'UPLOADED',
+        paymentProofUploadedAt: new Date(),
+        paymentVerificationNotes: null,
+      },
+      select: {
+        id: true,
+        orderNumber: true,
+        paymentProofImageUrl: true,
+        paymentProofStatus: true,
+        paymentProofUploadedAt: true,
+      },
+    });
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Comprobante subido correctamente.',
+      data: updatedOrder,
+    });
+  } catch (error) {
+    console.error('Payment proof upload error:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'No se pudo subir el comprobante.',
       detail: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }

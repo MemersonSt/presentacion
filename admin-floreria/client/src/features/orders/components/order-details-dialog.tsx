@@ -16,16 +16,18 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import {
-  Mail,
-  Phone,
-  MapPin,
-  Home,
-  Truck,
-  User,
-  MessageSquare,
-  Package,
   CheckCircle,
   CreditCard,
+  Home,
+  Image,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Package,
+  Phone,
+  Truck,
+  User,
+  XCircle,
 } from "lucide-react";
 import type { Order } from "../types";
 import { LocalDate } from "@/core/utils/date";
@@ -39,6 +41,11 @@ interface OrderDetailsDialogProps {
   getPaymentStatusColor: (s: string) => string;
   getPaymentStatusText: (s: string) => string;
   onUpdatePaymentStatus: (id: string, paymentStatus: string) => void;
+  onUpdatePaymentProof: (
+    id: string,
+    paymentProofStatus: string,
+    paymentVerificationNotes?: string,
+  ) => void;
   onChangeStatus: (id: string, status: string) => void;
   statusOptions: { value: string; label: string }[];
 }
@@ -52,6 +59,7 @@ export function OrderDetailsDialog({
   getPaymentStatusColor,
   getPaymentStatusText,
   onUpdatePaymentStatus,
+  onUpdatePaymentProof,
   onChangeStatus,
   statusOptions,
 }: OrderDetailsDialogProps) {
@@ -63,17 +71,16 @@ export function OrderDetailsDialog({
     order.description || order.notes || order.deliveryNotes || order.orderNotes;
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0">
-        {/* ── Header ─────────────────────────────────────── */}
-        <div className="bg-linear-to-r from-gray-900 to-gray-700 text-white px-6 py-5 rounded-t-lg">
+    <Dialog open={open} onOpenChange={(value) => !value && onClose()}>
+      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto p-0">
+        <div className="rounded-t-lg bg-linear-to-r from-gray-900 to-gray-700 px-6 py-5 text-white">
           <DialogHeader>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <DialogTitle className="text-2xl font-bold text-white">
                   Pedido #{order.orderNumber}
                 </DialogTitle>
-                <p className="text-gray-300 text-sm mt-0.5">
+                <p className="mt-0.5 text-sm text-gray-300">
                   {new LocalDate(order.createdAt).toLocaleDateString("es-ES", {
                     weekday: "long",
                     year: "numeric",
@@ -84,13 +91,13 @@ export function OrderDetailsDialog({
                   })}
                 </p>
               </div>
-              <div className="flex flex-col items-end gap-2 shrink-0">
-                <Badge className={`text-sm px-3 py-1 ${getStatusColor(order.status)}`}>
+              <div className="flex shrink-0 flex-col items-end gap-2">
+                <Badge className={`px-3 py-1 text-sm ${getStatusColor(order.status)}`}>
                   {getStatusText(order.status)}
                 </Badge>
                 <Badge
                   variant="outline"
-                  className={`text-xs px-2 py-0.5 border ${getPaymentStatusColor(order.paymentStatus)}`}
+                  className={`border px-2 py-0.5 text-xs ${getPaymentStatusColor(order.paymentStatus)}`}
                 >
                   {getPaymentStatusText(order.paymentStatus)}
                   {order.paidAt && (
@@ -104,25 +111,25 @@ export function OrderDetailsDialog({
           </DialogHeader>
         </div>
 
-        <div className="p-6 space-y-5">
-          {/* ── Acciones operativas ──────────────────────── */}
-          {(order.status !== "DELIVERED" && order.status !== "CANCELLED") || (order.paymentStatus !== "PAID" && !order.clientTransactionId) ? (
-            <div className="flex flex-wrap items-center gap-3 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+        <div className="space-y-5 p-6">
+          {((order.status !== "DELIVERED" && order.status !== "CANCELLED") ||
+            (order.paymentStatus !== "PAID" && !order.clientTransactionId)) && (
+            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4">
               <span className="text-sm font-medium text-blue-800">Acciones:</span>
 
               {order.status !== "DELIVERED" && order.status !== "CANCELLED" && (
-                <Select onValueChange={(v) => onChangeStatus(order.id, v)}>
-                  <SelectTrigger className="w-44 h-8 text-sm bg-white">
+                <Select onValueChange={(value) => onChangeStatus(order.id, value)}>
+                  <SelectTrigger className="h-8 w-44 bg-white text-sm">
                     <SelectValue placeholder="Cambiar estado..." />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
                       <SelectLabel>Cambiar a:</SelectLabel>
                       {statusOptions
-                        .filter((o) => o.value !== "ALL" && o.value !== order.status)
-                        .map((o) => (
-                          <SelectItem key={o.value} value={o.value}>
-                            {o.label}
+                        .filter((option) => option.value !== "ALL" && option.value !== order.status)
+                        .map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
                           </SelectItem>
                         ))}
                     </SelectGroup>
@@ -133,7 +140,7 @@ export function OrderDetailsDialog({
               {order.paymentStatus !== "PAID" && !order.clientTransactionId && (
                 <Button
                   size="sm"
-                  className="h-8 bg-green-600 hover:bg-green-700 text-white gap-1.5"
+                  className="h-8 gap-1.5 bg-green-600 text-white hover:bg-green-700"
                   onClick={() => onUpdatePaymentStatus(order.id, "PAID")}
                 >
                   <CheckCircle className="h-3.5 w-3.5" />
@@ -141,17 +148,15 @@ export function OrderDetailsDialog({
                 </Button>
               )}
             </div>
-          ) : null}
+          )}
 
-          {/* ── Cliente + Entrega ────────────────────────── */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Cliente */}
-            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-3 rounded-xl bg-gray-50 p-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400">
                 Cliente
               </h3>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-200">
                   <User className="h-5 w-5 text-gray-500" />
                 </div>
                 <div>
@@ -174,9 +179,8 @@ export function OrderDetailsDialog({
               </div>
             </div>
 
-            {/* Entrega */}
-            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            <div className="space-y-3 rounded-xl bg-gray-50 p-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400">
                 Entrega
               </h3>
               <div className="space-y-2 text-sm text-gray-700">
@@ -205,23 +209,80 @@ export function OrderDetailsDialog({
             </div>
           </div>
 
-          {/* ── Método de pago ───────────────────────────── */}
           {order.clientTransactionId && (
-            <div className="flex items-center gap-2 px-4 py-3 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-800">
+            <div className="flex items-center gap-2 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
               <CreditCard className="h-4 w-4 shrink-0" />
               <span>Pago con tarjeta (PayPhone)</span>
               {order.payPhoneAuthCode && (
-                <span className="ml-auto text-xs text-blue-500 font-mono">
+                <span className="ml-auto font-mono text-xs text-blue-500">
                   Auth: {order.payPhoneAuthCode}
                 </span>
               )}
             </div>
           )}
 
-          {/* ── Notas ────────────────────────────────────── */}
+          {order.paymentProofImageUrl && (
+            <div className="space-y-4 rounded-xl border bg-white p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                    <Image className="h-4 w-4" />
+                    Comprobante de pago
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-600">
+                    Estado: <span className="font-medium">{order.paymentProofStatus || "PENDING"}</span>
+                    {order.paymentProofUploadedAt && (
+                      <span className="ml-2 text-gray-400">
+                        · subido {new LocalDate(order.paymentProofUploadedAt).toLocaleDateString()}
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="bg-green-600 text-white hover:bg-green-700"
+                    onClick={() => onUpdatePaymentProof(order.id, "VERIFIED")}
+                  >
+                    <CheckCircle className="mr-1 h-4 w-4" />
+                    Verificar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-red-200 text-red-700 hover:bg-red-50"
+                    onClick={() => onUpdatePaymentProof(order.id, "REJECTED")}
+                  >
+                    <XCircle className="mr-1 h-4 w-4" />
+                    Rechazar
+                  </Button>
+                </div>
+              </div>
+
+              <a
+                href={order.paymentProofImageUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="block overflow-hidden rounded-xl border bg-gray-50"
+              >
+                <img
+                  src={order.paymentProofImageUrl}
+                  alt={order.paymentProofFileName || "Comprobante"}
+                  className="max-h-[420px] w-full object-contain bg-white"
+                />
+              </a>
+
+              {order.paymentVerificationNotes && (
+                <p className="text-sm text-gray-600">
+                  Observación: {order.paymentVerificationNotes}
+                </p>
+              )}
+            </div>
+          )}
+
           {hasNotes && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 space-y-2">
-              <h3 className="flex items-center gap-2 text-xs font-semibold text-yellow-700 uppercase tracking-wider">
+            <div className="space-y-2 rounded-xl border border-yellow-200 bg-yellow-50 p-4">
+              <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-yellow-700">
                 <MessageSquare className="h-4 w-4" />
                 Notas
               </h3>
@@ -239,9 +300,8 @@ export function OrderDetailsDialog({
             </div>
           )}
 
-          {/* ── Productos ────────────────────────────────── */}
           <div className="space-y-2">
-            <h3 className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
               <Package className="h-4 w-4" />
               Productos ({order.orderItems.length})
             </h3>
@@ -249,29 +309,29 @@ export function OrderDetailsDialog({
               {order.orderItems.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between gap-3 px-4 py-3 bg-white border rounded-xl"
+                  className="flex items-center justify-between gap-3 rounded-xl border bg-white px-4 py-3"
                 >
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-medium text-gray-900 text-sm truncate">
+                      <span className="truncate text-sm font-medium text-gray-900">
                         {item.product.name}
                       </span>
                       {item.variantName && (
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs shrink-0">
+                        <Badge variant="outline" className="shrink-0 border-blue-200 bg-blue-50 text-xs text-blue-700">
                           {item.variantName}
                         </Badge>
                       )}
                       {item.discounts_percents && (
-                        <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 text-xs shrink-0">
+                        <Badge variant="outline" className="shrink-0 border-orange-200 bg-orange-50 text-xs text-orange-700">
                           -{item.discounts_percents}%
                         </Badge>
                       )}
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="mt-1 text-xs text-gray-400">
                       {item.quantity} × ${item.price.toFixed(2)}
                     </p>
                   </div>
-                  <p className="font-bold text-green-700 text-sm shrink-0">
+                  <p className="shrink-0 text-sm font-bold text-green-700">
                     ${(item.price * item.quantity).toFixed(2)}
                   </p>
                 </div>
@@ -279,9 +339,8 @@ export function OrderDetailsDialog({
             </div>
           </div>
 
-          {/* ── Resumen financiero ───────────────────────── */}
-          <div className="bg-gray-50 rounded-xl overflow-hidden">
-            <div className="px-4 py-3 space-y-2 text-sm">
+          <div className="overflow-hidden rounded-xl bg-gray-50">
+            <div className="space-y-2 px-4 py-3 text-sm">
               {hasDiscounts && (
                 <>
                   <FinRow
@@ -291,7 +350,11 @@ export function OrderDetailsDialog({
                   />
                   {Number(order.product_discounted_amount || 0) > 0 && (
                     <FinRow
-                      label={<span className="flex items-center gap-1.5"><Badge className="bg-green-600 text-white text-xs px-1.5">Promoción</Badge></span>}
+                      label={
+                        <span className="flex items-center gap-1.5">
+                          <Badge className="bg-green-600 px-1.5 text-xs text-white">Promocion</Badge>
+                        </span>
+                      }
                       value={`-$${Number(order.product_discounted_amount).toFixed(2)}`}
                       accent="green"
                     />
@@ -300,7 +363,7 @@ export function OrderDetailsDialog({
                     <FinRow
                       label={
                         <span className="flex items-center gap-1.5">
-                          <Badge className="bg-purple-600 text-white text-xs px-1.5">Cupón</Badge>
+                          <Badge className="bg-purple-600 px-1.5 text-xs text-white">Cupon</Badge>
                           <span className="text-gray-600">{order.couponDiscountCode}</span>
                         </span>
                       }
@@ -310,38 +373,40 @@ export function OrderDetailsDialog({
                   )}
                   {Number(order.code_discounted_amount || 0) > 0 && (
                     <FinRow
-                      label={<span className="flex items-center gap-1.5"><Badge className="bg-blue-600 text-white text-xs px-1.5">Código</Badge></span>}
+                      label={
+                        <span className="flex items-center gap-1.5">
+                          <Badge className="bg-blue-600 px-1.5 text-xs text-white">Codigo</Badge>
+                        </span>
+                      }
                       value={`-$${Number(order.code_discounted_amount).toFixed(2)}`}
                       accent="blue"
                     />
                   )}
-                  <div className="border-t border-dashed border-gray-200 pt-2 mt-1" />
+                  <div className="mt-1 border-t border-dashed border-gray-200 pt-2" />
                 </>
               )}
 
               <FinRow label="Subtotal" value={`$${order.subtotal.toFixed(2)}`} />
               <FinRow label="IVA (15%)" value={`$${order.tax.toFixed(2)}`} />
               {Number(order.shipping || 0) > 0 && (
-                <FinRow label="Reserva (envío)" value={`$${Number(order.shipping).toFixed(2)}`} />
+                <FinRow label="Reserva (envio)" value={`$${Number(order.shipping).toFixed(2)}`} />
               )}
             </div>
 
-            {/* Total */}
-            <div className="flex items-center justify-between px-4 py-4 bg-gray-900 text-white">
-              <span className="font-bold text-base">Total</span>
-              <span className="font-bold text-2xl text-green-400">${total.toFixed(2)}</span>
+            <div className="flex items-center justify-between bg-gray-900 px-4 py-4 text-white">
+              <span className="text-base font-bold">Total</span>
+              <span className="text-2xl font-bold text-green-400">${total.toFixed(2)}</span>
             </div>
 
-            {/* Contraentrega */}
             {order.cashOnDelivery && (
-              <div className="px-4 py-3 bg-amber-50 border-t-2 border-amber-300 space-y-1 text-sm">
+              <div className="space-y-1 border-t-2 border-amber-300 bg-amber-50 px-4 py-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-amber-800">Reserva pagada online</span>
                   <span className="font-semibold text-amber-900">$7.00</span>
                 </div>
                 <div className="flex justify-between font-bold">
                   <span className="text-amber-900">Pendiente al recibir</span>
-                  <span className="text-amber-900 text-base">${(total - 7).toFixed(2)}</span>
+                  <span className="text-base text-amber-900">${(total - 7).toFixed(2)}</span>
                 </div>
               </div>
             )}
@@ -352,8 +417,6 @@ export function OrderDetailsDialog({
   );
 }
 
-/* ── Helpers internos ──────────────────────────────────────── */
-
 function InfoRow({
   icon,
   value,
@@ -363,8 +426,8 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-start gap-2.5">
-      <span className="text-gray-400 mt-0.5 shrink-0">{icon}</span>
-      <span className="text-gray-700 leading-snug">{value}</span>
+      <span className="mt-0.5 shrink-0 text-gray-400">{icon}</span>
+      <span className="leading-snug text-gray-700">{value}</span>
     </div>
   );
 }
@@ -384,12 +447,12 @@ function FinRow({
     accent === "green"
       ? "text-green-700 font-semibold"
       : accent === "purple"
-      ? "text-purple-700 font-semibold"
-      : accent === "blue"
-      ? "text-blue-700 font-semibold"
-      : muted
-      ? "text-gray-400 line-through"
-      : "text-gray-800";
+        ? "text-purple-700 font-semibold"
+        : accent === "blue"
+          ? "text-blue-700 font-semibold"
+          : muted
+            ? "text-gray-400 line-through"
+            : "text-gray-800";
 
   return (
     <div className="flex items-center justify-between gap-4">

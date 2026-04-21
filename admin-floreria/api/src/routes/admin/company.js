@@ -4,7 +4,9 @@ const {
   generateWebhookSecret,
   updateAllowedDomains,
   getApiConfig,
-  getApiLogs
+  getApiLogs,
+  getPaymentSettings,
+  updatePaymentSettings,
 } = require('../../controllers/admin/apiConfigController');
 
 const router = express.Router();
@@ -17,6 +19,10 @@ router.post('/webhook-secret', generateWebhookSecret);
 
 // Actualizar dominios permitidos
 router.put('/allowed-domains', updateAllowedDomains);
+
+// Configuración de pagos del admin autenticado
+router.get('/payment-settings', getPaymentSettings);
+router.put('/payment-settings', updatePaymentSettings);
 
 // Obtener configuración actual
 router.get('/:companyId/api-config', getApiConfig);

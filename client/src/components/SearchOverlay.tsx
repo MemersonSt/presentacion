@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, ArrowRight, ShoppingBag, Sparkles } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { useLocation } from "wouter";
-import { getProductPath } from "@shared/catalog";
+import { formatCategoryDisplayName, getProductPath } from "@shared/catalog";
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -25,13 +25,32 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
 
   // Bloquear scroll cuando está abierto
   useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+
     if (isOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
       setQuery("");
     }
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   const handleSelectProduct = (productPath: string) => {
     onClose();
@@ -93,7 +112,9 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                       <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-[#5A3F73] font-black text-[9px] uppercase tracking-widest mb-1">{product.category}</p>
+                      <p className="text-[#5A3F73] font-semibold text-xs tracking-[0.16em] mb-1">
+                        {formatCategoryDisplayName(product.category)}
+                      </p>
                       <h4 className="text-white font-bold text-lg leading-tight mb-2">{product.name}</h4>
                       <p className="text-white/40 font-bold text-sm">{product.price}</p>
                     </div>

@@ -32,8 +32,40 @@ model Company {
   businessType        BusinessType? @relation(fields: [businessTypeId], references: [id])
   products            Product[]
   reviews             Review[]
+  abandonedCarts      AbandonedCart[]
 
   @@map("companies")
+}
+
+model AbandonedCart {
+  id                  String   @id @default(cuid())
+  companyId           String
+  customerName        String
+  customerPhone       String
+  senderName          String?
+  receiverName        String?
+  exactAddress        String?
+  sector              String?
+  paymentMethod       String?
+  deliveryDateTime    String?
+  cardMessage         String?
+  couponCode          String?
+  total               Float    @default(0)
+  items               Json
+  source              String?
+  emailSent           Boolean  @default(false)
+  ownerEmail          String?
+  status              String   @default("NEW")
+  notes               String?
+  contactedAt         DateTime?
+  recoveredAt         DateTime?
+  abandonedAt         DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  company             Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, status, createdAt])
+  @@map("abandoned_carts")
 }
 
 model ApiRequest {
@@ -265,6 +297,13 @@ model Order {
   couponDiscountCode                             String?
   payPhoneAuthCode                               String?
   payPhoneTransactionId                          String?
+  paymentProofImageUrl                           String?
+  paymentProofFileName                           String?
+  paymentProofStatus                             String?     @default("PENDING")
+  paymentProofUploadedAt                         DateTime?
+  paymentVerifiedAt                              DateTime?
+  paymentVerifiedBy                              String?
+  paymentVerificationNotes                       String?
   orderItems                                     OrderItem[]
   discounts_orders_discount_code_idTodiscounts   discounts?  @relation("orders_discount_code_idTodiscounts", fields: [discount_code_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_code_discount_fk")
   discounts_orders_discount_coupon_idTodiscounts discounts?  @relation("orders_discount_coupon_idTodiscounts", fields: [discount_coupon_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_coupon_discount_fk")
