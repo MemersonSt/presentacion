@@ -21,6 +21,27 @@ function sanitizePaymentSettings(input) {
     const value = source[key];
     return typeof value === "string" ? value.trim() : "";
   };
+  const getSectorRates = (key) => {
+    const value = source[key];
+    if (!Array.isArray(value)) return [];
+
+    return value
+      .map((item) => {
+        if (!item || typeof item !== "object") return null;
+
+        const sector = typeof item.sector === "string" ? item.sector.trim() : "";
+        const numericCost = Number(item.cost);
+        const cost = Number.isFinite(numericCost) ? numericCost : NaN;
+
+        if (!sector || !Number.isFinite(cost) || cost < 0) return null;
+
+        return {
+          sector,
+          cost: Number(cost.toFixed(2)),
+        };
+      })
+      .filter(Boolean);
+  };
   const getEnvironment = (key, fallback = "sandbox") => {
     const value = getString(key).toLowerCase();
     return value === "live" ? "live" : fallback;
@@ -44,6 +65,7 @@ function sanitizePaymentSettings(input) {
     payphoneLiveToken: getString("payphoneLiveToken"),
     payphoneLiveWebhookToken: getString("payphoneLiveWebhookToken"),
     transferInstructions: getString("transferInstructions"),
+    shippingSectorRates: getSectorRates("shippingSectorRates"),
     ownerNotificationEmail: getString("ownerNotificationEmail"),
     ownerNotificationName: getString("ownerNotificationName"),
   };

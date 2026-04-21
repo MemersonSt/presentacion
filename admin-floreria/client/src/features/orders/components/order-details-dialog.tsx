@@ -207,22 +207,22 @@ export function OrderDetailsDialog({
             </div>
           )}
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-3 rounded-xl bg-gray-50 p-4">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div className="space-y-2 rounded-lg bg-gray-50 p-3">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400">
                 Quién envía
               </h3>
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-200">
-                  <User className="h-5 w-5 text-gray-500" />
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200">
+                  <User className="h-4 w-4 text-gray-500" />
                 </div>
-                <div>
-                  <p className="font-semibold text-gray-900">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-gray-900">
                     {senderName || "No especificado"}
                   </p>
                 </div>
               </div>
-              <div className="space-y-2 text-sm text-gray-700">
+              <div className="space-y-1.5 text-xs text-gray-700">
                 {senderEmail && <InfoRow icon={<Mail className="h-4 w-4" />} value={senderEmail} />}
                 {senderPhone && (
                   <InfoRow icon={<Phone className="h-4 w-4" />} value={senderPhone} />
@@ -230,21 +230,21 @@ export function OrderDetailsDialog({
               </div>
             </div>
 
-            <div className="space-y-3 rounded-xl bg-gray-50 p-4">
+            <div className="space-y-2 rounded-lg bg-gray-50 p-3">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400">
                 Quién recibe
               </h3>
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-200">
-                  <Truck className="h-5 w-5 text-gray-500" />
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200">
+                  <Truck className="h-4 w-4 text-gray-500" />
                 </div>
-                <div>
-                  <p className="font-semibold text-gray-900">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-gray-900">
                     {receiverName || "No especificado"}
                   </p>
                 </div>
               </div>
-              <div className="space-y-2 text-sm text-gray-700">
+              <div className="space-y-1.5 text-xs text-gray-700">
                 {receiverPhone && (
                   <InfoRow icon={<Phone className="h-4 w-4" />} value={receiverPhone} />
                 )}
@@ -498,9 +498,9 @@ function InfoRow({
   value: string;
 }) {
   return (
-    <div className="flex items-start gap-2.5">
+    <div className="flex items-start gap-2">
       <span className="mt-0.5 shrink-0 text-gray-400">{icon}</span>
-      <span className="leading-snug text-gray-700">{value}</span>
+      <span className="break-words leading-snug text-gray-700">{value}</span>
     </div>
   );
 }

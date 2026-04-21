@@ -39,6 +39,13 @@ const STATUS_OPTIONS: Array<{ value: "ALL" | AbandonedCartStatus; label: string 
   { value: "CLOSED", label: "Cerrados" },
 ];
 
+function extractCustomerEmail(notes?: string | null) {
+  if (!notes) return "";
+
+  const match = notes.match(/Correo\s+envia:\s*([^|]+)/i);
+  return match?.[1]?.trim() || "";
+}
+
 export default function AbandonedCartsPage() {
   const [items, setItems] = useState<AbandonedCart[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,7 +57,7 @@ export default function AbandonedCartsPage() {
 
   const selectedCart = useMemo(
     () => items.find((item) => item.id === selectedId) || items[0] || null,
-    [items, selectedId],
+    [items, selectedId]
   );
 
   const loadCarts = async (overrides?: { search?: string; status?: string }) => {
@@ -64,14 +71,16 @@ export default function AbandonedCartsPage() {
       if (resolvedStatus && resolvedStatus !== "ALL") params.append("status", resolvedStatus);
 
       const query = params.toString();
-      const response = await ecommerceService.get(query ? `/abandoned-carts?${query}` : "/abandoned-carts");
+      const response = await ecommerceService.get(
+        query ? `/abandoned-carts?${query}` : "/abandoned-carts"
+      );
       const data = response.data?.data || [];
       setItems(data);
-      setSelectedId((current) => (
+      setSelectedId((current) =>
         current && data.some((item: AbandonedCart) => item.id === current)
           ? current
           : data[0]?.id || null
-      ));
+      );
     } catch (error) {
       console.error("Load abandoned carts error:", error);
       toast.error("No se pudieron cargar los carritos abandonados");
@@ -82,7 +91,6 @@ export default function AbandonedCartsPage() {
 
   useEffect(() => {
     loadCarts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -134,12 +142,14 @@ export default function AbandonedCartsPage() {
     }
   };
 
+  const customerEmail = extractCustomerEmail(selectedCart?.notes);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <header>
         <h1 className="text-3xl font-bold text-gray-900">Carritos Abandonados</h1>
         <p className="mt-1 text-gray-600">
-          Revisa abandonos, marca seguimiento comercial y registra cuáles se recuperaron.
+          Revisa abandonos, marca seguimiento comercial y registra cuales se recuperaron.
         </p>
       </header>
 
@@ -148,13 +158,13 @@ export default function AbandonedCartsPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por cliente, teléfono o dirección"
-            className="h-11 rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:border-blue-500"
+            placeholder="Buscar por cliente, telefono o direccion"
+            className="h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:border-blue-500"
           />
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as "ALL" | AbandonedCartStatus)}
-            className="h-11 rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:border-blue-500"
+            className="h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:border-blue-500"
           >
             {STATUS_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -168,7 +178,7 @@ export default function AbandonedCartsPage() {
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[420px_1fr]">
+      <div className="grid gap-5 xl:grid-cols-[380px_1fr]">
         <section className="rounded-xl border bg-white shadow-sm">
           <div className="border-b p-4">
             <h2 className="font-semibold text-gray-900">Listado</h2>
@@ -184,18 +194,18 @@ export default function AbandonedCartsPage() {
                   key={item.id}
                   type="button"
                   onClick={() => setSelectedId(item.id)}
-                  className={`w-full border-b p-4 text-left transition hover:bg-gray-50 ${
+                  className={`w-full border-b px-4 py-3 text-left transition hover:bg-gray-50 ${
                     selectedCart?.id === item.id ? "bg-blue-50" : "bg-white"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-gray-900">{item.customerName}</p>
-                      <p className="text-sm text-gray-500">{item.customerPhone}</p>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-gray-900">{item.customerName}</p>
+                      <p className="text-xs text-gray-500">{item.customerPhone}</p>
                     </div>
                     <StatusBadge status={item.status} />
                   </div>
-                  <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
+                  <div className="mt-1.5 flex items-center justify-between text-[11px] text-gray-500">
                     <span>{formatDate(item.abandonedAt || item.createdAt)}</span>
                     <span>${Number(item.total || 0).toFixed(2)}</span>
                   </div>
@@ -213,48 +223,48 @@ export default function AbandonedCartsPage() {
           {!selectedCart ? (
             <div className="p-6 text-sm text-gray-500">Selecciona un carrito para ver el detalle.</div>
           ) : (
-            <div className="space-y-6 p-6">
-              <div className="flex flex-wrap items-center gap-3">
+            <div className="space-y-5 p-5">
+              <div className="flex flex-wrap items-center gap-2.5">
                 <StatusBadge status={selectedCart.status} />
                 <span className="text-sm text-gray-500">
                   Abandonado: {formatDate(selectedCart.abandonedAt || selectedCart.createdAt)}
                 </span>
                 {selectedCart.emailSent && (
-                  <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+                  <span className="rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-medium text-green-700">
                     Email enviado
                   </span>
                 )}
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-3 md:grid-cols-3">
                 <Info label="Cliente" value={selectedCart.customerName} />
-                <Info label="Teléfono" value={selectedCart.customerPhone} />
-                <Info label="Quien envía" value={selectedCart.senderName} />
+                <Info label="Telefono" value={selectedCart.customerPhone} />
+                <Info label="Email cliente" value={customerEmail} />
+                <Info label="Quien envia" value={selectedCart.senderName} />
                 <Info label="Quien recibe" value={selectedCart.receiverName} />
-                <Info label="Dirección" value={selectedCart.exactAddress} />
+                <Info label="Direccion" value={selectedCart.exactAddress} />
                 <Info label="Sector" value={selectedCart.sector} />
                 <Info label="Pago" value={selectedCart.paymentMethod} />
                 <Info label="Entrega" value={selectedCart.deliveryDateTime} />
-                <Info label="Cupón" value={selectedCart.couponCode} />
+                <Info label="Cupon" value={selectedCart.couponCode} />
                 <Info label="Origen" value={selectedCart.source} />
-                <Info label="Email dueño" value={selectedCart.ownerEmail} />
                 <Info label="Total" value={`$${Number(selectedCart.total || 0).toFixed(2)}`} />
               </div>
 
               {selectedCart.cardMessage && (
-                <div>
-                  <p className="mb-2 text-sm font-medium text-gray-700">Mensaje de tarjeta</p>
-                  <div className="rounded-lg border bg-gray-50 p-3 text-sm text-gray-600">
-                    {selectedCart.cardMessage}
-                  </div>
-                </div>
+                <CompactBlock label="Mensaje de tarjeta">
+                  {selectedCart.cardMessage}
+                </CompactBlock>
               )}
 
               <div>
                 <p className="mb-2 text-sm font-medium text-gray-700">Productos</p>
-                <div className="space-y-2 rounded-lg border bg-gray-50 p-3">
+                <div className="space-y-1.5 rounded-lg border bg-gray-50 p-3">
                   {(selectedCart.items || []).map((item, index) => (
-                    <div key={`${item.name}-${index}`} className="flex items-center justify-between text-sm">
+                    <div
+                      key={`${item.name}-${index}`}
+                      className="flex items-center justify-between gap-3 text-sm"
+                    >
                       <span className="text-gray-700">
                         {item.name} x {item.quantity}
                       </span>
@@ -269,9 +279,9 @@ export default function AbandonedCartsPage() {
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  rows={5}
+                  rows={4}
                   placeholder="Seguimiento, respuesta del cliente, observaciones..."
-                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-3 text-sm outline-none focus:border-blue-500"
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
                 />
               </div>
 
@@ -299,9 +309,26 @@ export default function AbandonedCartsPage() {
 
 function Info({ label, value }: { label: string; value?: string | null }) {
   return (
-    <div className="rounded-lg border bg-gray-50 p-3">
-      <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</p>
-      <p className="mt-1 text-sm text-gray-900">{value?.trim() ? value : "-"}</p>
+    <div className="rounded-lg border bg-gray-50 p-2.5">
+      <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">{label}</p>
+      <p className="mt-1 text-sm leading-snug text-gray-900 break-words">{value?.trim() ? value : "-"}</p>
+    </div>
+  );
+}
+
+function CompactBlock({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <p className="mb-2 text-sm font-medium text-gray-700">{label}</p>
+      <div className="rounded-lg border bg-gray-50 p-3 text-sm text-gray-600">
+        {children}
+      </div>
     </div>
   );
 }
@@ -322,7 +349,7 @@ function StatusBadge({ status }: { status: AbandonedCartStatus }) {
   };
 
   return (
-    <span className={`rounded-full px-3 py-1 text-xs font-medium ${styles[status]}`}>
+    <span className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${styles[status]}`}>
       {labels[status]}
     </span>
   );

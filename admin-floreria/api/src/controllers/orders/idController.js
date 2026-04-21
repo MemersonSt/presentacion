@@ -1,10 +1,101 @@
 const { db: prisma } = require("../../lib/prisma");
 const { orderEvents } = require("../../events/orderEvents");
 
+const orderSelect = {
+  id: true,
+  orderNumber: true,
+  sequentialNumber: true,
+  customerName: true,
+  customerLastName: true,
+  customerProvince: true,
+  billingPrincipalAddress: true,
+  billingSecondAddress: true,
+  customerReference: true,
+  subtotal: true,
+  tax: true,
+  shipping: true,
+  total: true,
+  paymentStatus: true,
+  status: true,
+  deliveryNotes: true,
+  createdAt: true,
+  updatedAt: true,
+  paidAt: true,
+  updatedBy: true,
+  source: true,
+  sourceIp: true,
+  sourceUserAgent: true,
+  verifiedWebhook: true,
+  Courier: true,
+  billingContactName: true,
+  billingCity: true,
+  customerEmail: true,
+  orderNotes: true,
+  customerPhone: true,
+  total_discount_amount: true,
+  product_discounted_amount: true,
+  code_discounted_amount: true,
+  coupon_discounted_amount: true,
+  discount_coupon_percent: true,
+  discount_code_percent: true,
+  discount_coupon_id: true,
+  discount_code_id: true,
+  cashOnDelivery: true,
+  clientTransactionId: true,
+  couponDiscountCode: true,
+  payPhoneAuthCode: true,
+  payPhoneTransactionId: true,
+  orderItems: {
+    select: {
+      id: true,
+      quantity: true,
+      price: true,
+      productId: true,
+      orderId: true,
+      variantName: true,
+      discounts_percents: true,
+      discounts_ids: true,
+      product: {
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          image: true,
+        },
+      },
+    },
+  },
+};
+
 function roundMoney(amount) {
   const n = Number(amount);
   if (!Number.isFinite(n)) return 0;
   return Math.round((n + Number.EPSILON) * 100) / 100;
+}
+
+function serializeOrder(order) {
+  const totalAmount = Number(order.total || 0);
+  const shipping = Number(order.shipping || 0);
+  const subtotal = Number(order.subtotal || 0);
+  const tax = Number(order.tax || 0);
+  const pendingAmount = shipping > 0 ? Math.max(0, subtotal + tax - shipping) : 0;
+  const estimatedDiscountAmount = roundMoney(order.total_discount_amount);
+
+  return {
+    ...order,
+    description: null,
+    notes: null,
+    paymentProofImageUrl: null,
+    paymentProofFileName: null,
+    paymentProofStatus: null,
+    paymentProofUploadedAt: null,
+    paymentVerifiedAt: null,
+    paymentVerifiedBy: null,
+    paymentVerificationNotes: null,
+    totalAmount,
+    estimatedDiscountAmount,
+    pendingAmount,
+  };
 }
 
 exports.getOrderById = async (req, res) => {
@@ -12,31 +103,20 @@ exports.getOrderById = async (req, res) => {
     const { id } = req.params;
     const order = await prisma.order.findUnique({
       where: { id },
-      include: {
-        orderItems: {
-          include: {
-            product: true,
-          },
-        },
-      },
+      select: orderSelect,
     });
+
     if (!order) {
       return res.status(404).json({ error: "Orden no encontrada" });
     }
-    const totalAmount = Number(order.total || 0);
-    const shipping = Number(order.shipping || 0);
-    const subtotal = Number(order.subtotal || 0);
-    const tax = Number(order.tax || 0);
-    const pendingAmount = shipping > 0 ? Math.max(0, subtotal + tax - shipping) : 0;
-    const estimatedDiscountAmount = roundMoney(order.total_discount_amount);
 
-    const orderWithPending = { ...order, totalAmount, estimatedDiscountAmount, pendingAmount };
     return res.status(200).json({
       status: "success",
       message: "Orden obtenida",
-      data: orderWithPending,
+      data: serializeOrder(order),
     });
   } catch (error) {
+    console.error("Get order by id error:", error);
     return res.status(500).json({ error: "Error al obtener orden" });
   }
 };
@@ -48,9 +128,11 @@ exports.updateOrderById = async (req, res) => {
     const order = await prisma.order.update({
       where: { id },
       data,
+      select: orderSelect,
     });
-    return res.status(200).json({ order });
+    return res.status(200).json({ order: serializeOrder(order) });
   } catch (error) {
+    console.error("Update order by id error:", error);
     return res.status(500).json({ error: "Error al actualizar orden" });
   }
 };
@@ -67,7 +149,6 @@ exports.updateStateOrderById = async (req, res) => {
       });
     }
 
-    // Validar que el status sea válido
     const validStatuses = [
       "PENDING",
       "CONFIRMED",
@@ -80,23 +161,16 @@ exports.updateStateOrderById = async (req, res) => {
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
         status: "error",
-        message: "Status inválido",
+        message: "Status invalido",
       });
     }
 
     const order = await prisma.order.update({
       where: { id },
       data: { status },
-      include: {
-        orderItems: {
-          include: {
-            product: true,
-          },
-        },
-      },
+      select: orderSelect,
     });
 
-    // Emitir evento de actualización de estado
     orderEvents.emit("order.status.updated", {
       id: order.id,
       status: order.status,
@@ -108,7 +182,7 @@ exports.updateStateOrderById = async (req, res) => {
     return res.status(200).json({
       status: "success",
       message: "Estado actualizado correctamente",
-      data: { order },
+      data: { order: serializeOrder(order) },
     });
   } catch (error) {
     console.error("Update order status error:", error);
@@ -127,7 +201,7 @@ exports.updatePaymentStatus = async (req, res) => {
 
     const validStatuses = ["PENDING", "PAID", "FAILED", "CANCELLED"];
     if (!paymentStatus || !validStatuses.includes(paymentStatus)) {
-      return res.status(400).json({ status: "error", message: "paymentStatus inválido." });
+      return res.status(400).json({ status: "error", message: "paymentStatus invalido." });
     }
 
     const order = await prisma.order.update({
@@ -136,12 +210,13 @@ exports.updatePaymentStatus = async (req, res) => {
         paymentStatus,
         paidAt: paymentStatus === "PAID" ? new Date() : undefined,
       },
+      select: orderSelect,
     });
 
     return res.status(200).json({
       status: "success",
       message: "Estado de pago actualizado",
-      data: { order },
+      data: { order: serializeOrder(order) },
     });
   } catch (error) {
     console.error("Update payment status error:", error);
@@ -151,33 +226,9 @@ exports.updatePaymentStatus = async (req, res) => {
 
 exports.updatePaymentProof = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { paymentProofStatus, paymentVerificationNotes } = req.body;
-    const validStatuses = ["PENDING", "UPLOADED", "VERIFIED", "REJECTED"];
-
-    if (!paymentProofStatus || !validStatuses.includes(paymentProofStatus)) {
-      return res.status(400).json({
-        status: "error",
-        message: "paymentProofStatus inválido.",
-      });
-    }
-
-    const updateData = {
-      paymentProofStatus,
-      paymentVerificationNotes: paymentVerificationNotes || null,
-      paymentVerifiedAt: paymentProofStatus === "VERIFIED" ? new Date() : null,
-      paymentVerifiedBy: req.user?.adminId || null,
-    };
-
-    const order = await prisma.order.update({
-      where: { id },
-      data: updateData,
-    });
-
-    return res.status(200).json({
-      status: "success",
-      message: "Estado del comprobante actualizado",
-      data: { order },
+    return res.status(501).json({
+      status: "error",
+      message: "La base actual no soporta campos de comprobante de pago todavia.",
     });
   } catch (error) {
     console.error("Update payment proof error:", error);

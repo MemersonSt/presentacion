@@ -3,6 +3,11 @@ import { toast } from "sonner";
 import ecommerceService from "@/core/api/ecommerce-service";
 import { Button } from "@/shared/components/ui/button";
 
+type ShippingSectorRate = {
+  sector: string;
+  cost: string;
+};
+
 type PaymentSettings = {
   paypalEnvironment: "sandbox" | "live";
   paypalSandboxClientId: string;
@@ -21,6 +26,7 @@ type PaymentSettings = {
   payphoneLiveToken: string;
   payphoneLiveWebhookToken: string;
   transferInstructions: string;
+  shippingSectorRates: ShippingSectorRate[];
   ownerNotificationEmail: string;
   ownerNotificationName: string;
 };
@@ -43,9 +49,32 @@ const DEFAULT_SETTINGS: PaymentSettings = {
   payphoneLiveToken: "",
   payphoneLiveWebhookToken: "",
   transferInstructions: "",
+  shippingSectorRates: [],
   ownerNotificationEmail: "",
   ownerNotificationName: "",
 };
+
+function normalizeSectorRates(value: unknown): ShippingSectorRate[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.map((item) => {
+    const source = item && typeof item === "object" ? item : {};
+    const sector = typeof (source as { sector?: unknown }).sector === "string"
+      ? String((source as { sector?: unknown }).sector)
+      : "";
+    const cost = (source as { cost?: unknown }).cost;
+
+    return {
+      sector,
+      cost:
+        typeof cost === "number"
+          ? String(cost)
+          : typeof cost === "string"
+            ? cost
+            : "",
+    };
+  });
+}
 
 export default function PaymentsPage() {
   const [form, setForm] = useState<PaymentSettings>(DEFAULT_SETTINGS);
@@ -60,6 +89,7 @@ export default function PaymentsPage() {
         setForm({
           ...DEFAULT_SETTINGS,
           ...paymentSettings,
+          shippingSectorRates: normalizeSectorRates(paymentSettings.shippingSectorRates),
         });
       } catch (error) {
         console.error("Load payment settings error:", error);
@@ -79,10 +109,48 @@ export default function PaymentsPage() {
     }));
   };
 
+  const updateSectorRate = (
+    index: number,
+    field: keyof ShippingSectorRate,
+    value: string
+  ) => {
+    setForm((current) => ({
+      ...current,
+      shippingSectorRates: current.shippingSectorRates.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, [field]: value } : item
+      ),
+    }));
+  };
+
+  const addSectorRate = () => {
+    setForm((current) => ({
+      ...current,
+      shippingSectorRates: [
+        ...current.shippingSectorRates,
+        { sector: "", cost: "" },
+      ],
+    }));
+  };
+
+  const removeSectorRate = (index: number) => {
+    setForm((current) => ({
+      ...current,
+      shippingSectorRates: current.shippingSectorRates.filter((_, itemIndex) => itemIndex !== index),
+    }));
+  };
+
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      await ecommerceService.put("/admin/company/payment-settings", form);
+      await ecommerceService.put("/admin/company/payment-settings", {
+        ...form,
+        shippingSectorRates: form.shippingSectorRates
+          .map((item) => ({
+            sector: item.sector.trim(),
+            cost: item.cost.trim(),
+          }))
+          .filter((item) => item.sector && item.cost),
+      });
       toast.success("Configuracion de pagos guardada");
     } catch (error) {
       console.error("Save payment settings error:", error);
@@ -105,9 +173,50 @@ export default function PaymentsPage() {
       <header>
         <h1 className="text-3xl font-bold text-gray-900">Configuracion de Pagos</h1>
         <p className="mt-1 text-gray-600">
-          Deja listo el admin para desarrollo y produccion: PayPal, PayPhone, transferencias y correo del dueno.
+          Deja listo el admin para desarrollo y produccion: PayPal, PayPhone, transferencias, envios por sector y correo del dueno.
         </p>
       </header>
+
+      <section className="rounded-xl border bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-gray-900">Envio por sector</h2>
+        <p className="mt-1 text-sm text-gray-500">
+          Define los sectores y el costo de envio que vera el cliente en checkout segun lo que escriba.
+        </p>
+
+        <div className="mt-6 space-y-3">
+          {form.shippingSectorRates.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500">
+              Aun no hay sectores configurados.
+            </div>
+          ) : (
+            form.shippingSectorRates.map((item, index) => (
+              <div key={`${index}-${item.sector}`} className="grid gap-3 rounded-lg border bg-gray-50 p-3 md:grid-cols-[1fr_180px_auto]">
+                <Field
+                  label="Sector"
+                  value={item.sector}
+                  onChange={(value) => updateSectorRate(index, "sector", value)}
+                  placeholder="Ej: Urdesa, Alborada, Ceibos"
+                />
+                <Field
+                  label="Costo"
+                  value={item.cost}
+                  onChange={(value) => updateSectorRate(index, "cost", value)}
+                  placeholder="Ej: 3.50"
+                />
+                <div className="flex items-end">
+                  <Button type="button" variant="outline" onClick={() => removeSectorRate(index)}>
+                    Quitar
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+
+          <Button type="button" variant="outline" onClick={addSectorRate}>
+            Agregar sector
+          </Button>
+        </div>
+      </section>
 
       <section className="rounded-xl border bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900">PayPal</h2>

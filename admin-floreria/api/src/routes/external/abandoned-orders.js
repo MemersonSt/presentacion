@@ -88,9 +88,9 @@ router.post("/", async (req, res) => {
         cardMessage: cardMessage || null,
         couponCode: couponCode || null,
         notes: [
-          senderEmail ? `Correo envía: ${senderEmail}` : "",
-          senderPhone ? `Teléfono envía: ${senderPhone}` : "",
-          receiverPhone ? `Teléfono recibe: ${receiverPhone}` : "",
+          senderEmail ? `Correo envia: ${senderEmail}` : "",
+          senderPhone ? `Telefono envia: ${senderPhone}` : "",
+          receiverPhone ? `Telefono recibe: ${receiverPhone}` : "",
           observations ? `Observaciones: ${observations}` : "",
         ].filter(Boolean).join(" | ") || null,
         total: Number(total) || 0,
