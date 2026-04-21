@@ -114,29 +114,28 @@ export function CategorySidebar({
         </AnimatePresence>
       </div>
 
-      <div className="hidden lg:flex flex-col gap-3 p-8 bg-white border border-primary/20 rounded-[3rem] shadow-xl sticky top-32">
-        <h3 className="text-foreground font-serif font-bold text-2xl mb-8 px-2 flex items-center gap-3">
-          <Sparkles className="w-5 h-5 text-accent" />
+      <div className="hidden lg:flex flex-col gap-4 p-8 bg-white border border-primary/20 rounded-[3rem] shadow-xl sticky top-32">
+        <h3 className="text-foreground font-serif font-bold text-[2rem] mb-8 px-2 flex items-center gap-3">
           Colecciones
         </h3>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           {mobileOptions.map((option) =>
             isFilter ? (
               <button
                 key={option.label}
                 className={cn(
-                  "w-full text-left px-5 py-4 rounded-2xl transition-all duration-300 font-semibold text-sm leading-snug flex items-center justify-between gap-4 group relative overflow-hidden",
+                  "w-full text-left px-5 py-4 rounded-2xl transition-all duration-300 font-semibold text-[1.02rem] leading-snug flex items-center justify-between gap-4 group relative overflow-hidden",
                   activeCategory === option.value
                     ? "bg-primary/20 text-accent shadow-sm"
-                    : "text-foreground/50 hover:bg-primary/10 hover:text-foreground/85 border border-transparent",
+                    : "text-foreground/72 hover:bg-primary/10 hover:text-foreground border border-transparent",
                 )}
                 onClick={() => setActiveCategory?.(option.value)}
               >
                 <span className="relative z-10">{option.label}</span>
                 <div
                   className={cn(
-                    "w-1.5 h-1.5 rounded-full transition-all duration-500 relative z-10 shrink-0",
-                    activeCategory === option.value ? "bg-accent scale-150" : "bg-primary group-hover:scale-125",
+                    "w-2 h-2 rounded-full transition-all duration-500 relative z-10 shrink-0",
+                    activeCategory === option.value ? "bg-accent scale-125" : "bg-primary/45 group-hover:bg-accent/70 group-hover:scale-110",
                   )}
                 ></div>
               </button>
@@ -145,17 +144,17 @@ export function CategorySidebar({
                 key={option.label}
                 href={option.href}
                 className={cn(
-                  "w-full text-left px-5 py-4 rounded-2xl transition-all duration-300 font-semibold text-sm leading-snug flex items-center justify-between gap-4 group relative overflow-hidden",
+                  "w-full text-left px-5 py-4 rounded-2xl transition-all duration-300 font-semibold text-[1.02rem] leading-snug flex items-center justify-between gap-4 group relative overflow-hidden",
                   activeCategory === option.value
                     ? "bg-primary/20 text-accent shadow-sm"
-                    : "text-foreground/50 hover:bg-primary/10 hover:text-foreground/85 border border-transparent",
+                    : "text-foreground/72 hover:bg-primary/10 hover:text-foreground border border-transparent",
                 )}
               >
                 <span className="relative z-10">{option.label}</span>
                 <div
                   className={cn(
-                    "w-1.5 h-1.5 rounded-full transition-all duration-500 relative z-10 shrink-0",
-                    activeCategory === option.value ? "bg-accent scale-150" : "bg-primary group-hover:scale-125",
+                    "w-2 h-2 rounded-full transition-all duration-500 relative z-10 shrink-0",
+                    activeCategory === option.value ? "bg-accent scale-125" : "bg-primary/45 group-hover:bg-accent/70 group-hover:scale-110",
                   )}
                 ></div>
               </Link>
