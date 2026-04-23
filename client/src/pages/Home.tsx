@@ -20,17 +20,21 @@ export default function Home() {
   
   const [newReview, setNewReview] = useState({ name: "", content: "", stars: 5 });
   const [showForm, setShowForm] = useState(false);
+  const [reviewMessage, setReviewMessage] = useState("");
 
   const handleAddReview = async (e: React.FormEvent) => {
     e.preventDefault();
+    setReviewMessage("");
     if (!newReview.name || !newReview.content) return;
 
     try {
       await createReviewMutation.mutateAsync(newReview);
       setNewReview({ name: "", content: "", stars: 5 });
       setShowForm(false);
+      setReviewMessage("Gracias por compartir tu experiencia.");
     } catch (err) {
       console.error("Error al enviar la reseña:", err);
+      setReviewMessage("No pudimos guardar tu reseña. Inténtalo nuevamente.");
     }
   };
 
@@ -225,14 +229,21 @@ export default function Home() {
                     />
                     <button 
                       type="submit"
+                      disabled={createReviewMutation.isPending}
                       className="ui-btn-primary w-full"
                     >
-                      Publicar Reseña
+                      {createReviewMutation.isPending ? "Publicando..." : "Publicar Reseña"}
                     </button>
                   </form>
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {reviewMessage ? (
+              <p className="mx-auto mb-10 max-w-xl rounded-2xl border border-primary/15 bg-white/70 px-5 py-4 text-center text-sm font-semibold text-foreground/70">
+                {reviewMessage}
+              </p>
+            ) : null}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
                {isLoadingReviews ? (

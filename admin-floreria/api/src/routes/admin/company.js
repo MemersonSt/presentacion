@@ -7,6 +7,7 @@ const {
   getApiLogs,
   getPaymentSettings,
   updatePaymentSettings,
+  testPaypalSettings,
 } = require('../../controllers/admin/apiConfigController');
 
 const router = express.Router();
@@ -23,6 +24,7 @@ router.put('/allowed-domains', updateAllowedDomains);
 // Configuración de pagos del admin autenticado
 router.get('/payment-settings', getPaymentSettings);
 router.put('/payment-settings', updatePaymentSettings);
+router.post('/payment-settings/test-paypal', testPaypalSettings);
 
 // Obtener configuración actual
 router.get('/:companyId/api-config', getApiConfig);

@@ -9,12 +9,19 @@ const router = express.Router();
  */
 router.get('/', async (req, res) => {
   try {
-    // Usamos el ID de empresa que ya verificamos anteriormente
-    const companyId = "cmnnzkgvl0000dpy8cj69hkg7";
+    const company = await prisma.company.findFirst({
+      where: { isActive: true },
+      select: { id: true },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    if (!company) {
+      return res.status(200).json({ status: 'success', data: [] });
+    }
     
     const reviews = await prisma.review.findMany({
       where: { 
-        companyId,
+        companyId: company.id,
         isActive: true 
       },
       orderBy: { createdAt: 'desc' },
@@ -36,19 +43,33 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { name, content, stars, role } = req.body;
-    const companyId = "cmnnzkgvl0000dpy8cj69hkg7";
 
     if (!name || !content || !stars) {
       return res.status(400).json({ status: 'error', message: 'Datos incompletos' });
     }
 
+    const numericStars = Number.parseInt(String(stars), 10);
+    if (!Number.isInteger(numericStars) || numericStars < 1 || numericStars > 5) {
+      return res.status(400).json({ status: 'error', message: 'La calificación debe estar entre 1 y 5' });
+    }
+
+    const company = await prisma.company.findFirst({
+      where: { isActive: true },
+      select: { id: true },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    if (!company) {
+      return res.status(404).json({ status: 'error', message: 'Empresa no configurada' });
+    }
+
     const newReview = await prisma.review.create({
       data: {
-        name,
-        content,
-        stars: parseInt(stars),
+        name: String(name).trim(),
+        content: String(content).trim(),
+        stars: numericStars,
         role: role || "Cliente",
-        companyId,
+        companyId: company.id,
         isActive: true // Por ahora las activamos por defecto
       }
     });

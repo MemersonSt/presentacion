@@ -88,6 +88,7 @@ export default function PaymentsPage() {
   const [form, setForm] = useState<PaymentSettings>(DEFAULT_SETTINGS);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTestingPaypal, setIsTestingPaypal] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -151,28 +152,37 @@ export default function PaymentsPage() {
     }));
   };
 
-  const handleSave = async () => {
+  const buildPaymentSettingsPayload = () => {
     const normalizedSectorRates = form.shippingSectorRates.map((item) => ({
       sector: item.sector.trim(),
       cost: item.cost.trim(),
     }));
+
+    return {
+      normalizedSectorRates,
+      payload: {
+        ...form,
+        shippingSectorRates: normalizedSectorRates.filter(
+          (item) => item.sector && item.cost
+        ),
+      },
+    };
+  };
+
+  const handleSave = async () => {
+    const { normalizedSectorRates, payload } = buildPaymentSettingsPayload();
     const hasIncompleteSectorRate = normalizedSectorRates.some(
       (item) => (item.sector && !item.cost) || (!item.sector && item.cost)
     );
 
     if (hasIncompleteSectorRate) {
       toast.error("Cada sector debe tener nombre y costo para poder guardarse.");
-      return;
+      return false;
     }
 
     try {
       setIsSaving(true);
-      const response = await ecommerceService.put("/admin/company/payment-settings", {
-        ...form,
-        shippingSectorRates: normalizedSectorRates.filter(
-          (item) => item.sector && item.cost
-        ),
-      });
+      const response = await ecommerceService.put("/admin/company/payment-settings", payload);
       const savedPaymentSettings = response.data?.data?.settings?.paymentSettings || {};
       setForm({
         ...DEFAULT_SETTINGS,
@@ -182,11 +192,29 @@ export default function PaymentsPage() {
         ),
       });
       toast.success("Configuracion de pagos guardada");
+      return true;
     } catch (error) {
       console.error("Save payment settings error:", error);
       toast.error("No se pudo guardar la configuracion");
+      return false;
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleTestPaypal = async () => {
+    try {
+      setIsTestingPaypal(true);
+      const saved = await handleSave();
+      if (!saved) return;
+
+      const response = await ecommerceService.post("/admin/company/payment-settings/test-paypal");
+      toast.success(response.data?.message || "Credenciales PayPal válidas");
+    } catch (error: any) {
+      console.error("Test PayPal settings error:", error);
+      toast.error(error?.response?.data?.message || "No se pudieron validar las credenciales de PayPal");
+    } finally {
+      setIsTestingPaypal(false);
     }
   };
 
@@ -203,7 +231,7 @@ export default function PaymentsPage() {
       <header>
         <h1 className="text-3xl font-bold text-gray-900">Configuracion de Pagos</h1>
         <p className="mt-1 text-gray-600">
-          Deja listo el admin para desarrollo y produccion: PayPal, PayPhone, transferencias, envios por sector y correo del dueno.
+          Deja listo el admin para desarrollo y produccion: PayPal, transferencias, envios por sector y correo del dueno.
         </p>
       </header>
 
@@ -270,7 +298,7 @@ export default function PaymentsPage() {
       <section className="rounded-xl border bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900">PayPal</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Guarda por separado las credenciales de sandbox y live para activar el entorno correcto.
+          Guarda por separado las credenciales de sandbox y live. Al probar, el sistema solicita un token a PayPal con el entorno activo.
         </p>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -301,42 +329,20 @@ export default function PaymentsPage() {
           <Field label="Merchant ID" value={form.paypalLiveMerchantId} onChange={(value) => updateField("paypalLiveMerchantId", value)} placeholder="XYZMERCHANT..." />
           <Field label="Client Secret" value={form.paypalLiveClientSecret} onChange={(value) => updateField("paypalLiveClientSecret", value)} placeholder="Secret..." />
           <Field label="Webhook ID" value={form.paypalLiveWebhookId} onChange={(value) => updateField("paypalLiveWebhookId", value)} placeholder="Webhook..." />
-        </div>
-      </section>
 
-      <section className="rounded-xl border bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900">PayPhone</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Dejamos centralizados los IDs y tokens de PayPhone para sandbox y live.
-        </p>
-
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <label className="space-y-2 text-sm md:col-span-2">
-            <span className="font-medium text-gray-700">Entorno activo de PayPhone</span>
-            <select
-              value={form.payphoneEnvironment}
-              onChange={(e) => updateField("payphoneEnvironment", e.target.value)}
-              className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:border-blue-500"
+          <div className="md:col-span-2 flex flex-wrap gap-3 pt-4">
+            <Button
+              type="button"
+              onClick={handleTestPaypal}
+              disabled={isSaving || isTestingPaypal}
+              className="bg-blue-600 text-white hover:bg-blue-700"
             >
-              <option value="sandbox">Sandbox</option>
-              <option value="live">Live</option>
-            </select>
-          </label>
-
-          <div className="md:col-span-2 pt-2">
-            <h3 className="text-sm font-semibold text-gray-800">Sandbox / Desarrollo</h3>
+              {isTestingPaypal ? "Probando PayPal..." : "Guardar y probar PayPal"}
+            </Button>
+            <p className="self-center text-xs text-gray-500">
+              Se valida el Client ID y Client Secret del entorno activo.
+            </p>
           </div>
-          <Field label="Store ID" value={form.payphoneSandboxStoreId} onChange={(value) => updateField("payphoneSandboxStoreId", value)} placeholder="Store ID de sandbox" />
-          <Field label="Token API" value={form.payphoneSandboxToken} onChange={(value) => updateField("payphoneSandboxToken", value)} placeholder="Token de sandbox" />
-          <Field label="Webhook Token" value={form.payphoneSandboxWebhookToken} onChange={(value) => updateField("payphoneSandboxWebhookToken", value)} placeholder="Webhook token de sandbox" />
-          <div className="hidden md:block" />
-
-          <div className="md:col-span-2 pt-4">
-            <h3 className="text-sm font-semibold text-gray-800">Produccion / Live</h3>
-          </div>
-          <Field label="Store ID" value={form.payphoneLiveStoreId} onChange={(value) => updateField("payphoneLiveStoreId", value)} placeholder="Store ID de produccion" />
-          <Field label="Token API" value={form.payphoneLiveToken} onChange={(value) => updateField("payphoneLiveToken", value)} placeholder="Token de produccion" />
-          <Field label="Webhook Token" value={form.payphoneLiveWebhookToken} onChange={(value) => updateField("payphoneLiveWebhookToken", value)} placeholder="Webhook token de produccion" />
         </div>
       </section>
 
@@ -373,7 +379,7 @@ export default function PaymentsPage() {
       <div className="flex justify-end">
         <Button
           onClick={handleSave}
-          disabled={isSaving}
+          disabled={isSaving || isTestingPaypal}
           className="bg-blue-600 text-white hover:bg-blue-700"
         >
           {isSaving ? "Guardando..." : "Guardar configuracion"}

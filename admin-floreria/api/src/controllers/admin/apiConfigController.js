@@ -89,6 +89,52 @@ function sanitizePaymentSettings(input) {
   };
 }
 
+function getActivePaypalCredentials(paymentSettings = {}) {
+  const environment = paymentSettings.paypalEnvironment === "live" ? "live" : "sandbox";
+  const prefix = environment === "live" ? "paypalLive" : "paypalSandbox";
+
+  return {
+    environment,
+    clientId: paymentSettings[`${prefix}ClientId`] || "",
+    clientSecret: paymentSettings[`${prefix}ClientSecret`] || "",
+    merchantId: paymentSettings[`${prefix}MerchantId`] || "",
+    webhookId: paymentSettings[`${prefix}WebhookId`] || "",
+  };
+}
+
+async function requestPaypalAccessToken({ environment, clientId, clientSecret }) {
+  const baseUrl = environment === "live"
+    ? "https://api-m.paypal.com"
+    : "https://api-m.sandbox.paypal.com";
+  const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+
+  const response = await fetch(`${baseUrl}/v1/oauth2/token`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${credentials}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: "grant_type=client_credentials",
+  });
+
+  const rawBody = await response.text();
+  let data = {};
+  try {
+    data = rawBody ? JSON.parse(rawBody) : {};
+  } catch {
+    data = { rawBody };
+  }
+
+  if (!response.ok || !data.access_token) {
+    const message = data.error_description || data.message || data.error || "PayPal no aceptó las credenciales.";
+    const error = new Error(message);
+    error.statusCode = response.status;
+    throw error;
+  }
+
+  return data;
+}
+
 /**
  * Generar nueva API Key para la empresa
  * POST /api/admin/company/api-key
@@ -492,6 +538,52 @@ const updatePaymentSettings = async (req, res) => {
   }
 };
 
+const testPaypalSettings = async (req, res) => {
+  try {
+    const company = await getCompanyForAdmin(req.user?.adminId);
+
+    if (!company) {
+      return res.status(404).json({
+        status: "error",
+        message: "Empresa no encontrada para este usuario.",
+      });
+    }
+
+    const currentSettings = company.settings && typeof company.settings === "object"
+      ? company.settings
+      : {};
+    const paymentSettings = currentSettings.paymentSettings || {};
+    const credentials = getActivePaypalCredentials(paymentSettings);
+
+    if (!credentials.clientId || !credentials.clientSecret) {
+      return res.status(400).json({
+        status: "error",
+        message: `Completa Client ID y Client Secret de PayPal (${credentials.environment}).`,
+      });
+    }
+
+    const tokenData = await requestPaypalAccessToken(credentials);
+
+    return res.json({
+      status: "success",
+      message: `Credenciales PayPal ${credentials.environment} válidas.`,
+      data: {
+        environment: credentials.environment,
+        merchantId: credentials.merchantId || null,
+        webhookId: credentials.webhookId || null,
+        tokenType: tokenData.token_type,
+        expiresIn: tokenData.expires_in,
+      },
+    });
+  } catch (error) {
+    console.error("Error testing PayPal settings:", error);
+    return res.status(error.statusCode || 500).json({
+      status: "error",
+      message: error.message || "No se pudieron validar las credenciales de PayPal.",
+    });
+  }
+};
+
 module.exports = {
   generateApiKey,
   generateWebhookSecret,
@@ -500,5 +592,5 @@ module.exports = {
   getApiLogs,
   getPaymentSettings,
   updatePaymentSettings,
+  testPaypalSettings,
 };
-
