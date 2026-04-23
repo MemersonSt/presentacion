@@ -102,9 +102,11 @@ app.use("/api/external/reviews", externalReviewsRoutes);
 const storeOrdersRoutes = require("./routes/external/store-orders");
 const abandonedOrdersRoutes = require("./routes/external/abandoned-orders");
 const payphoneRoutes = require("./routes/external/payphone");
+const paypalRoutes = require("./routes/external/paypal");
 app.use("/api/external/store-orders", storeOrdersRoutes);
 app.use("/api/external/store-orders/abandoned", abandonedOrdersRoutes);
 app.use("/api/external/payphone", payphoneRoutes);
+app.use("/api/external/paypal", paypalRoutes);
 
 // Rutas externas genéricas (viejas)
 const externalRoutes = require("./routes/external/index");

@@ -29,10 +29,11 @@ import {
 // import type { User } from "@/core/interfaces";
 import { useUserStore } from "@/store/use-user-store";
 import { toast } from "sonner";
+import { authService } from "@/core/api/auth-service";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
-  const { user } = useUserStore();
+  const { user, clearUser } = useUserStore();
 
   async function requestNotificationPermission() {
     if (!("Notification" in window)) {
@@ -45,6 +46,17 @@ export function NavUser() {
       toast.warning("No se activaron las notificaciones del sistema");
     } else {
       toast.success("Notificaciones del sistema activadas");
+    }
+  }
+
+  async function handleLogout() {
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      clearUser();
+      window.location.href = "/auth";
     }
   }
 
@@ -106,7 +118,7 @@ export function NavUser() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onSelect={handleLogout}>
               <IconLogout />
               Log out
             </DropdownMenuItem>

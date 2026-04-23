@@ -4,6 +4,10 @@ const juice = require("juice");
 const fs = require("fs").promises;
 const path = require("path");
 const { getDefaultFrom, getSmtpConfig } = require("../utils/smtpConfig");
+const EMAIL_LOGO_PATH = path.resolve(
+  __dirname,
+  "../../../client/public/difiori.png"
+);
 
 class EmailService {
   constructor() {
@@ -113,11 +117,10 @@ class EmailService {
         subject: `Factura de tu pedido NR.${orderData.orderNumber}`,
         html: htmlContent,
         attachments: [
-          // Opcional: adjuntar logo u otros archivos
           {
-            filename: "logo-perfumeriasz.jpg",
-            path: path.join(__dirname, "../assets/logo-perfumeriasz.jpg"),
-            cid: "logo", // Para usar en el HTML como <img src="cid:logo"/>
+            filename: "difiori.png",
+            path: EMAIL_LOGO_PATH,
+            cid: "logo",
           },
         ],
       };
@@ -181,11 +184,10 @@ class EmailService {
         subject: `Confirmación de pedido #${orderData.orderNumber}`,
         html: htmlContent,
         attachments: [
-          // Opcional: adjuntar logo u otros archivos
           {
-            filename: "logo-perfumeriasz.jpg",
-            path: path.join(__dirname, "../assets/logo-perfumeriasz.jpg"),
-            cid: "logo", // Para usar en el HTML como <img src="cid:logo"/>
+            filename: "difiori.png",
+            path: EMAIL_LOGO_PATH,
+            cid: "logo",
           },
         ],
       };

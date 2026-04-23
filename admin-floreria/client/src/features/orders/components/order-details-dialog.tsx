@@ -96,7 +96,9 @@ export function OrderDetailsDialog({
     (order.clientTransactionId ? "Payphone" : null);
   const hasNotes = order.description || order.notes;
   const showsPaymentProofActions =
-    paymentMethod === "Banco" || paymentMethod === "Zelle";
+    paymentMethod === "Banco" ||
+    paymentMethod === "Zelle" ||
+    paymentMethod === "PayPal";
   const paymentProofDirectUrl =
     order.paymentProofRawUrl ||
     storefrontDetails.paymentProofImageUrl ||

@@ -550,6 +550,44 @@ export default function Checkout() {
         return;
       }
 
+      if (paymentMethod === "PayPal") {
+        const response = await fetch("/api/external/paypal/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...orderPayload,
+            paymentMethod,
+            callbackUrl: `${window.location.origin}/payment-result?provider=paypal`,
+            cancellationUrl: `${window.location.origin}/payment-result?provider=paypal`,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || result.status !== "success") {
+          throw new Error(
+            result.message ||
+              "No se pudo iniciar el pago con PayPal. Intenta nuevamente."
+          );
+        }
+
+        const createdOrderNumber = result.data?.orderNumber || "DIFIORI-OK";
+        const approveUrl = String(result.data?.approveUrl || "").trim();
+
+        setOrderNumber(createdOrderNumber);
+
+        if (selectedProofFile) {
+          await uploadPaymentProofForOrder(createdOrderNumber, selectedProofFile);
+        }
+
+        if (!approveUrl) {
+          throw new Error("PayPal no devolvio una URL de aprobacion.");
+        }
+
+        window.location.assign(approveUrl);
+        return;
+      }
+
       const res = await fetch("/api/external/store-orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -563,7 +601,9 @@ export default function Checkout() {
         setOrderNumber(createdOrderNumber);
         setOrderStatus("success");
         if (
-          (paymentMethod === "Banco" || paymentMethod === "Zelle") &&
+          (paymentMethod === "Banco" ||
+            paymentMethod === "Zelle" ||
+            paymentMethod === "PayPal") &&
           selectedProofFile
         ) {
           await uploadPaymentProofForOrder(
@@ -1251,7 +1291,7 @@ export default function Checkout() {
                             Pago internacional o con tarjeta de crédito
                           </p>
                           <p className="mt-1 text-sm font-medium text-[#6B5487]">
-                            Registraremos tu pedido y el vendedor se pondrá en contacto contigo para completar el pago.
+                            Al confirmar te redirigiremos a PayPal para completar el pago de forma segura.
                           </p>
                         </div>
                       </div>
@@ -1269,7 +1309,9 @@ export default function Checkout() {
                         </div>
                       </div>
                     )}
-                    {(paymentMethod === "Banco" || paymentMethod === "Zelle") && (
+                    {(paymentMethod === "Banco" ||
+                      paymentMethod === "Zelle" ||
+                      paymentMethod === "PayPal") && (
                       <div className="mt-6 rounded-2xl border border-[#DCC5E8] bg-white p-4">
                         <p className="text-sm font-bold text-[#4A3362]">
                           Comprobante de pago

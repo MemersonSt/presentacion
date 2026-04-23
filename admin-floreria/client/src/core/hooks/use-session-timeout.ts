@@ -20,7 +20,7 @@ export function useSessionTimeout() {
     } finally {
       // Limpiar estado local
       clearUser();
-      window.location.href = '/auth/login';
+      window.location.href = '/auth';
     }
   }, [clearUser]);
 

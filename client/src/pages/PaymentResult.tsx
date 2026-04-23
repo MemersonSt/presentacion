@@ -18,10 +18,13 @@ export default function PaymentResult() {
     confirmed.current = true;
 
     const params = new URLSearchParams(window.location.search);
+    const provider = params.get("provider");
     const payphoneId = params.get("id");
+    const paypalOrderId = params.get("token");
+    const paypalStatus = params.get("paypalStatus");
     const clientTransactionId = params.get("clientTransactionId");
     const transactionStatus = params.get("transactionStatus");
-    const clearPaymentDraft = () => {
+    const clearPayphoneDraft = () => {
       localStorage.removeItem("pp_clientTxId");
       localStorage.removeItem("pp_box_payload");
       sessionStorage.removeItem("pp_web_token");
@@ -30,12 +33,7 @@ export default function PaymentResult() {
     // Si no hay clientTransactionId en la URL, buscar en localStorage (fallback)
     const finalClientTxId = clientTransactionId || localStorage.getItem("pp_clientTxId");
 
-    if (!finalClientTxId) {
-      setStatus("error");
-      return;
-    }
-
-    const finalizeOrder = async (payload: Record<string, unknown>) => {
+    const finalizePayphoneOrder = async (payload: Record<string, unknown>) => {
       const response = await fetch("/api/payphone-web/finalize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -44,9 +42,23 @@ export default function PaymentResult() {
       return response.json();
     };
 
+    const capturePaypalOrder = async () => {
+      const response = await fetch("/api/external/paypal/capture", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          paypalOrderId,
+          clientTransactionId: finalClientTxId,
+          cancelled: paypalStatus === "cancelled",
+        }),
+      });
+
+      return response.json();
+    };
+
     const confirmWebBoxInBrowser = async () => {
       if (!payphoneId || transactionStatus === "CANCELLED") {
-        return finalizeOrder({
+        return finalizePayphoneOrder({
           id: payphoneId,
           clientTransactionId: finalClientTxId,
           transactionStatus: "CANCELLED",
@@ -76,7 +88,7 @@ export default function PaymentResult() {
       }
 
       const confirmData = JSON.parse(rawBody);
-      return finalizeOrder({
+      return finalizePayphoneOrder({
         id: payphoneId,
         clientTransactionId: finalClientTxId,
         transactionStatus: confirmData.transactionStatus,
@@ -87,7 +99,16 @@ export default function PaymentResult() {
 
     const confirmOrder = async () => {
       try {
-        const data = await confirmWebBoxInBrowser();
+        if (!finalClientTxId) {
+          setStatus("error");
+          return;
+        }
+
+        const isPaypalFlow =
+          provider === "paypal" || Boolean(paypalOrderId) || paypalStatus === "cancelled";
+        const data = isPaypalFlow
+          ? await capturePaypalOrder()
+          : await confirmWebBoxInBrowser();
 
         if (data.status !== "success") {
           setStatus("error");
@@ -100,13 +121,13 @@ export default function PaymentResult() {
         if (ps === "PAID") {
           setStatus("success");
           clearCart();
-          clearPaymentDraft();
+          if (!isPaypalFlow) clearPayphoneDraft();
         } else if (ps === "CANCELLED") {
           setStatus("cancelled");
-          clearPaymentDraft();
+          if (!isPaypalFlow) clearPayphoneDraft();
         } else {
           setStatus("failed");
-          clearPaymentDraft();
+          if (!isPaypalFlow) clearPayphoneDraft();
         }
       } catch {
         setStatus("error");
