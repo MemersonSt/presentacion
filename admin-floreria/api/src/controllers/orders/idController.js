@@ -3,6 +3,9 @@ const { db: prisma } = require("../../lib/prisma");
 const { orderEvents } = require("../../events/orderEvents");
 const minioClient = require("../../lib/s3Config");
 
+const PROOFS_BUCKET_NAME = "difiori";
+const PROOFS_PUBLIC_BASE_URL = "http://66.94.98.69:9000";
+
 const orderSelect = {
   id: true,
   orderNumber: true,
@@ -147,6 +150,53 @@ function parseMinioObjectFromUrl(fileUrl) {
   }
 }
 
+function buildMinioPublicUrl(objectName) {
+  const objectPath = String(objectName || "")
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+
+  return `${PROOFS_PUBLIC_BASE_URL}/${PROOFS_BUCKET_NAME}/${objectPath}`;
+}
+
+function findLatestPaymentProofInMinio(orderNumber) {
+  return new Promise((resolve) => {
+    if (!orderNumber) {
+      resolve(null);
+      return;
+    }
+
+    const prefix = `payment-proofs/${orderNumber}-`;
+    const objectsStream = minioClient.listObjectsV2(
+      PROOFS_BUCKET_NAME,
+      prefix,
+      true
+    );
+    let latestObject = null;
+
+    objectsStream.on("data", (object) => {
+      if (!object?.name) return;
+
+      if (
+        !latestObject ||
+        new Date(object.lastModified || 0) >
+          new Date(latestObject.lastModified || 0)
+      ) {
+        latestObject = object;
+      }
+    });
+
+    objectsStream.on("error", (error) => {
+      console.error("Payment proof MinIO lookup error:", error);
+      resolve(null);
+    });
+
+    objectsStream.on("end", () => {
+      resolve(latestObject ? buildMinioPublicUrl(latestObject.name) : null);
+    });
+  });
+}
+
 async function getExistingPaymentProofColumns() {
   if (cachedPaymentProofColumns) return cachedPaymentProofColumns;
 
@@ -245,8 +295,9 @@ function serializeOrder(order, paymentProofFields = {}) {
     ...order,
     description: null,
     notes: null,
-    paymentProofImageUrl: getPaymentProofProxyUrl(order.id, rawPaymentProofImageUrl),
+    paymentProofImageUrl: rawPaymentProofImageUrl,
     paymentProofRawUrl: rawPaymentProofImageUrl,
+    paymentProofProxyUrl: getPaymentProofProxyUrl(order.id, rawPaymentProofImageUrl),
     paymentProofFileName: rawPaymentProofFileName,
     paymentProofStatus: paymentProofFields.paymentProofStatus || null,
     paymentProofUploadedAt: paymentProofFields.paymentProofUploadedAt || null,
@@ -347,11 +398,23 @@ exports.getOrderById = async (req, res) => {
     }
 
     const paymentProofFields = await getPaymentProofFields(order.id);
+    const fallbackProofData = extractPaymentProofFromNotes(order.orderNotes);
+    const minioProofUrl =
+      paymentProofFields.paymentProofImageUrl ||
+      fallbackProofData.paymentProofImageUrl
+        ? null
+        : await findLatestPaymentProofInMinio(order.orderNumber);
 
     return res.status(200).json({
       status: "success",
       message: "Orden obtenida",
-      data: serializeOrder(order, paymentProofFields),
+      data: serializeOrder(order, {
+        ...paymentProofFields,
+        paymentProofImageUrl:
+          paymentProofFields.paymentProofImageUrl ||
+          fallbackProofData.paymentProofImageUrl ||
+          minioProofUrl,
+      }),
     });
   } catch (error) {
     console.error("Get order by id error:", error);

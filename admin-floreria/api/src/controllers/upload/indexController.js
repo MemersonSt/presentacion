@@ -1,15 +1,5 @@
 const fs = require("fs");
-const minioClient = require("../../lib/s3Config");
-
-const BUCKET_NAME = "difiori";
-const PUBLIC_BASE_URL = "http://66.94.98.69:9000";
-
-async function ensureBucketExists() {
-  const exists = await minioClient.bucketExists(BUCKET_NAME);
-  if (!exists) {
-    await minioClient.makeBucket(BUCKET_NAME, "us-east-1");
-  }
-}
+const { uploadBuffer } = require("../../services/storageService");
 
 function sanitizeFileName(originalName = "") {
   return originalName
@@ -49,37 +39,24 @@ exports.uploadFile = async (req, res) => {
       });
     }
 
-    await ensureBucketExists();
-
     const folderName = isVideo ? "videos" : "images";
     const safeName = sanitizeFileName(file.originalname || "archivo");
     const objectName = `${folderName}/${Date.now()}-${safeName}`;
 
-    await minioClient.putObject(
-      BUCKET_NAME,
+    const uploadedFile = await uploadBuffer({
       objectName,
-      file.buffer,
-      file.size,
-      {
-        "Content-Type": file.mimetype,
-      }
-    );
-
-    const objectPath = objectName
-      .split("/")
-      .map((segment) => encodeURIComponent(segment))
-      .join("/");
-
-    const fileUrl = `${PUBLIC_BASE_URL}/${BUCKET_NAME}/${objectPath}`;
+      buffer: file.buffer,
+      contentType: file.mimetype,
+    });
 
     return res.status(200).json({
       status: "success",
-      url: fileUrl,
-      public_id: objectName,
+      url: uploadedFile.url,
+      public_id: uploadedFile.objectName,
       resource_type: isVideo ? "video" : "image",
       message: isVideo
-        ? "Video subido exitosamente a MinIO"
-        : "Imagen subida exitosamente a MinIO",
+        ? "Video subido exitosamente"
+        : "Imagen subida exitosamente",
     });
   } catch (error) {
     console.error("Error uploading file:", error);

@@ -2,13 +2,11 @@ const express = require("express");
 const crypto = require("crypto");
 const { Prisma } = require("@prisma/client");
 const { db: prisma } = require("../../lib/prisma");
-const minioClient = require("../../lib/s3Config");
 const emailService = require("../../services/emailService");
 const { buildStorefrontOrderDetails } = require("../../utils/storefrontOrderDetails");
+const { uploadBuffer } = require("../../services/storageService");
 
 const router = express.Router();
-const PROOFS_BUCKET_NAME = "difiori";
-const PROOFS_PUBLIC_BASE_URL = "http://66.94.98.69:9000";
 
 function parseMoney(value) {
   const normalized = String(value ?? "")
@@ -19,13 +17,6 @@ function parseMoney(value) {
   return Number.isFinite(amount) ? amount : 0;
 }
 
-async function ensureProofsBucketExists() {
-  const exists = await minioClient.bucketExists(PROOFS_BUCKET_NAME);
-  if (!exists) {
-    await minioClient.makeBucket(PROOFS_BUCKET_NAME, "us-east-1");
-  }
-}
-
 function sanitizeFileName(originalName = "") {
   return String(originalName || "")
     .normalize("NFD")
@@ -34,6 +25,26 @@ function sanitizeFileName(originalName = "") {
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
     .toLowerCase();
+}
+
+async function savePaymentProofInOrderNotes(orderId, proofUrl, fileName) {
+  const existingOrder = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: { orderNotes: true },
+  });
+
+  const currentNotes = String(existingOrder?.orderNotes || "");
+  const cleanedNotes = currentNotes
+    .replace(/\s*\|\s*Comprobante URL:[^|]*/gi, "")
+    .replace(/\s*\|\s*Comprobante Archivo:[^|]*/gi, "")
+    .trim();
+  const fallbackNotes =
+    `${cleanedNotes} | Comprobante URL: ${proofUrl} | Comprobante Archivo: ${String(fileName || "comprobante")}`.trim();
+
+  await prisma.order.update({
+    where: { id: orderId },
+    data: { orderNotes: fallbackNotes },
+  });
 }
 
 function getExtensionFromMime(mimeType = "") {
@@ -378,22 +389,18 @@ router.post("/:orderNumber/payment-proof", async (req, res) => {
         : getExtensionFromMime(mimeType);
     const objectName = `payment-proofs/${order.orderNumber}-${Date.now()}-${safeOriginalName || "comprobante"}${extension}`;
 
-    await ensureProofsBucketExists();
-    await minioClient.putObject(
-      PROOFS_BUCKET_NAME,
+    const uploadedProof = await uploadBuffer({
       objectName,
       buffer,
-      buffer.length,
-      {
-        "Content-Type": mimeType,
-      }
-    );
+      contentType: mimeType,
+    });
+    const proofUrl = uploadedProof.url;
 
-    const objectPath = objectName
-      .split("/")
-      .map((segment) => encodeURIComponent(segment))
-      .join("/");
-    const proofUrl = `${PROOFS_PUBLIC_BASE_URL}/${PROOFS_BUCKET_NAME}/${objectPath}`;
+    try {
+      await savePaymentProofInOrderNotes(order.id, proofUrl, fileName);
+    } catch (notesError) {
+      console.error("Payment proof orderNotes save warning:", notesError);
+    }
 
     // Compatibilidad: si la base no tiene columnas de comprobante, no rompemos la subida.
     let updatedOrder;
@@ -417,27 +424,6 @@ router.post("/:orderNumber/payment-proof", async (req, res) => {
       });
     } catch (updateError) {
       console.error("Payment proof DB compatibility warning:", updateError);
-
-      try {
-        const existingOrder = await prisma.order.findUnique({
-          where: { id: order.id },
-          select: { orderNotes: true },
-        });
-
-        const currentNotes = String(existingOrder?.orderNotes || "");
-        const cleanedNotes = currentNotes
-          .replace(/\s*\|\s*Comprobante URL:[^|]*/gi, "")
-          .replace(/\s*\|\s*Comprobante Archivo:[^|]*/gi, "")
-          .trim();
-        const fallbackNotes = `${cleanedNotes} | Comprobante URL: ${proofUrl} | Comprobante Archivo: ${String(fileName || "comprobante")}`.trim();
-
-        await prisma.order.update({
-          where: { id: order.id },
-          data: { orderNotes: fallbackNotes },
-        });
-      } catch (notesError) {
-        console.error("Payment proof orderNotes fallback warning:", notesError);
-      }
 
       updatedOrder = {
         id: order.id,

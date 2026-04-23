@@ -34,7 +34,6 @@ import {
 import type { Order } from "../types";
 import { LocalDate } from "@/core/utils/date";
 import { getImageUrl } from "@/core/utils/variables";
-import ecommerceService from "@/core/api/ecommerce-service";
 
 interface OrderDetailsDialogProps {
   order: Order | null;
@@ -108,7 +107,6 @@ export function OrderDetailsDialog({
   statusOptions,
 }: OrderDetailsDialogProps) {
   const [proofDialogOpen, setProofDialogOpen] = useState(false);
-  const [paymentProofPreviewUrl, setPaymentProofPreviewUrl] = useState("");
   const initialPaymentProofStatus =
     order?.paymentProofStatus === "VERIFIED" ? "VERIFIED" : "PENDING";
   const [paymentProofStatusValue, setPaymentProofStatusValue] = useState(
@@ -118,54 +116,6 @@ export function OrderDetailsDialog({
   useEffect(() => {
     setPaymentProofStatusValue(initialPaymentProofStatus);
   }, [initialPaymentProofStatus, order?.id]);
-
-  useEffect(() => {
-    let objectUrlToRevoke = "";
-
-    const loadPaymentProofPreview = async () => {
-      if (!order?.id) {
-        setPaymentProofPreviewUrl("");
-        return;
-      }
-
-      const proofUrl =
-        order.paymentProofImageUrl ||
-        parseStorefrontOrderNotes(order.orderNotes).paymentProofImageUrl ||
-        "";
-
-      if (!proofUrl) {
-        setPaymentProofPreviewUrl("");
-        return;
-      }
-
-      if (/^https?:\/\//i.test(proofUrl) || proofUrl.startsWith("data:image/")) {
-        setPaymentProofPreviewUrl(getImageUrl(proofUrl));
-        return;
-      }
-
-      try {
-        const requestUrl = proofUrl.startsWith("/api/")
-          ? proofUrl.replace(/^\/api/, "")
-          : proofUrl;
-        const blobResponse = await ecommerceService.get(requestUrl, {
-          responseType: "blob",
-        });
-        objectUrlToRevoke = URL.createObjectURL(blobResponse.data);
-        setPaymentProofPreviewUrl(objectUrlToRevoke);
-      } catch (error) {
-        console.error("Payment proof preview error:", error);
-        setPaymentProofPreviewUrl("");
-      }
-    };
-
-    loadPaymentProofPreview();
-
-    return () => {
-      if (objectUrlToRevoke) {
-        URL.revokeObjectURL(objectUrlToRevoke);
-      }
-    };
-  }, [order?.id, order?.orderNotes, order?.paymentProofImageUrl]);
 
   if (!order) return null;
 
@@ -192,14 +142,20 @@ export function OrderDetailsDialog({
   const hasNotes = order.description || order.notes;
   const showsPaymentProofActions =
     paymentMethod === "Banco" || paymentMethod === "Zelle";
+  const paymentProofDirectUrl =
+    order.paymentProofRawUrl ||
+    storefrontDetails.paymentProofImageUrl ||
+    (/^https?:\/\//i.test(order.paymentProofImageUrl || "")
+      ? order.paymentProofImageUrl
+      : "") ||
+    "";
   const paymentProofImageUrl =
-    order.paymentProofImageUrl || storefrontDetails.paymentProofImageUrl || "";
+    paymentProofDirectUrl || order.paymentProofImageUrl || "";
   const paymentProofFileName =
     order.paymentProofFileName || storefrontDetails.paymentProofFileName || "";
   const hasPaymentProof = Boolean(paymentProofImageUrl);
   const resolvedPaymentProofPreviewUrl =
-    paymentProofPreviewUrl ||
-    (paymentProofImageUrl ? getImageUrl(paymentProofImageUrl) : "");
+    paymentProofImageUrl ? getImageUrl(paymentProofImageUrl) : "";
 
   return (
     <>

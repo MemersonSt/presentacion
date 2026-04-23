@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import type { Order } from "../types";
 import { Button } from "@/shared/components/ui/button";
 import Loading from "@/shared/components/loading";
 import useOrder from "../hooks/use-order";

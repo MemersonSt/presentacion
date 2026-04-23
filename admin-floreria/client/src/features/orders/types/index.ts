@@ -75,6 +75,8 @@ export interface Order {
   payPhoneTransactionId?: string | null;
   payPhoneAuthCode?: string | null;
   paymentProofImageUrl?: string | null;
+  paymentProofRawUrl?: string | null;
+  paymentProofProxyUrl?: string | null;
   paymentProofFileName?: string | null;
   paymentProofStatus?: string | null;
   paymentProofUploadedAt?: string | null;
