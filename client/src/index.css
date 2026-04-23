@@ -73,6 +73,85 @@
   @apply bg-white/40 backdrop-blur-xl border border-white/40 shadow-xl;
 }
 
+@layer components {
+  .page-shell {
+    @apply min-h-screen bg-background px-6 pb-24 pt-36 md:px-10 lg:px-20;
+  }
+
+  .page-container {
+    @apply mx-auto w-full max-w-7xl;
+  }
+
+  .page-header {
+    @apply mb-14 max-w-3xl;
+  }
+
+  .page-kicker {
+    @apply mb-4 flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.32em] text-accent;
+  }
+
+  .page-kicker::before {
+    content: "";
+    @apply h-px w-10 bg-accent/30;
+  }
+
+  .page-title {
+    @apply font-serif text-5xl font-semibold italic leading-[0.98] text-foreground md:text-7xl;
+  }
+
+  .page-copy {
+    @apply mt-5 max-w-2xl text-base leading-relaxed text-foreground/62 md:text-lg;
+  }
+
+  .section-title {
+    @apply font-serif text-4xl font-semibold italic leading-tight text-foreground md:text-6xl;
+  }
+
+  .section-copy {
+    @apply mt-3 text-lg leading-relaxed text-foreground/62;
+  }
+
+  .surface-card {
+    @apply rounded-2xl border border-primary/15 bg-white shadow-[0_18px_50px_rgba(74,51,98,0.08)];
+  }
+
+  .product-grid {
+    @apply grid grid-cols-1 gap-7 sm:grid-cols-2 xl:grid-cols-3;
+  }
+
+  .product-skeleton {
+    @apply h-[28rem] animate-pulse rounded-2xl border border-primary/10 bg-white/60 shadow-sm;
+  }
+
+  .empty-state {
+    @apply rounded-2xl border border-dashed border-primary/25 bg-white/70 px-6 py-16 text-center shadow-sm;
+  }
+
+  .empty-state-title {
+    @apply font-serif text-2xl italic text-foreground/70;
+  }
+
+  .ui-btn-primary {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-accent px-7 py-4 text-xs font-black uppercase tracking-[0.22em] text-white shadow-lg shadow-accent/20 transition-all hover:bg-foreground active:scale-95 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .ui-btn-secondary {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-accent/25 bg-white px-7 py-4 text-xs font-black uppercase tracking-[0.22em] text-accent shadow-sm transition-all hover:border-accent hover:bg-accent hover:text-white active:scale-95 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .icon-button {
+    @apply inline-flex h-11 w-11 items-center justify-center rounded-full border border-primary/15 bg-white/80 text-accent shadow-sm backdrop-blur transition-all hover:border-accent/35 hover:bg-accent hover:text-white active:scale-95;
+  }
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .checkout-shell {
   position: relative;
   overflow: hidden;

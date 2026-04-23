@@ -74,7 +74,7 @@ export default function CategoryPage() {
     : undefined;
 
   return (
-    <div className="min-h-screen pt-36 px-6 md:px-20 max-w-7xl mx-auto">
+    <div className="page-shell">
       <Seo
         title={
           categoryName
@@ -86,82 +86,78 @@ export default function CategoryPage() {
         robots={categoryName ? "index, follow" : "noindex, nofollow"}
         schema={schema}
       />
+      <div className="page-container">
 
-      <Breadcrumb className="mb-10">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <Link href="/" className="transition-colors hover:text-foreground">
-              Inicio
-            </Link>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <Link href="/shop" className="transition-colors hover:text-foreground">
-              Catálogo
-            </Link>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{categoryLabel || "Categoría"}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+        <Breadcrumb className="mb-10">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <Link href="/" className="transition-colors hover:text-foreground">
+                Inicio
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <Link href="/shop" className="transition-colors hover:text-foreground">
+                Catálogo
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{categoryLabel || "Categoría"}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
-      {categoryName ? (
-        <>
-          <div className="mb-16 max-w-3xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-[1px] bg-accent/30"></div>
-              <span className="text-accent font-black uppercase tracking-[0.4em] text-[10px]">Colección DIFIORI</span>
+        {categoryName ? (
+          <>
+            <div className="page-header">
+              <div className="page-kicker">Colección DIFIORI</div>
+              <h1 className="page-title">{categoryLabel}</h1>
+              <p className="page-copy">{description}</p>
             </div>
-            <h1 className="text-5xl md:text-7xl font-serif text-foreground mb-4 italic">{categoryLabel}</h1>
-            <p className="text-foreground/60 text-lg md:text-xl leading-relaxed max-w-2xl">{description}</p>
-          </div>
 
-          <div className="flex flex-col lg:flex-row gap-16">
-            <aside className="lg:w-72 shrink-0">
-              <CategorySidebar variant="link" activeCategory={categoryName} />
-            </aside>
+            <div className="flex flex-col gap-12 lg:flex-row lg:gap-14">
+              <aside className="shrink-0 lg:w-72">
+                <CategorySidebar variant="link" activeCategory={categoryName} />
+              </aside>
 
-            <section className="flex-1">
-              {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                  {Array(6)
-                    .fill(0)
-                    .map((_, index) => (
-                      <div key={index} className="h-80 bg-primary/5 animate-pulse rounded-[3rem]" />
+              <section className="flex-1">
+                {loading ? (
+                  <div className="product-grid">
+                    {Array(6)
+                      .fill(0)
+                      .map((_, index) => (
+                        <div key={index} className="product-skeleton" />
+                      ))}
+                  </div>
+                ) : products.length > 0 ? (
+                  <div className="product-grid">
+                    {products.map((product) => (
+                      <ProductCard key={product.id} product={product} />
                     ))}
-                </div>
-              ) : products.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                  {products.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              ) : (
-                <div className="py-20 text-center bg-primary/5 rounded-[3rem] border border-primary/10">
-                  <p className="text-foreground/50 font-serif italic text-2xl">
-                    No encontramos productos disponibles en esta categoría.
-                  </p>
-                </div>
-              )}
-            </section>
+                  </div>
+                ) : (
+                  <div className="empty-state">
+                    <p className="empty-state-title">
+                      No encontramos productos disponibles en esta categoría.
+                    </p>
+                  </div>
+                )}
+              </section>
+            </div>
+          </>
+        ) : (
+          <div className="empty-state mx-auto max-w-2xl">
+            <h1 className="section-title">Categoría no encontrada</h1>
+            <p className="section-copy mb-8">
+              La categoría solicitada no existe o fue retirada del catálogo público.
+            </p>
+            <Link href="/shop" className="ui-btn-primary">
+              Volver al catálogo
+            </Link>
           </div>
-        </>
-      ) : (
-        <div className="py-20 text-center bg-primary/5 rounded-[3rem] border border-primary/10">
-          <h1 className="text-4xl font-serif text-foreground mb-4">Categoría no encontrada</h1>
-          <p className="text-foreground/60 mb-8">
-            La categoría solicitada no existe o fue retirada del catálogo público.
-          </p>
-          <Link
-            href="/shop"
-            className="inline-flex items-center justify-center bg-accent text-white px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest"
-          >
-            Volver al catálogo
-          </Link>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

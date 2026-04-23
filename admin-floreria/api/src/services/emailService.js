@@ -3,6 +3,7 @@ const handlebars = require("handlebars");
 const juice = require("juice");
 const fs = require("fs").promises;
 const path = require("path");
+const { getDefaultFrom, getSmtpConfig } = require("../utils/smtpConfig");
 
 class EmailService {
   constructor() {
@@ -11,16 +12,7 @@ class EmailService {
   }
 
   initializeTransporter() {
-    // Usar la configuración existente del .env
-    this.transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST || "smtp.gmail.com",
-      port: process.env.EMAIL_PORT || 587,
-      secure: false, // true para 465, false para otros puertos
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    this.transporter = nodemailer.createTransport(getSmtpConfig());
 
     // Verificar la conexión al inicializar (sin bloquear y de forma silenciosa)
     this.verifyConnection().catch(() => {
@@ -116,10 +108,7 @@ class EmailService {
       // Configurar el email
       const mailOptions = {
         from:
-          process.env.EMAIL_FROM ||
-          `"${process.env.COMPANY_NAME || "Mi Panadería"}" <${
-            process.env.EMAIL_USER
-          }>`,
+          getDefaultFrom(),
         to: orderData.customerEmail,
         subject: `Factura de tu pedido NR.${orderData.orderNumber}`,
         html: htmlContent,
@@ -187,10 +176,7 @@ class EmailService {
 
       const mailOptions = {
         from:
-          process.env.EMAIL_FROM ||
-          `"${process.env.COMPANY_NAME || "Mi Panadería"}" <${
-            process.env.EMAIL_USER
-          }>`,
+          getDefaultFrom(),
         to: orderData.customerEmail,
         subject: `Confirmación de pedido #${orderData.orderNumber}`,
         html: htmlContent,
@@ -249,10 +235,7 @@ class EmailService {
       // Configurar el email
       const mailOptions = {
         from:
-          process.env.EMAIL_FROM ||
-          `"${process.env.COMPANY_NAME || "Mi Panadería"}" <${
-            process.env.EMAIL_USER
-          }>`,
+          getDefaultFrom(),
         to: customerEmail,
         subject: `Código de descuento`,
         html: htmlContent,

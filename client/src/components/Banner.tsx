@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Loader2 } from "lucide-react";
+import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import { useCMS } from "@/hooks/useCMS";
+import { DEFAULT_COMPANY } from "@/lib/site";
 
 const DEFAULT_SLIDES = [
   {
@@ -10,12 +12,14 @@ const DEFAULT_SLIDES = [
     title: "Regalos que trascienden",
     subtitle: "Historias reales de alegría en Guayaquil",
     cta: "Ver testimonios",
+    href: "/#testimonios",
   },
   {
     image: "https://images.unsplash.com/photo-1508784411316-02b8cd4d3a3a?q=80&w=2000&auto=format&fit=crop",
     title: "Hoy haces su día especial",
     subtitle: "Entrega en Guayaquil en horas",
     cta: "Comprar ahora",
+    href: "/shop",
   }
 ];
 
@@ -35,7 +39,8 @@ export function Banner() {
       image: img,
       title: cms.title || "DIFIORI",
       subtitle: cms.description || "Diseñando emociones",
-      cta: "Comprar ahora"
+      cta: "Comprar ahora",
+      href: "/shop",
     }));
   }, [cms]);
 
@@ -157,7 +162,7 @@ export function Banner() {
              </AnimatePresence>
 
             <div className="flex flex-col sm:flex-row gap-6 items-center">
-              <button className="group relative overflow-hidden bg-white/5 backdrop-blur-sm border border-white/30 text-white px-12 py-5 rounded-none font-bold text-xs uppercase tracking-[0.3em] transition-all hover:border-white shadow-2xl flex items-center gap-4 justify-center min-w-[240px]">
+              <Link href={slides[selectedIndex].href} className="group relative flex min-w-[240px] items-center justify-center gap-4 overflow-hidden border border-white/30 bg-white/5 px-12 py-5 text-xs font-bold uppercase tracking-[0.3em] text-white shadow-2xl backdrop-blur-sm transition-all hover:border-white">
                 <div className="absolute inset-0 bg-white translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]" />
                 <AnimatePresence mode="wait">
                   <motion.span
@@ -169,12 +174,13 @@ export function Banner() {
                     className="relative z-10 flex items-center gap-4 group-hover:text-black transition-colors duration-500"
                   >
                     {slides[selectedIndex].cta}
+                    <ArrowRight className="h-4 w-4" />
                   </motion.span>
                 </AnimatePresence>
-              </button>
+              </Link>
               
               <a 
-                href="https://wa.me/5930997984583" 
+                href={`https://wa.me/${DEFAULT_COMPANY.phoneDigits}`}
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="group flex items-center gap-4 text-white hover:text-white/70 transition-colors uppercase font-bold text-[10px] tracking-[0.4em]"
@@ -190,6 +196,8 @@ export function Banner() {
              {slides.map((_, i) => (
                <button
                  key={i}
+                 type="button"
+                 aria-label={`Ver banner ${i + 1}`}
                  onClick={() => setSelectedIndex(i)}
                  className={cn(
                    "h-[1px] transition-all duration-1000", 

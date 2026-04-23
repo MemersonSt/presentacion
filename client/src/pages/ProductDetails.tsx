@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Link, useLocation, useRoute } from "wouter";
-import { MessageSquare, Truck, ShieldCheck, Clock, Heart } from "lucide-react";
+import { MessageSquare, Truck, ShieldCheck, Clock, ShoppingBag } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useProducts } from "@/hooks/useProducts";
+import { useCart } from "@/context/CartContext";
 import { Seo } from "@/components/Seo";
 import { DEFAULT_COMPANY, absoluteUrl } from "@/lib/site";
 import {
@@ -26,6 +27,7 @@ export default function ProductDetails() {
   const [legacyMatch, legacyParams] = useRoute("/product/:id");
   const [, setLocation] = useLocation();
   const { data: allProducts = [], isLoading } = useProducts();
+  const { buyNow } = useCart();
 
   const routeValue = canonicalMatch ? canonicalParams?.slug || "" : legacyParams?.id || "";
   const routePath = canonicalMatch ? `/producto/${routeValue}` : `/product/${routeValue}`;
@@ -50,6 +52,12 @@ export default function ProductDetails() {
     }
   }, [product, routePath, setLocation]);
 
+  const handleBuyNow = () => {
+    if (!product) return;
+    buyNow(product);
+    setLocation("/checkout");
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -66,14 +74,20 @@ export default function ProductDetails() {
 
   if (!product) {
     return (
-      <div className="pt-40 text-center text-foreground font-serif text-2xl">
+      <div className="page-shell">
         <Seo
           title="Producto no encontrado | DIFIORI"
           description="La ficha del producto solicitado no está disponible."
           path={routePath}
           robots="noindex, nofollow"
         />
-        Producto no encontrado
+        <div className="empty-state mx-auto max-w-2xl">
+          <h1 className="section-title">Producto no encontrado</h1>
+          <p className="section-copy mb-8">La ficha solicitada no está disponible en el catálogo público.</p>
+          <Link href="/shop" className="ui-btn-primary">
+            Volver al catálogo
+          </Link>
+        </div>
       </div>
     );
   }
@@ -132,7 +146,7 @@ export default function ProductDetails() {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-40 pb-20 px-6">
+    <div className="page-shell">
       <Seo
         title={`${product.name} | Arreglos Florales en Guayaquil | DIFIORI`}
         description={product.description}
@@ -141,7 +155,7 @@ export default function ProductDetails() {
         type="product"
         schema={productSchema}
       />
-      <div className="container mx-auto">
+      <div className="page-container">
         <Breadcrumb className="mb-10">
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -168,12 +182,12 @@ export default function ProductDetails() {
           </BreadcrumbList>
         </Breadcrumb>
 
-        <div className="grid lg:grid-cols-2 gap-16 items-start">
+        <div className="grid items-start gap-14 lg:grid-cols-2 lg:gap-16">
           <div className="space-y-8 flex flex-col items-center lg:items-start">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="relative aspect-[4/5] w-full max-w-xl rounded-[3rem] overflow-hidden border border-primary/20 shadow-2xl group bg-white"
+              className="surface-card relative aspect-[4/5] w-full max-w-xl overflow-hidden group"
             >
               <img
                 src={selectedImage}
@@ -183,19 +197,18 @@ export default function ProductDetails() {
                 decoding="async"
                 fetchPriority="high"
               />
-              <button className="absolute top-8 right-8 p-4 bg-white/80 backdrop-blur-md rounded-full text-accent shadow-xl border border-primary/10 hover:scale-110 transition-transform">
-                <Heart className="w-6 h-6" />
-              </button>
             </motion.div>
 
             <div className="flex gap-4 justify-center lg:justify-start w-full max-w-xl overflow-x-auto pb-4 no-scrollbar">
               {[product.image, ...(product.additionalImages || [])].map((img, i) => (
                 <button
                   key={i}
+                  type="button"
+                  aria-label={`Ver imagen ${i + 1} de ${product.name}`}
                   onMouseEnter={() => setSelectedImage(img)}
                   onClick={() => setSelectedImage(img)}
                   className={cn(
-                    "w-24 h-24 min-w-[6rem] rounded-2xl overflow-hidden border-2 transition-all transition-transform hover:scale-105",
+                    "h-24 w-24 min-w-[6rem] overflow-hidden rounded-2xl border-2 transition-all hover:scale-105",
                     selectedImage === img ? "border-accent shadow-lg" : "border-primary/10",
                   )}
                 >
@@ -213,12 +226,9 @@ export default function ProductDetails() {
           </div>
 
           <div className="flex flex-col h-full">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-[1px] bg-accent/30"></div>
-              <span className="text-accent font-semibold tracking-[0.16em] text-sm">{categoryLabel}</span>
-            </div>
+            <div className="page-kicker">{categoryLabel}</div>
 
-            <h1 className="text-5xl md:text-7xl font-serif font-bold text-foreground mb-8 leading-tight italic">
+            <h1 className="page-title mb-8">
               {product.name}
             </h1>
 
@@ -253,16 +263,17 @@ export default function ProductDetails() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-6 mt-auto">
-              <button className="flex-1 bg-accent hover:bg-accent/90 text-white py-6 rounded-3xl font-black text-xs uppercase tracking-[0.3em] transition-all shadow-2xl active:scale-95 flex items-center justify-center gap-3">
+              <button onClick={handleBuyNow} className="ui-btn-primary flex-1 py-5">
+                <ShoppingBag className="h-5 w-5" />
                 Comprar ahora
               </button>
               <a
                 href={`https://wa.me/${DEFAULT_COMPANY.phoneDigits}?text=Hola!%20Deseo%20ordenar%20el%20arreglo:%20${encodeURIComponent(product.name)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 bg-white border-2 border-accent/40 text-accent hover:bg-accent hover:text-white py-6 rounded-3xl font-black text-xs uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3 shadow-xl"
+                className="ui-btn-secondary flex-1 py-5"
               >
-                <MessageSquare className="w-6 h-6" /> Pedir por WhatsApp
+                <MessageSquare className="h-5 w-5" /> Pedir por WhatsApp
               </a>
             </div>
 

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "wouter";
 import { useCategories } from "@/hooks/useCategories";
 import { cn } from "@/lib/utils";
-import { ChevronDown, Filter, Sparkles, Loader2 } from "lucide-react";
+import { ChevronDown, Filter, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   BEST_SELLERS_CATEGORY_NAME,
@@ -114,8 +114,8 @@ export function CategorySidebar({
         </AnimatePresence>
       </div>
 
-      <div className="hidden lg:flex flex-col gap-4 p-8 bg-white border border-primary/20 rounded-[3rem] shadow-xl sticky top-32">
-        <h3 className="text-foreground font-serif font-bold text-[2rem] mb-8 px-2 flex items-center gap-3">
+      <div className="surface-card sticky top-32 hidden flex-col gap-4 p-6 lg:flex">
+        <h3 className="mb-6 flex items-center gap-3 px-2 font-serif text-3xl font-bold text-foreground">
           Colecciones
         </h3>
         <div className="flex flex-col gap-3">
@@ -124,7 +124,7 @@ export function CategorySidebar({
               <button
                 key={option.label}
                 className={cn(
-                  "w-full text-left px-5 py-4 rounded-2xl transition-all duration-300 font-semibold text-[1.02rem] leading-snug flex items-center justify-between gap-4 group relative overflow-hidden",
+                  "group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-xl px-5 py-4 text-left text-[1.02rem] font-semibold leading-snug transition-all duration-300",
                   activeCategory === option.value
                     ? "bg-primary/20 text-accent shadow-sm"
                     : "text-foreground/72 hover:bg-primary/10 hover:text-foreground border border-transparent",
@@ -144,7 +144,7 @@ export function CategorySidebar({
                 key={option.label}
                 href={option.href}
                 className={cn(
-                  "w-full text-left px-5 py-4 rounded-2xl transition-all duration-300 font-semibold text-[1.02rem] leading-snug flex items-center justify-between gap-4 group relative overflow-hidden",
+                  "group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-xl px-5 py-4 text-left text-[1.02rem] font-semibold leading-snug transition-all duration-300",
                   activeCategory === option.value
                     ? "bg-primary/20 text-accent shadow-sm"
                     : "text-foreground/72 hover:bg-primary/10 hover:text-foreground border border-transparent",

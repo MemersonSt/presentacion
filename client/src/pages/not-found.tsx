@@ -1,27 +1,25 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
+import { Link } from "wouter";
 import { Seo } from "@/components/Seo";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
+    <div className="page-shell flex items-center justify-center">
       <Seo
         title="Página no encontrada | DIFIORI"
         description="La página solicitada no existe."
         robots="noindex, nofollow"
       />
-      <Card className="w-full max-w-md mx-4">
-        <CardContent className="pt-6">
-          <div className="flex mb-4 gap-2">
-            <AlertCircle className="h-8 w-8 text-red-500" />
-            <h1 className="text-2xl font-bold text-gray-900">404 Page Not Found</h1>
-          </div>
-
-          <p className="mt-4 text-sm text-gray-600">
-            Did you forget to add the page to the router?
-          </p>
-        </CardContent>
-      </Card>
+      <div className="empty-state w-full max-w-lg">
+        <AlertCircle className="mx-auto mb-5 h-12 w-12 text-accent" />
+        <h1 className="section-title">Página no encontrada</h1>
+        <p className="section-copy mb-8">
+          La ruta solicitada no existe o fue retirada de la tienda.
+        </p>
+        <Link href="/" className="ui-btn-primary">
+          Volver al inicio
+        </Link>
+      </div>
     </div>
   );
 }

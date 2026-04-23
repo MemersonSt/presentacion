@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, ArrowRight, ShoppingBag, Sparkles } from "lucide-react";
+import { Search, X, ArrowRight, Sparkles } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { useLocation } from "wouter";
 import { formatCategoryDisplayName, getProductPath } from "@shared/catalog";
@@ -67,6 +67,8 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
           className="fixed inset-0 z-[100] bg-[#111111]/90 backdrop-blur-2xl flex flex-col items-center pt-32 px-6"
         >
           <button 
+            type="button"
+            aria-label="Cerrar búsqueda"
             onClick={onClose}
             className="absolute top-10 right-10 p-4 text-white/40 hover:text-white transition-colors group"
           >

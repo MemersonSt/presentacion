@@ -1,14 +1,7 @@
 const nodemailer = require("nodemailer");
+const { getDefaultFrom, getSmtpConfig } = require("./smtpConfig");
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: process.env.SMTP_SECURE === "true",
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const transporter = nodemailer.createTransport(getSmtpConfig());
 
 async function sendAbandonedCartEmail({
   customerName,
@@ -77,7 +70,7 @@ async function sendAbandonedCartEmail({
   const detailsText = details.map(([label, value]) => `${label}: ${value}`).join("\n");
 
   const mailOptions = {
-    from: process.env.EMAIL_FROM || "\"DIFIORI Notificaciones\" <noreply@difiori.com.ec>",
+    from: process.env.EMAIL_FROM || getDefaultFrom(),
     to: adminEmail,
     subject: `Carrito Abandonado - ${customerName}`,
     html: `

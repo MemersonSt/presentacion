@@ -113,6 +113,8 @@ export function Navbar() {
                 }}
               >
                 <button
+                  type="button"
+                  aria-label="Buscar productos"
                   onClick={() => setIsSearchOpen(true)}
                   className={cn(
                     "transition-all hover:scale-110",
@@ -123,6 +125,8 @@ export function Navbar() {
                 </button>
                 <Link href="/checkout">
                   <button
+                    type="button"
+                    aria-label={`Ver carrito (${cartItemCount})`}
                     className={cn(
                       "relative flex items-center gap-2 transition-all hover:scale-110",
                       (scrolled || location !== "/") ? "text-foreground/80 hover:text-accent" : "text-white/90 hover:text-white",
@@ -138,6 +142,8 @@ export function Navbar() {
 
           <div className="flex items-center justify-between lg:hidden">
             <button
+              type="button"
+              aria-label="Abrir menú"
               className={cn("p-1 transition-colors", (scrolled || location !== "/") ? "text-foreground" : "text-white")}
               onClick={() => setIsOpen(!isOpen)}
             >
@@ -150,6 +156,8 @@ export function Navbar() {
 
             <div className="flex items-center gap-4">
               <button
+                type="button"
+                aria-label="Buscar productos"
                 onClick={() => setIsSearchOpen(true)}
                 className={cn("p-1 transition-colors", (scrolled || location !== "/") ? "text-foreground" : "text-white")}
               >
@@ -157,6 +165,8 @@ export function Navbar() {
               </button>
               <Link href="/checkout">
                 <button
+                  type="button"
+                  aria-label={`Ver carrito (${cartItemCount})`}
                   className={cn(
                     "relative p-1 transition-colors hover:scale-110",
                     (scrolled || location !== "/") ? "text-foreground" : "text-white",
@@ -186,6 +196,8 @@ export function Navbar() {
               <div className="mb-16 flex items-center justify-between">
                 <Logo size="sm" variant="dark" />
                 <button
+                  type="button"
+                  aria-label="Cerrar menú"
                   className="p-2 text-foreground/50 transition-colors hover:text-foreground"
                   onClick={() => setIsOpen(false)}
                 >
@@ -219,6 +231,7 @@ export function Navbar() {
         href={`https://wa.me/${DEFAULT_COMPANY.phoneDigits}`}
         target="_blank"
         rel="noopener noreferrer"
+        aria-label="Contactar por WhatsApp"
         className="group fixed bottom-8 right-8 z-[100] flex h-[60px] w-[60px] items-center justify-center rounded-full border border-white/10 bg-accent shadow-[0_20px_50px_rgba(90,63,115,0.4)] transition-all duration-700 hover:shadow-[0_30px_60px_rgba(90,63,115,0.6)]"
       >
         <div className="relative flex h-7 w-7 items-center justify-center transition-transform duration-500 group-hover:scale-110">

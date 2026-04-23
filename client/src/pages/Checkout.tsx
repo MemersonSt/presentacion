@@ -31,6 +31,7 @@ type OrderStatus = "idle" | "loading" | "success" | "error";
 type PaymentMethod = "PayPal" | "Payphone" | "Banco" | "Zelle";
 type CheckoutStep = "sender" | "receiver" | "payment";
 type ShippingSectorRate = { sector: string; cost: number };
+type CheckoutFocusable = HTMLInputElement | HTMLTextAreaElement;
 
 function normalizeSectorName(value: string) {
   return value
@@ -50,19 +51,19 @@ const CHECKOUT_STEPS: {
   {
     id: "sender",
     label: "Tus datos",
-    helper: "Quien envia",
+    helper: "Quién envía",
     Icon: User,
   },
   {
     id: "receiver",
     label: "Entrega",
-    helper: "Quien recibe",
+    helper: "Quién recibe",
     Icon: Truck,
   },
   {
     id: "payment",
     label: "Pago",
-    helper: "Confirmacion",
+    helper: "Confirmación",
     Icon: CreditCard,
   },
 ];
@@ -74,7 +75,7 @@ const PAYMENT_METHODS: {
 }[] = [
   {
     label: "PayPal",
-    description: "Pago internacional o con tarjeta de credito",
+    description: "Pago internacional o con tarjeta de crédito",
     Icon: Globe2,
   },
   {
@@ -89,7 +90,7 @@ const PAYMENT_METHODS: {
   },
   {
     label: "Zelle",
-    description: "Pago por Zelle; el vendedor confirmara los datos",
+    description: "Pago por Zelle; el vendedor confirmará los datos",
     Icon: CreditCard,
   },
 ];
@@ -189,6 +190,7 @@ export default function Checkout() {
   const senderNameRef = useRef<HTMLInputElement>(null);
   const senderEmailRef = useRef<HTMLInputElement>(null);
   const senderPhoneRef = useRef<HTMLInputElement>(null);
+  const sectorRef = useRef<HTMLInputElement>(null);
   const dateTimeRef = useRef<HTMLInputElement>(null);
   const addressRef = useRef<HTMLInputElement>(null);
   const cardMessageRef = useRef<HTMLTextAreaElement>(null);
@@ -308,12 +310,23 @@ export default function Checkout() {
 
   const finalTotal = cartSubtotal + shippingCost - discountAmount;
 
+  const focusCheckoutField = (
+    step: CheckoutStep,
+    fieldRef: React.RefObject<CheckoutFocusable | null>
+  ) => {
+    setActiveStep(step);
+    window.setTimeout(() => {
+      fieldRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      fieldRef.current?.focus({ preventScroll: true });
+    }, 0);
+  };
+
   const getMissingSenderFields = () => {
     const { senderName, senderEmail, senderPhone } = readCheckoutFields();
     return [
-      [senderName, "nombre de quien envia"],
-      [senderEmail, "correo de quien envia"],
-      [senderPhone, "telefono de quien envia"],
+      [senderName, "nombre de quien envía"],
+      [senderEmail, "correo de quien envía"],
+      [senderPhone, "teléfono de quien envía"],
     ]
       .filter(([value]) => !value)
       .map(([, label]) => label);
@@ -330,29 +343,35 @@ export default function Checkout() {
     } = readCheckoutFields();
     return [
       [receiverName, "nombre de quien recibe"],
-      [receiverPhone, "telefono de quien recibe"],
+      [receiverPhone, "teléfono de quien recibe"],
       [sector, "sector"],
-      [address, "direccion exacta"],
-      [cardMessage, "mensaje para la tarjeta"],
       [deliveryDateTime, "hora de entrega"],
+      [address, "dirección exacta"],
+      [cardMessage, "mensaje para la tarjeta"],
     ]
       .filter(([value]) => !value)
       .map(([, label]) => label);
   };
 
   const validateSenderStep = () => {
-    const { senderEmail } = readCheckoutFields();
+    const { senderName, senderEmail, senderPhone } = readCheckoutFields();
     const missingFields = getMissingSenderFields();
 
     if (missingFields.length > 0) {
-      setActiveStep("sender");
       setErrorMsg(`Completa: ${missingFields.join(", ")}.`);
+      if (!senderName) {
+        focusCheckoutField("sender", senderNameRef);
+      } else if (!senderEmail) {
+        focusCheckoutField("sender", senderEmailRef);
+      } else if (!senderPhone) {
+        focusCheckoutField("sender", senderPhoneRef);
+      }
       return false;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail)) {
-      setActiveStep("sender");
-      setErrorMsg("Ingresa un correo valido para quien envia.");
+      setErrorMsg("Ingresa un correo válido para quien envía.");
+      focusCheckoutField("sender", senderEmailRef);
       return false;
     }
 
@@ -361,11 +380,31 @@ export default function Checkout() {
   };
 
   const validateReceiverStep = () => {
+    const {
+      receiverName,
+      receiverPhone,
+      address,
+      sector,
+      cardMessage,
+      deliveryDateTime,
+    } = readCheckoutFields();
     const missingFields = getMissingReceiverFields();
 
     if (missingFields.length > 0) {
-      setActiveStep("receiver");
       setErrorMsg(`Completa: ${missingFields.join(", ")}.`);
+      if (!receiverName) {
+        focusCheckoutField("receiver", receiverNameRef);
+      } else if (!receiverPhone) {
+        focusCheckoutField("receiver", receiverPhoneRef);
+      } else if (!sector) {
+        focusCheckoutField("receiver", sectorRef);
+      } else if (!deliveryDateTime) {
+        focusCheckoutField("receiver", dateTimeRef);
+      } else if (!address) {
+        focusCheckoutField("receiver", addressRef);
+      } else if (!cardMessage) {
+        focusCheckoutField("receiver", cardMessageRef);
+      }
       return false;
     }
 
@@ -403,18 +442,18 @@ export default function Checkout() {
         const coupon = data.data;
         if (coupon.minAmount && cartSubtotal < coupon.minAmount) {
           setErrorMsg(
-            `El cupon requiere una compra minima de $${coupon.minAmount}`
+            `El cupón requiere una compra mínima de $${coupon.minAmount}`
           );
           setAppliedCoupon(null);
         } else {
           setAppliedCoupon(coupon);
         }
       } else {
-        setErrorMsg(data.message || "Cupon no valido");
+        setErrorMsg(data.message || "Cupón no válido");
         setAppliedCoupon(null);
       }
     } catch {
-      setErrorMsg("Error al validar el cupon");
+      setErrorMsg("Error al validar el cupón");
     } finally {
       setIsValidatingCoupon(false);
     }
@@ -502,14 +541,14 @@ export default function Checkout() {
       } else {
         setErrorMsg(
           data.message ||
-            "Hubo un error al procesar tu orden. Contactanos por WhatsApp."
+            "Hubo un error al procesar tu orden. Contáctanos por WhatsApp."
         );
         setOrderStatus("error");
         abandonmentSent.current = false;
       }
     } catch {
       setErrorMsg(
-        "No se pudo conectar con el servidor. Contactanos por WhatsApp."
+        "No se pudo conectar con el servidor. Contáctanos por WhatsApp."
       );
       setOrderStatus("error");
       abandonmentSent.current = false;
@@ -549,7 +588,7 @@ export default function Checkout() {
       }
 
       setProofMessage(
-        "Comprobante subido. El equipo lo revisara desde el admin."
+        "Comprobante subido. El equipo lo revisará desde el admin."
       );
       setSelectedProofFile(null);
     } catch (error) {
@@ -600,7 +639,7 @@ export default function Checkout() {
             {orderNumber}
           </p>
           <p className="text-[#5A3F73] text-base font-semibold mb-8">
-            Hemos recibido tu pedido. El vendedor se pondra en contacto contigo.
+            Hemos recibido tu pedido. El vendedor se pondrá en contacto contigo.
             Esperamos tu respuesta.
           </p>
           <Link href="/">
@@ -693,7 +732,7 @@ export default function Checkout() {
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_430px] lg:items-start">
-          <aside className="order-2 checkout-panel rounded-[2rem] p-6 lg:sticky lg:order-2">
+          <aside className="order-2 checkout-panel rounded-[2rem] p-6 lg:sticky lg:top-8 lg:order-2">
             <div className="space-y-6">
               <div>
                 <div className="mb-4 flex items-center justify-between gap-4">
@@ -746,7 +785,7 @@ export default function Checkout() {
               <div className="rounded-2xl border border-[#E5D7EF] bg-[#FBF7FD] p-4">
                 <div className="mb-4">
                   <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-[#6B5487]">
-                    Cupon
+                    Cupón
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -781,7 +820,7 @@ export default function Checkout() {
                   </div>
                   {appliedCoupon && (
                     <p className="mt-2 text-[10px] font-bold uppercase text-green-600">
-                      Cupon aplicado
+                      Cupón aplicado
                     </p>
                   )}
                 </div>
@@ -798,7 +837,7 @@ export default function Checkout() {
                     </span>
                   </div>
                   <div className="flex justify-between text-sm font-semibold text-[#6B5487]">
-                    <span>Envio</span>
+                    <span>Envío</span>
                     <span className="text-[#5A3F73]">
                       {shippingResolution.isMatched
                         ? `+$${shippingCost.toFixed(2)}`
@@ -825,7 +864,7 @@ export default function Checkout() {
                   </div>
                   {shippingResolution.isMatched && (
                     <p className="text-right text-[11px] font-semibold text-[#6B5487]">
-                      Total con envio adicional de ${shippingCost.toFixed(2)} para {shippingResolution.matchedSector}.
+                      Total con envío adicional de ${shippingCost.toFixed(2)} para {shippingResolution.matchedSector}.
                     </p>
                   )}
                 </div>
@@ -878,7 +917,7 @@ export default function Checkout() {
                 )}
               >
                 <h3 className="flex items-center gap-3 text-3xl font-bold text-[#4A3362]">
-                  <User className="h-8 w-8" /> Quien envia
+                  <User className="h-8 w-8" /> Quién envía
                 </h3>
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                   <label className="checkout-field">
@@ -894,7 +933,7 @@ export default function Checkout() {
                   </label>
                   <label className="checkout-field">
                     <span>
-                      <Mail className="h-4 w-4" /> Correo electronico *
+                      <Mail className="h-4 w-4" /> Correo electrónico *
                     </span>
                     <input
                       ref={senderEmailRef}
@@ -906,7 +945,7 @@ export default function Checkout() {
                   </label>
                   <label className="checkout-field md:col-span-2">
                     <span>
-                      <Phone className="h-4 w-4" /> Telefono *
+                      <Phone className="h-4 w-4" /> Teléfono *
                     </span>
                     <input
                       ref={senderPhoneRef}
@@ -922,7 +961,7 @@ export default function Checkout() {
                   onClick={handleNextStep}
                   className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#5A3F73] px-6 py-5 text-base font-black text-white shadow-lg shadow-[#5A3F73]/20 transition-all hover:bg-[#4A3362] active:scale-95 sm:w-auto"
                 >
-                  Continuar a entrega <ArrowRight className="h-4 w-4" />
+                  Datos de quien recibe <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
 
@@ -933,7 +972,7 @@ export default function Checkout() {
                 )}
               >
                 <h3 className="flex items-center gap-3 text-3xl font-bold text-[#4A3362]">
-                  <Truck className="h-8 w-8" /> Quien recibe
+                  <Truck className="h-8 w-8" /> Quién recibe
                 </h3>
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                   <label className="checkout-field">
@@ -948,7 +987,7 @@ export default function Checkout() {
                   </label>
                   <label className="checkout-field">
                     <span>
-                      <Phone className="h-4 w-4" /> Telefono *
+                      <Phone className="h-4 w-4" /> Teléfono *
                     </span>
                     <input
                       ref={receiverPhoneRef}
@@ -962,6 +1001,7 @@ export default function Checkout() {
                       <MapPin className="h-4 w-4" /> Sector *
                     </span>
                     <input
+                      ref={sectorRef}
                       value={sectorInput}
                       onChange={(e) => setSectorInput(e.target.value)}
                       className="checkout-input"
@@ -975,10 +1015,10 @@ export default function Checkout() {
                     </datalist>
                     <span className="text-xs font-medium text-[#6B5487]">
                       {shippingResolution.isMatched
-                        ? `Costo de envio para ${shippingResolution.matchedSector}: $${shippingCost.toFixed(2)}`
+                        ? `Costo de envío para ${shippingResolution.matchedSector}: $${shippingCost.toFixed(2)}`
                         : sectorInput
-                          ? "No encontramos una tarifa exacta para ese sector. El envio quedara a coordinar."
-                          : "Ingresa tu sector para calcular el envio."}
+                          ? "No encontramos una tarifa exacta para ese sector. El envío quedará a coordinar."
+                          : "Ingresa tu sector para calcular el envío."}
                     </span>
                   </label>
                   <label className="checkout-field">
@@ -993,7 +1033,7 @@ export default function Checkout() {
                   </label>
                   <label className="checkout-field md:col-span-2">
                     <span>
-                      <MapPin className="h-4 w-4" /> Direccion exacta *
+                      <MapPin className="h-4 w-4" /> Dirección exacta *
                     </span>
                     <input
                       ref={addressRef}
@@ -1008,7 +1048,7 @@ export default function Checkout() {
                     <textarea
                       ref={cardMessageRef}
                       className="checkout-input h-28 resize-none"
-                      placeholder="Escribe el mensaje que ira en la tarjeta"
+                      placeholder="Escribe el mensaje que irá en la tarjeta"
                     />
                   </label>
                   <label className="checkout-field md:col-span-2">
@@ -1047,7 +1087,7 @@ export default function Checkout() {
                 )}
               >
                 <h3 className="flex items-center gap-3 text-3xl font-bold text-[#4A3362]">
-                  <CreditCard className="h-8 w-8" /> Metodos de pago
+                  <CreditCard className="h-8 w-8" /> Métodos de pago
                 </h3>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {PAYMENT_METHODS.map(({ label, description, Icon }) => (
@@ -1101,7 +1141,7 @@ export default function Checkout() {
                           {transferInstructions}
                         </pre>
                         <p className="mt-4 text-sm font-medium text-[#6B5487]">
-                          Puedes adjuntar el comprobante aqui. Cuando confirmes el pedido se subira automaticamente y el admin lo vera en la orden.
+                          Puedes adjuntar el comprobante aquí. Cuando confirmes el pedido se subirá automáticamente y el admin lo verá en la orden.
                         </p>
                       </>
                     )}
@@ -1113,7 +1153,7 @@ export default function Checkout() {
                             Pago seguro con Payphone
                           </p>
                           <p className="mt-1 text-sm font-medium text-[#6B5487]">
-                            Al confirmar seras redirigido a la pasarela para ingresar los datos de tu tarjeta.
+                            Al confirmar serás redirigido a la pasarela para ingresar los datos de tu tarjeta.
                           </p>
                         </div>
                       </div>
@@ -1123,10 +1163,10 @@ export default function Checkout() {
                         <Globe2 className="mt-1 h-7 w-7 text-[#5A3F73]" />
                         <div>
                           <p className="text-base font-bold text-[#4A3362]">
-                            Pago internacional o con tarjeta de credito
+                            Pago internacional o con tarjeta de crédito
                           </p>
                           <p className="mt-1 text-sm font-medium text-[#6B5487]">
-                            Registraremos tu pedido y el vendedor se pondra en contacto contigo para completar el pago.
+                            Registraremos tu pedido y el vendedor se pondrá en contacto contigo para completar el pago.
                           </p>
                         </div>
                       </div>
@@ -1139,7 +1179,7 @@ export default function Checkout() {
                             Pago por Zelle
                           </p>
                           <p className="mt-1 text-sm font-medium text-[#6B5487]">
-                            Registraremos tu pedido y el vendedor compartira o confirmara los datos de pago. Si ya tienes el comprobante, adjuntalo aqui para subirlo automaticamente al confirmar.
+                            Registraremos tu pedido y el vendedor compartirá o confirmará los datos de pago. Si ya tienes el comprobante, adjúntalo aquí para subirlo automáticamente al confirmar.
                           </p>
                         </div>
                       </div>
@@ -1150,7 +1190,7 @@ export default function Checkout() {
                           Comprobante de pago
                         </p>
                         <p className="mt-1 text-xs font-medium text-[#6B5487]">
-                          Selecciona la imagen del comprobante. Al confirmar el pedido se guardara automaticamente para que el admin pueda verlo.
+                          Selecciona la imagen del comprobante. Al confirmar el pedido se guardará automáticamente para que el admin pueda verlo.
                         </p>
                         <input
                           type="file"
@@ -1164,7 +1204,7 @@ export default function Checkout() {
                         <p className="mt-3 text-xs font-semibold text-[#5A3F73]">
                           {selectedProofFile
                             ? `Archivo listo: ${selectedProofFile.name}`
-                            : "Aun no has seleccionado un comprobante."}
+                            : "Aún no has seleccionado un comprobante."}
                         </p>
                         {proofMessage && (
                           <p className="mt-2 text-xs text-[#5A3F73]">

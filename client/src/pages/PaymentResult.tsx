@@ -164,7 +164,7 @@ export default function PaymentResult() {
           </p>
           <Link href="/">
             <button className="w-full bg-[#5A3F73] hover:bg-[#4A3362] text-white py-5 rounded-3xl font-black text-base transition-all shadow-xl">
-              Volver a la tienda 🌸
+              Volver a la tienda
             </button>
           </Link>
         </motion.div>

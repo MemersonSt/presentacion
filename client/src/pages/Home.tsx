@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, Variants, AnimatePresence } from "framer-motion";
-import { ArrowRight, Sparkles, Star, Instagram, Facebook, Mail, MessageSquare, Phone } from "lucide-react";
+import { Star, Instagram, Facebook, Mail, MessageSquare, Phone } from "lucide-react";
 import { Link } from "wouter";
 import { Banner } from "@/components/Banner";
 import { CategorySidebar } from "@/components/CategorySidebar";
@@ -129,19 +129,19 @@ export default function Home() {
               <div className="h-[1px] flex-1 bg-foreground"></div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+            <div className="product-grid">
               {isLoadingAll ? (
                 // Skeleton loading state (minimal)
                 Array(6).fill(0).map((_, i) => (
-                  <div key={i} className="h-80 bg-primary/5 animate-pulse rounded-[3rem]" />
+                  <div key={i} className="product-skeleton" />
                 ))
               ) : allProducts.length > 0 ? (
                 allProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))
               ) : (
-                <div className="col-span-full py-20 text-center">
-                  <p className="text-foreground/60 font-serif italic text-2xl">
+                <div className="empty-state col-span-full">
+                  <p className="empty-state-title">
                     No se encontraron productos en esta categoría.
                   </p>
                 </div>
@@ -150,7 +150,7 @@ export default function Home() {
             
             <div className="mt-24 text-center">
               <Link href="/shop">
-                <button className="bg-transparent border-2 border-primary hover:bg-primary/20 text-foreground px-16 py-6 rounded-3xl font-black text-xs uppercase tracking-widest transition-all shadow-xl hover:scale-105 duration-500">
+                <button type="button" className="ui-btn-secondary px-12">
                   Ver Colección Completa
                 </button>
               </Link>
@@ -165,18 +165,19 @@ export default function Home() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="mb-40 py-24 bg-primary/5 rounded-[4rem] px-12 border border-primary/20 relative"
+          className="relative mb-32 border-y border-primary/15 bg-white/45 px-6 py-20 sm:px-10"
         >
            <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-1 h-20 bg-gradient-to-b from-transparent to-primary/20" />
            
            <div className="text-center mb-20">
-              <h2 className="text-5xl md:text-7xl font-serif text-foreground mb-4 italic">Lo que dicen de nosotros</h2>
-              <p className="text-foreground/70 italic font-serif text-2xl">Tu satisfacción es nuestra mayor recompensa.</p>
+              <h2 className="section-title">Lo que dicen de nosotros</h2>
+              <p className="section-copy">Tu satisfacción es nuestra mayor recompensa.</p>
            </div>
             <div className="text-center mb-10">
                <button 
+                 type="button"
                  onClick={() => setShowForm(!showForm)}
-                 className="inline-flex items-center gap-3 bg-accent text-white px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-xl"
+                 className="ui-btn-primary"
                >
                  {showForm ? "Cerrar Formulario" : "Escribir una reseña"}
                </button>
@@ -190,7 +191,7 @@ export default function Home() {
                   exit={{ opacity: 0, height: 0 }}
                   className="max-w-xl mx-auto mb-20 overflow-hidden"
                 >
-                  <form onSubmit={handleAddReview} className="bg-white p-8 rounded-[3rem] shadow-2xl border border-primary/20 space-y-6">
+                  <form onSubmit={handleAddReview} className="surface-card space-y-6 p-8">
                     <div className="flex justify-center gap-2 mb-4">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
@@ -224,7 +225,7 @@ export default function Home() {
                     />
                     <button 
                       type="submit"
-                      className="w-full bg-foreground text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-accent transition-colors shadow-lg"
+                      className="ui-btn-primary w-full"
                     >
                       Publicar Reseña
                     </button>
@@ -244,7 +245,7 @@ export default function Home() {
                      whileInView={{ opacity: 1, y: 0 }}
                      whileHover={{ y: -8 }}
                      transition={{ duration: 0.5 }}
-                     className="bg-white p-12 rounded-[3rem] shadow-xl border border-primary/10 relative group"
+                     className="surface-card group relative p-8 sm:p-10"
                    >
                       <div className="flex gap-1 mb-6 opacity-40 group-hover:opacity-100 transition-opacity duration-700">
                          {[...Array(review.stars)].map((_, s) => <Star key={s} className="w-5 h-5 fill-accent text-accent" />)}
@@ -276,15 +277,15 @@ export default function Home() {
           className="mb-40"
         >
           <div className="text-center mb-16">
-            <h2 className="text-5xl md:text-7xl font-serif text-foreground mb-4 italic">Preguntas frecuentes</h2>
-            <p className="text-foreground/60 font-serif italic text-2xl">
+            <h2 className="section-title">Preguntas frecuentes</h2>
+            <p className="section-copy">
               Información clave sobre entregas, pagos y tiempos de atención.
             </p>
           </div>
 
           <div className="grid gap-6 max-w-4xl mx-auto">
             {FAQS.map((faq) => (
-              <article key={faq.question} className="bg-white border border-primary/10 rounded-[2rem] p-8 shadow-lg">
+              <article key={faq.question} className="surface-card p-7">
                 <h3 className="text-xl font-serif text-foreground mb-3">{faq.question}</h3>
                 <p className="text-foreground/70 leading-relaxed">{faq.answer}</p>
               </article>
