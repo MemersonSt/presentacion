@@ -134,7 +134,7 @@ export function CategorySidebar({
       </div>
 
       <div className="surface-card sticky top-32 hidden max-h-[calc(100vh-10rem)] flex-col gap-4 overflow-hidden p-6 lg:flex">
-        <h3 className="mb-6 flex items-center gap-3 px-2 font-serif text-3xl font-bold text-[#4A3362]">
+        <h3 className="mb-6 flex items-center gap-3 px-2 text-3xl font-black text-[#4B1F6F]" style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}>
           Colecciones
         </h3>
         <div className="flex flex-col gap-3 overflow-y-auto pr-1 no-scrollbar">
@@ -143,18 +143,19 @@ export function CategorySidebar({
               <button
                 key={option.label}
                 className={cn(
-                  "group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-xl px-5 py-4 text-left text-[1.02rem] font-semibold leading-snug transition-all duration-300 lg:w-fit lg:max-w-full lg:min-w-0 xl:w-full",
+                  "group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-xl px-5 py-4 text-left text-[1.08rem] font-black leading-snug transition-all duration-300 lg:w-fit lg:max-w-full lg:min-w-0 xl:w-full",
                   activeCategory === option.value
-                    ? "bg-primary/20 text-[#4A3362] shadow-sm"
-                    : "text-[#4A3362]/80 hover:bg-[#4A3362] hover:text-[#EBDCF7] border border-transparent",
+                    ? "bg-primary/20 text-[#4B1F6F] shadow-sm"
+                    : "text-[#4B1F6F] hover:bg-[#4B1F6F] hover:text-white border border-transparent",
                 )}
+                style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}
                 onClick={() => setActiveCategory?.(option.value)}
               >
                 <span className="relative z-10">{option.label}</span>
                 <div
                   className={cn(
                     "w-2 h-2 rounded-full transition-all duration-500 relative z-10 shrink-0",
-                    activeCategory === option.value ? "bg-[#4A3362] scale-125" : "bg-primary/45 group-hover:bg-[#EBDCF7] group-hover:scale-110",
+                    activeCategory === option.value ? "bg-[#4B1F6F] scale-125" : "bg-primary/45 group-hover:bg-white group-hover:scale-110",
                   )}
                 ></div>
               </button>
@@ -167,17 +168,18 @@ export function CategorySidebar({
                   handleLinkSelection(option.href);
                 }}
                 className={cn(
-                  "group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-xl px-5 py-4 text-left text-[1.02rem] font-semibold leading-snug transition-all duration-300",
+                  "group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-xl px-5 py-4 text-left text-[1.08rem] font-black leading-snug transition-all duration-300",
                   activeCategory === option.value
-                    ? "bg-primary/20 text-[#4A3362] shadow-sm"
-                    : "text-[#4A3362]/80 hover:bg-[#4A3362] hover:text-[#EBDCF7] border border-transparent",
+                    ? "bg-primary/20 text-[#4B1F6F] shadow-sm"
+                    : "text-[#4B1F6F] hover:bg-[#4B1F6F] hover:text-white border border-transparent",
                 )}
+                style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}
               >
                 <span className="relative z-10">{option.label}</span>
                 <div
                   className={cn(
                     "w-2 h-2 rounded-full transition-all duration-500 relative z-10 shrink-0",
-                    activeCategory === option.value ? "bg-[#4A3362] scale-125" : "bg-primary/45 group-hover:bg-[#EBDCF7] group-hover:scale-110",
+                    activeCategory === option.value ? "bg-[#4B1F6F] scale-125" : "bg-primary/45 group-hover:bg-white group-hover:scale-110",
                   )}
                 ></div>
               </Link>
