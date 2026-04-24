@@ -48,7 +48,7 @@ export default function Shop() {
         path="/shop"
         schema={shopSchema}
       />
-      <div className="page-container">
+      <div className="mx-auto w-full max-w-[1600px] px-6 xl:px-10">
         <Breadcrumb className="mb-10">
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -69,12 +69,12 @@ export default function Shop() {
           <p className="page-copy">Arreglos florales diseñados para trascender.</p>
         </div>
 
-        <div className="flex flex-col gap-12 lg:flex-row lg:gap-14">
-          <aside className="shrink-0 lg:w-72">
+        <div className="flex flex-col gap-10 lg:flex-row xl:gap-8">
+          <aside className="h-fit shrink-0 lg:sticky lg:top-32 lg:w-[280px] xl:w-[300px]">
             <CategorySidebar variant="link" />
           </aside>
 
-          <section id="product-list" className="flex-1 scroll-mt-32">
+          <section id="product-list" className="flex-1 scroll-mt-32 overflow-hidden">
             {isLoading ? (
               <div className="product-grid">
                 {Array(6).fill(0).map((_, i) => (
