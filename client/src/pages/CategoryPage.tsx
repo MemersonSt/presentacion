@@ -121,7 +121,7 @@ export default function CategoryPage() {
                 <CategorySidebar variant="link" activeCategory={categoryName} />
               </aside>
 
-              <section className="flex-1">
+              <section id="product-list" className="flex-1 scroll-mt-32">
                 {loading ? (
                   <div className="product-grid">
                     {Array(6)

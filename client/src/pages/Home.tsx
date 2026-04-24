@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, Variants, AnimatePresence } from "framer-motion";
-import { Star, Instagram, Facebook, Mail, MessageSquare, Phone } from "lucide-react";
+import { Star, Instagram, Facebook, Music2, Mail, MessageSquare, Phone } from "lucide-react";
 import { Link } from "wouter";
 import { Banner } from "@/components/Banner";
 import { CategorySidebar } from "@/components/CategorySidebar";
@@ -109,7 +109,7 @@ export default function Home() {
         <Banner />
       </motion.section>
 
-      <div className="container mx-auto px-6 py-20 relative z-20">
+      <div className="mx-auto w-full max-w-[1600px] px-6 py-20 relative z-20 xl:px-10">
         
         {/* Main Content: Sidebar + Catalog */}
         <motion.section 
@@ -117,9 +117,9 @@ export default function Home() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="flex flex-col lg:flex-row gap-16 pt-10 mb-40 relative z-20"
+          className="relative z-20 flex flex-col gap-10 pt-10 mb-40 lg:flex-row xl:gap-8"
         >
-          <aside className="lg:sticky lg:top-32 h-fit lg:w-64 shrink-0">
+          <aside className="h-fit shrink-0 lg:sticky lg:top-32 lg:w-[280px] xl:w-[300px]">
             <CategorySidebar variant="link" />
           </aside>
 
@@ -133,7 +133,7 @@ export default function Home() {
               <div className="h-[1px] flex-1 bg-foreground"></div>
             </div>
 
-            <div className="product-grid">
+            <div id="product-list" className="product-grid scroll-mt-32">
               {isLoadingAll ? (
                 // Skeleton loading state (minimal)
                 Array(6).fill(0).map((_, i) => (
@@ -320,14 +320,14 @@ export default function Home() {
                  <img
                    src="/logo-footer.png"
                    alt="DIFIORI"
-                   className="mb-12 h-20 w-auto object-contain"
+                   className="mb-12 h-32 w-auto object-contain"
                    loading="eager"
                  />
                  <p className="mb-12 text-base leading-relaxed text-foreground/50 italic font-serif">
                    Diseñando emociones con las flores más frescas de exportación en Guayaquil.
                  </p>
                  <div className="flex gap-4">
-                    {[Instagram, Facebook, Mail].map((Icon, i) => (
+                    {[Instagram, Facebook, Music2].map((Icon, i) => (
                       <div key={i} className="cursor-pointer rounded-2xl border border-primary/10 bg-primary/5 p-5 transition-all duration-500 hover:scale-110 hover:bg-accent hover:text-white">
                          <Icon className="w-6 h-6" />
                       </div>

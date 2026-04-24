@@ -74,7 +74,7 @@ export default function Shop() {
             <CategorySidebar variant="link" />
           </aside>
 
-          <section className="flex-1">
+          <section id="product-list" className="flex-1 scroll-mt-32">
             {isLoading ? (
               <div className="product-grid">
                 {Array(6).fill(0).map((_, i) => (

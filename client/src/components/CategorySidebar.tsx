@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useCategories } from "@/hooks/useCategories";
 import { cn } from "@/lib/utils";
 import { ChevronDown, Filter, Loader2 } from "lucide-react";
@@ -21,7 +21,9 @@ export function CategorySidebar({
   setActiveCategory,
   variant = "filter",
 }: CategorySidebarProps) {
+  const productListHash = "#product-list";
   const [isOpen, setIsOpen] = useState(false);
+  const [, setLocation] = useLocation();
   const { data: categories, isLoading } = useCategories();
 
   if (isLoading) {
@@ -36,15 +38,15 @@ export function CategorySidebar({
   const isFilter = variant === "filter";
   const activeCategoryLabel = activeCategory ? formatCategoryDisplayName(activeCategory) : "Todas";
   const mobileOptions = [
-    { label: "Todas las Colecciones", href: "/shop", value: null },
+    { label: "Todas las Colecciones", href: `/shop${productListHash}`, value: null },
     {
       label: BEST_SELLERS_CATEGORY_NAME,
-      href: getCategoryPath(BEST_SELLERS_CATEGORY_NAME),
+      href: `${getCategoryPath(BEST_SELLERS_CATEGORY_NAME)}${productListHash}`,
       value: BEST_SELLERS_CATEGORY_NAME,
     },
     ...allCategories.map((name) => ({
       label: formatCategoryDisplayName(name),
-      href: getCategoryPath(name),
+      href: `${getCategoryPath(name)}${productListHash}`,
       value: name,
     })),
   ];
@@ -54,23 +56,35 @@ export function CategorySidebar({
     setIsOpen(false);
   };
 
+  const handleLinkSelection = (href: string) => {
+    setIsOpen(false);
+    setLocation(href);
+
+    window.setTimeout(() => {
+      const productList = document.getElementById("product-list");
+      if (productList) {
+        productList.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 50);
+  };
+
   return (
     <div className="w-full lg:w-72 flex flex-col gap-6">
       <div className="lg:hidden w-full relative group">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full flex items-center justify-between gap-4 bg-white border border-primary/20 p-5 rounded-2xl shadow-lg text-foreground transition-all active:scale-95"
+          className="w-full flex items-center justify-between gap-4 rounded-2xl border border-[#D9C6EA] bg-white p-6 shadow-lg text-foreground transition-all active:scale-95"
         >
           <div className="min-w-0 flex items-center gap-3 text-left">
-            <Filter className="w-4 h-4 text-accent shrink-0" />
+            <Filter className="h-5 w-5 shrink-0 text-[#6F4D95]" />
             <div className="min-w-0">
-              <span className="block text-[10px] font-black uppercase tracking-[0.32em] text-foreground/45">
+              <span className="block text-[0.72rem] font-black uppercase tracking-[0.32em] text-[#9A82B7]">
                 Categorías
               </span>
-              <span className="block text-sm font-semibold text-accent truncate">{activeCategoryLabel}</span>
+              <span className="block truncate pt-1 text-[1.08rem] font-black text-[#5A3F73]">{activeCategoryLabel}</span>
             </div>
           </div>
-          <ChevronDown className={cn("w-5 h-5 shrink-0 transition-transform duration-500", isOpen && "rotate-180")} />
+          <ChevronDown className={cn("h-6 w-6 shrink-0 text-[#6F4D95] transition-transform duration-500", isOpen && "rotate-180")} />
         </button>
 
         <AnimatePresence>
@@ -98,7 +112,10 @@ export function CategorySidebar({
                   <Link
                     key={option.label}
                     href={option.href}
-                    onClick={() => setIsOpen(false)}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      handleLinkSelection(option.href);
+                    }}
                     className={cn(
                       "block w-full text-left p-5 hover:bg-primary/10 transition-colors font-semibold text-sm leading-snug border-b border-primary/5",
                       index === mobileOptions.length - 1 && "last:border-0",
@@ -124,7 +141,7 @@ export function CategorySidebar({
               <button
                 key={option.label}
                 className={cn(
-                  "group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-xl px-5 py-4 text-left text-[1.02rem] font-semibold leading-snug transition-all duration-300",
+                  "group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-xl px-5 py-4 text-left text-[1.02rem] font-semibold leading-snug transition-all duration-300 lg:w-fit lg:max-w-full lg:min-w-0 xl:w-full",
                   activeCategory === option.value
                     ? "bg-primary/20 text-accent shadow-sm"
                     : "text-foreground/72 hover:bg-primary/10 hover:text-foreground border border-transparent",
@@ -143,6 +160,10 @@ export function CategorySidebar({
               <Link
                 key={option.label}
                 href={option.href}
+                onClick={(event) => {
+                  event.preventDefault();
+                  handleLinkSelection(option.href);
+                }}
                 className={cn(
                   "group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-xl px-5 py-4 text-left text-[1.02rem] font-semibold leading-snug transition-all duration-300",
                   activeCategory === option.value

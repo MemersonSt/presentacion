@@ -55,7 +55,7 @@ export function Navbar() {
                   key={link.label}
                   href={link.href}
                   className={cn(
-                    "group relative text-sm font-black uppercase tracking-[0.18em] transition-all duration-500",
+                    "group relative text-[1.14rem] font-black uppercase tracking-[0.18em] transition-all duration-500",
                     "text-foreground hover:text-accent",
                   )}
                 >
@@ -86,7 +86,7 @@ export function Navbar() {
                   key={link.label}
                   href={link.href}
                   className={cn(
-                    "group relative hidden text-sm font-black uppercase tracking-[0.18em] transition-all duration-500 xl:block",
+                    "group relative hidden text-[1.14rem] font-black uppercase tracking-[0.18em] transition-all duration-500 xl:block",
                     "text-foreground hover:text-accent",
                   )}
                 >
