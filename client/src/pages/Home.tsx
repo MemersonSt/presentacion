@@ -104,7 +104,7 @@ export default function Home() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.5 }}
-        className="relative"
+        className="relative pt-24 lg:pt-28"
       >
         <Banner />
       </motion.section>
@@ -169,7 +169,7 @@ export default function Home() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="relative mb-32 border-y border-primary/15 bg-white/45 px-6 py-20 sm:px-10"
+          className="relative left-1/2 right-1/2 mb-32 w-screen -translate-x-1/2 border-y border-[#DECDF0] bg-[#F4ECFB] px-6 py-20 sm:px-10"
         >
            <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-1 h-20 bg-gradient-to-b from-transparent to-primary/20" />
            
@@ -261,12 +261,12 @@ export default function Home() {
                       <div className="flex gap-1 mb-6 opacity-40 group-hover:opacity-100 transition-opacity duration-700">
                          {[...Array(review.stars)].map((_, s) => <Star key={s} className="w-5 h-5 fill-accent text-accent" />)}
                       </div>
-                      <p className="text-foreground/80 text-lg leading-relaxed mb-8 italic font-serif">"{review.content}"</p>
+                      <p className="mb-8 font-serif text-[2rem] leading-relaxed italic text-[#8D6AB5]">"{review.content}"</p>
                       <div className="flex items-center gap-4">
                          <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center font-bold text-accent transition-transform duration-700 group-hover:rotate-[360deg]">{review.name[0]}</div>
                          <div>
-                            <h4 className="font-black uppercase tracking-widest text-[10px] text-foreground">{review.name}</h4>
-                            <span className="text-[10px] text-foreground/40 font-bold uppercase">{review.role || "Cliente"}</span>
+                            <h4 className="text-[1.15rem] font-black uppercase tracking-[0.2em] text-[#845EAE]">{review.name}</h4>
+                            <span className="text-[0.95rem] font-bold uppercase tracking-[0.16em] text-[#A582CB]">{review.role || "Cliente"}</span>
                          </div>
                       </div>
                    </motion.div>
@@ -312,27 +312,32 @@ export default function Home() {
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 1.5 }}
-        className="bg-white border-t border-primary/20 pt-40 pb-12 px-6"
+        className="border-t border-[#DECDF0] bg-[#F4ECFB] px-6 pt-44 pb-14"
       >
         <div className="container mx-auto">
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-20 mb-32">
+           <div className="mb-36 grid grid-cols-1 gap-24 md:grid-cols-2 lg:grid-cols-4">
               <div className="lg:col-span-1">
-                 <Logo variant="dark" size="md" className="mb-10" />
-                 <p className="text-foreground/50 text-sm leading-relaxed mb-10 italic font-serif">
+                 <img
+                   src="/logo-footer.png"
+                   alt="DIFIORI"
+                   className="mb-12 h-20 w-auto object-contain"
+                   loading="eager"
+                 />
+                 <p className="mb-12 text-base leading-relaxed text-foreground/50 italic font-serif">
                    Diseñando emociones con las flores más frescas de exportación en Guayaquil.
                  </p>
                  <div className="flex gap-4">
                     {[Instagram, Facebook, Mail].map((Icon, i) => (
-                      <div key={i} className="p-4 bg-primary/5 rounded-2xl hover:bg-accent hover:text-white transition-all duration-500 cursor-pointer border border-primary/10 hover:scale-110">
-                         <Icon className="w-5 h-5" />
+                      <div key={i} className="cursor-pointer rounded-2xl border border-primary/10 bg-primary/5 p-5 transition-all duration-500 hover:scale-110 hover:bg-accent hover:text-white">
+                         <Icon className="w-6 h-6" />
                       </div>
                     ))}
                  </div>
               </div>
               
               <div>
-                 <h4 className="text-sm font-black uppercase tracking-[0.4em] text-foreground mb-10">La Maison</h4>
-                 <ul className="space-y-5 text-base text-foreground/60 font-bold uppercase tracking-widest text-xs">
+                 <h4 className="mb-12 text-[1.05rem] font-black uppercase tracking-[0.4em] text-foreground">La Maison</h4>
+                 <ul className="space-y-6 text-sm font-bold uppercase tracking-widest text-foreground/60">
                     <li className="hover:text-accent cursor-pointer transition-all duration-500 hover:translate-x-2">Tienda</li>
                     <li className="hover:text-accent cursor-pointer transition-all duration-500 hover:translate-x-2">Contacto</li>
                     <li className="hover:text-accent cursor-pointer transition-all duration-500 hover:translate-x-2">Preguntas Frecuentes</li>
@@ -341,8 +346,8 @@ export default function Home() {
               </div>
 
               <div>
-                 <h4 className="text-sm font-black uppercase tracking-[0.4em] text-foreground mb-10">Soporte</h4>
-                 <ul className="space-y-5 text-base text-foreground/60 font-bold uppercase tracking-widest text-xs">
+                 <h4 className="mb-12 text-[1.05rem] font-black uppercase tracking-[0.4em] text-foreground">Soporte</h4>
+                 <ul className="space-y-6 text-sm font-bold uppercase tracking-widest text-foreground/60">
                     <li className="hover:text-accent cursor-pointer transition-all duration-500 hover:translate-x-2">Envíos y Entregas</li>
                     <li className="hover:text-accent cursor-pointer transition-all duration-500 hover:translate-x-2">Cuidado de Flores</li>
                     <li className="hover:text-accent cursor-pointer transition-all duration-500 hover:translate-x-2">Política de Privacidad</li>
@@ -351,26 +356,26 @@ export default function Home() {
               </div>
 
               <div>
-                 <h4 className="text-sm font-black uppercase tracking-[0.4em] text-foreground mb-10">Contacto Directo</h4>
-                 <div className="space-y-8">
+                 <h4 className="mb-12 text-[1.05rem] font-black uppercase tracking-[0.4em] text-foreground">Contacto Directo</h4>
+                 <div className="space-y-10">
                     <div className="flex items-center gap-5 group">
-                       <div className="p-4 bg-accent/10 rounded-2xl group-hover:bg-accent transition-colors duration-500"><MessageSquare className="w-4 h-4 text-accent group-hover:text-white transition-colors duration-500"/></div>
-                       <div className="text-xs font-black uppercase">
-                          <span className="block opacity-60 mb-1">WhatsApp</span>
+                       <div className="rounded-2xl bg-accent/10 p-5 transition-colors duration-500 group-hover:bg-accent"><MessageSquare className="w-5 h-5 text-accent transition-colors duration-500 group-hover:text-white"/></div>
+                       <div className="text-sm font-black uppercase">
+                          <span className="block mb-1.5 opacity-60">WhatsApp</span>
                           <a href={`https://wa.me/${companyPhoneDigits}`} className="hover:text-accent transition-colors duration-500">{companyPhoneDisplay}</a>
                        </div>
                     </div>
                     <div className="flex items-center gap-5 group">
-                       <div className="p-4 bg-accent/10 rounded-2xl group-hover:bg-accent transition-colors duration-500"><Phone className="w-4 h-4 text-accent group-hover:text-white transition-colors duration-500"/></div>
-                       <div className="text-xs font-black uppercase">
-                          <span className="block opacity-60 mb-1">Llamadas</span>
+                       <div className="rounded-2xl bg-accent/10 p-5 transition-colors duration-500 group-hover:bg-accent"><Phone className="w-5 h-5 text-accent transition-colors duration-500 group-hover:text-white"/></div>
+                       <div className="text-sm font-black uppercase">
+                          <span className="block mb-1.5 opacity-60">Llamadas</span>
                           <span className="group-hover:text-accent transition-colors duration-500">{companyPhoneDisplay}</span>
                        </div>
                     </div>
                     <div className="flex items-center gap-5 group">
-                       <div className="p-4 bg-accent/10 rounded-2xl group-hover:bg-accent transition-colors duration-500"><Mail className="w-4 h-4 text-accent group-hover:text-white transition-colors duration-500"/></div>
-                       <div className="text-xs font-black uppercase">
-                          <span className="block opacity-60 mb-1">Email</span>
+                       <div className="rounded-2xl bg-accent/10 p-5 transition-colors duration-500 group-hover:bg-accent"><Mail className="w-5 h-5 text-accent transition-colors duration-500 group-hover:text-white"/></div>
+                       <div className="text-sm font-black uppercase">
+                          <span className="block mb-1.5 opacity-60">Email</span>
                           <span className="break-all group-hover:text-accent transition-colors duration-500">{companyEmail}</span>
                        </div>
                     </div>
@@ -378,11 +383,11 @@ export default function Home() {
               </div>
            </div>
 
-           <div className="pt-12 border-t border-primary/10 flex flex-col md:flex-row justify-between items-center gap-10">
-              <p className="text-xs font-black uppercase tracking-[0.6em] text-foreground/40">
+           <div className="flex flex-col items-center justify-between gap-10 border-t border-primary/10 pt-14 md:flex-row">
+              <p className="text-sm font-black uppercase tracking-[0.55em] text-foreground/40">
                  © 2026 DIFIORI Ecuador. Todos los derechos reservados.
               </p>
-              <div className="flex gap-8 text-xs font-black uppercase tracking-[0.4em] text-foreground/40">
+              <div className="flex gap-8 text-sm font-black uppercase tracking-[0.35em] text-foreground/40">
                  <span className="hover:text-accent cursor-pointer transition-colors duration-500">Guayaquil, Ecuador</span>
               </div>
            </div>

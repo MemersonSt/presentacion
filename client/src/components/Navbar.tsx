@@ -14,16 +14,9 @@ const SearchOverlay = lazy(() =>
 export function Navbar() {
   const [location, setLocation] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCartNavigating, setIsCartNavigating] = useState(false);
   const { cartItemCount } = useCart();
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 30);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   useEffect(() => {
     setIsOpen(false);
@@ -53,14 +46,7 @@ export function Navbar() {
         {isSearchOpen && <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />}
       </Suspense>
 
-      <nav
-        className={cn(
-          "fixed top-0 z-50 w-full transition-all duration-1000",
-          scrolled
-            ? "bg-white/90 py-5 lg:py-6 backdrop-blur-3xl border-b border-primary/10 shadow-[0_10px_30px_rgba(0,0,0,0.03)]"
-            : "bg-transparent py-6 lg:py-8",
-        )}
-      >
+      <nav className="fixed top-0 z-50 w-full border-b border-primary/10 bg-white py-6 shadow-[0_10px_30px_rgba(0,0,0,0.03)] transition-all duration-1000 lg:py-8">
         <div className="container mx-auto px-6 lg:px-12">
           <div className="hidden lg:grid grid-cols-3 items-center">
             <div className="flex items-center justify-start gap-10">
@@ -69,15 +55,15 @@ export function Navbar() {
                   key={link.label}
                   href={link.href}
                   className={cn(
-                    "group relative text-sm font-bold uppercase tracking-[0.18em] transition-all duration-500",
-                    (scrolled || location !== "/") ? "text-foreground/70 hover:text-foreground" : "text-white/80 hover:text-white",
+                    "group relative text-sm font-black uppercase tracking-[0.18em] transition-all duration-500",
+                    "text-foreground hover:text-accent",
                   )}
                 >
                   {link.label}
                   <span
                     className={cn(
                       "absolute -bottom-2 left-1/2 h-[1px] w-0 -translate-x-1/2 transition-all duration-500 group-hover:w-full",
-                      (scrolled || location !== "/") ? "bg-accent/40" : "bg-white/60",
+                      "bg-accent/40",
                     )}
                   />
                 </a>
@@ -88,7 +74,7 @@ export function Navbar() {
               <Link href="/" className="group flex items-center">
                 <Logo
                   size="md"
-                  variant={(scrolled || location !== "/") ? "dark" : "light"}
+                  variant="dark"
                   className="transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]"
                 />
               </Link>
@@ -100,15 +86,15 @@ export function Navbar() {
                   key={link.label}
                   href={link.href}
                   className={cn(
-                    "group relative hidden text-sm font-bold uppercase tracking-[0.18em] transition-all duration-500 xl:block",
-                    (scrolled || location !== "/") ? "text-foreground/70 hover:text-foreground" : "text-white/80 hover:text-white",
+                    "group relative hidden text-sm font-black uppercase tracking-[0.18em] transition-all duration-500 xl:block",
+                    "text-foreground hover:text-accent",
                   )}
                 >
                   {link.label}
                   <span
                     className={cn(
                       "absolute -bottom-2 left-1/2 h-[1px] w-0 -translate-x-1/2 transition-all duration-500 group-hover:w-full",
-                      (scrolled || location !== "/") ? "bg-accent/40" : "bg-white/60",
+                      "bg-accent/40",
                     )}
                   />
                 </a>
@@ -117,7 +103,7 @@ export function Navbar() {
               <div
                 className="flex items-center gap-8 border-l pl-8 transition-colors duration-500"
                 style={{
-                  borderLeftColor: (scrolled || location !== "/") ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.2)",
+                  borderLeftColor: "rgba(0,0,0,0.1)",
                 }}
               >
                 <button
@@ -126,7 +112,7 @@ export function Navbar() {
                   onClick={() => setIsSearchOpen(true)}
                   className={cn(
                     "transition-all hover:scale-110",
-                    (scrolled || location !== "/") ? "text-foreground/80 hover:text-accent" : "text-white/90 hover:text-white",
+                    "text-foreground hover:text-accent",
                   )}
                 >
                   <Search className="h-7 w-7" strokeWidth={2} />
@@ -138,7 +124,7 @@ export function Navbar() {
                   disabled={isCartNavigating}
                   className={cn(
                     "relative flex items-center gap-2 transition-all hover:scale-110 disabled:pointer-events-none disabled:opacity-70",
-                    (scrolled || location !== "/") ? "text-foreground/80 hover:text-accent" : "text-white/90 hover:text-white",
+                    "text-foreground hover:text-accent",
                   )}
                 >
                   {isCartNavigating ? (
@@ -156,14 +142,14 @@ export function Navbar() {
             <button
               type="button"
               aria-label="Abrir menú"
-              className={cn("p-1 transition-colors", (scrolled || location !== "/") ? "text-foreground" : "text-white")}
+              className={cn("p-1 transition-colors", "text-foreground")}
               onClick={() => setIsOpen(!isOpen)}
             >
               <Menu className="h-8 w-8" strokeWidth={2} />
             </button>
 
             <Link href="/" className="absolute left-1/2 flex items-center -translate-x-1/2">
-              <Logo size="sm" variant={(scrolled || location !== "/") ? "dark" : "light"} />
+              <Logo size="sm" variant="dark" />
             </Link>
 
             <div className="flex items-center gap-4">
@@ -171,7 +157,7 @@ export function Navbar() {
                 type="button"
                 aria-label="Buscar productos"
                 onClick={() => setIsSearchOpen(true)}
-                className={cn("p-1 transition-colors", (scrolled || location !== "/") ? "text-foreground" : "text-white")}
+                className={cn("p-1 transition-colors", "text-foreground")}
               >
                 <Search className="h-7 w-7" strokeWidth={2} />
               </button>
@@ -182,7 +168,7 @@ export function Navbar() {
                 disabled={isCartNavigating}
                 className={cn(
                   "relative p-1 transition-colors hover:scale-110 disabled:pointer-events-none disabled:opacity-70",
-                  (scrolled || location !== "/") ? "text-foreground" : "text-white",
+                  "text-foreground",
                 )}
               >
                 {isCartNavigating ? (

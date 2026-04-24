@@ -114,11 +114,11 @@ export function CategorySidebar({
         </AnimatePresence>
       </div>
 
-      <div className="surface-card sticky top-32 hidden flex-col gap-4 p-6 lg:flex">
+      <div className="surface-card sticky top-32 hidden max-h-[calc(100vh-10rem)] flex-col gap-4 overflow-hidden p-6 lg:flex">
         <h3 className="mb-6 flex items-center gap-3 px-2 font-serif text-3xl font-bold text-foreground">
           Colecciones
         </h3>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 overflow-y-auto pr-1 no-scrollbar">
           {mobileOptions.map((option) =>
             isFilter ? (
               <button

@@ -29,7 +29,7 @@ export function ProductCard({ product }: ProductCardProps) {
       className="surface-card group flex h-full flex-col overflow-hidden transition-all duration-500 hover:shadow-[0_24px_64px_rgba(74,51,98,0.14)]"
       itemScope itemType="https://schema.org/Product"
     >
-      <Link href={getProductPath(product)} className="block relative aspect-[4/5] overflow-hidden">
+      <Link href={getProductPath(product)} className="block relative aspect-[4/5] overflow-hidden bg-white">
         <img 
           itemProp="image"
           src={product.image} 
@@ -37,7 +37,7 @@ export function ProductCard({ product }: ProductCardProps) {
           loading="lazy"
           decoding="async"
           fetchPriority="low"
-          className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110"
+          className="w-full h-full object-contain object-center p-4 transition-transform duration-[1.5s] group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors duration-500" />
         
@@ -52,7 +52,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <span className="text-[10px] font-black text-accent uppercase tracking-[0.2em] mb-3">
           {categoryLabel}
         </span>
-        <h3 itemProp="name" className="mb-3 font-serif text-2xl font-bold leading-tight text-foreground">
+        <h3 itemProp="name" className="mb-3 font-serif text-[2rem] font-bold leading-tight text-[#8F73B1]">
           {product.name}
         </h3>
         

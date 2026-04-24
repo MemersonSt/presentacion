@@ -189,11 +189,11 @@ export default function ProductDetails() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="surface-card relative aspect-[4/5] w-full max-w-xl overflow-hidden group"
+              className="surface-card relative aspect-[4/5] w-full max-w-xl overflow-hidden group bg-white"
             >
               <img
                 src={selectedImage}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 cursor-zoom-in"
+                className="w-full h-full object-contain object-center p-6 transition-transform duration-700 group-hover:scale-[1.02] cursor-zoom-in"
                 alt={product.name}
                 loading="eager"
                 decoding="async"
@@ -210,13 +210,13 @@ export default function ProductDetails() {
                   onMouseEnter={() => setSelectedImage(img)}
                   onClick={() => setSelectedImage(img)}
                   className={cn(
-                    "h-24 w-24 min-w-[6rem] overflow-hidden rounded-2xl border-2 transition-all hover:scale-105",
+                    "h-24 w-24 min-w-[6rem] overflow-hidden rounded-2xl border-2 bg-white transition-all hover:scale-105",
                     selectedImage === img ? "border-accent shadow-lg" : "border-primary/10",
                   )}
                 >
                   <img
                     src={img}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain object-center p-1"
                     alt={`${product.name} vista ${i + 1}`}
                     loading="lazy"
                     decoding="async"
@@ -243,22 +243,22 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            <p className="text-foreground/60 text-xl leading-relaxed mb-12 max-w-xl font-serif italic border-l-4 border-primary/30 pl-8">
+            <p className="mb-12 max-w-xl border-l-4 border-[#D7C4EA] pl-8 font-serif text-[1.65rem] leading-relaxed italic text-[#9E7FBE]">
               "{product.description}"
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-16">
               <div className="space-y-3">
                 <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-accent">Lo que recibes</h4>
-                <p className="text-foreground/80 font-medium text-sm leading-relaxed">{product.includes}</p>
+                <p className="text-[1.05rem] font-medium leading-relaxed text-[#8F73B1]">{product.includes}</p>
               </div>
               <div className="space-y-3">
                 <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-accent">Dimensiones</h4>
-                <p className="text-foreground/80 font-medium text-sm leading-relaxed">{product.size}</p>
+                <p className="text-[1.05rem] font-medium leading-relaxed text-[#8F73B1]">{product.size}</p>
               </div>
               <div className="space-y-3">
                 <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-accent">Promesa de Entrega</h4>
-                <p className="text-foreground/80 font-medium text-sm leading-relaxed flex items-center gap-2">
+                <p className="flex items-center gap-2 text-[1.05rem] font-medium leading-relaxed text-[#8F73B1]">
                   <Clock className="w-4 h-4" /> {product.deliveryTime} (Guayaquil)
                 </p>
               </div>

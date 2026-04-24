@@ -186,6 +186,14 @@ export default function Checkout() {
     () => resolveShippingCostBySector(sectorInput, shippingSectorRates),
     [sectorInput, shippingSectorRates]
   );
+  const sectorSuggestions = useMemo(() => {
+    const query = normalizeSectorName(sectorInput);
+    if (!query) return [];
+
+    return shippingSectorRates
+      .filter((item) => normalizeSectorName(item.sector).includes(query))
+      .slice(0, 6);
+  }, [sectorInput, shippingSectorRates]);
 
   const receiverNameRef = useRef<HTMLInputElement>(null);
   const receiverPhoneRef = useRef<HTMLInputElement>(null);
@@ -831,8 +839,8 @@ export default function Checkout() {
           })}
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_430px] lg:items-start">
-          <aside className="order-2 checkout-panel rounded-[2rem] p-6 lg:sticky lg:top-8 lg:order-2">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_490px] lg:items-start">
+          <aside className="order-2 checkout-panel rounded-[2rem] p-7 lg:sticky lg:top-8 lg:order-2">
             <div className="space-y-6">
               <div>
                 <div className="mb-4 flex items-center justify-between gap-4">
@@ -859,22 +867,22 @@ export default function Checkout() {
                     items.map((item, i) => (
                       <div
                         key={i}
-                        className="flex min-w-[240px] items-center gap-3 rounded-2xl border border-[#E5D7EF] bg-[#FBF7FD] p-3"
+                        className="flex min-w-[285px] items-center gap-4 rounded-2xl border border-[#E5D7EF] bg-[#FBF7FD] p-4"
                       >
-                        <div className="h-16 w-14 shrink-0 overflow-hidden rounded-xl border border-[#DCC5E8] bg-white">
+                        <div className="h-20 w-16 shrink-0 overflow-hidden rounded-xl border border-[#DCC5E8] bg-white">
                           <img
                             src={item.product.image}
-                            className="h-full w-full object-cover"
+                            className="h-full w-full object-contain p-1"
                           />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h4 className="truncate text-sm font-black text-[#4A3362]">
+                          <h4 className="truncate text-[1.12rem] font-black text-[#4A3362]">
                             {item.product.name}
                           </h4>
-                          <p className="mt-1 text-sm font-black text-[#5A3F73]">
+                          <p className="mt-1.5 text-[1.12rem] font-black text-[#5A3F73]">
                             {item.product.price}
                           </p>
-                          <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-[#8D73A6]">
+                          <p className="mt-1.5 text-[0.92rem] font-bold uppercase tracking-[0.16em] text-[#8D73A6]">
                             Cant: {item.quantity}
                           </p>
                         </div>
@@ -884,7 +892,7 @@ export default function Checkout() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-[#E5D7EF] bg-[#FBF7FD] p-4">
+              <div className="rounded-2xl border border-[#E5D7EF] bg-[#FBF7FD] p-5">
                 <div className="mb-4">
                   <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-[#6B5487]">
                     Cupón
@@ -927,18 +935,18 @@ export default function Checkout() {
                   )}
                 </div>
 
-                <div className="space-y-3 border-t border-[#DCC5E8] pt-4">
-                  <div className="flex justify-between text-sm font-semibold text-[#6B5487]">
+                <div className="space-y-3.5 border-t border-[#DCC5E8] pt-5">
+                  <div className="flex justify-between text-[1rem] font-semibold text-[#6B5487]">
                     <span>Subtotal</span>
                     <span>${cartSubtotal.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-sm font-semibold text-[#6B5487]">
+                  <div className="flex justify-between text-[1rem] font-semibold text-[#6B5487]">
                     <span>Sector</span>
                     <span className="text-[#5A3F73]">
                       {sectorInput || "Pendiente"}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm font-semibold text-[#6B5487]">
+                  <div className="flex justify-between text-[1rem] font-semibold text-[#6B5487]">
                     <span>Envío</span>
                     <span className="text-[#5A3F73]">
                       {shippingResolution.isMatched
@@ -948,24 +956,24 @@ export default function Checkout() {
                           : "Ingresa tu sector"}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm font-semibold text-[#6B5487]">
+                  <div className="flex justify-between text-[1rem] font-semibold text-[#6B5487]">
                     <span>Pago</span>
                     <span className="text-[#5A3F73]">{paymentMethod}</span>
                   </div>
                   {discountAmount > 0 && (
-                    <div className="flex justify-between text-sm font-bold text-green-600">
+                    <div className="flex justify-between text-[1rem] font-bold text-green-600">
                       <span>Descuento</span>
                       <span>-${discountAmount.toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between border-t border-[#DCC5E8] pt-3 text-2xl font-black text-[#4A3362]">
+                  <div className="flex justify-between border-t border-[#DCC5E8] pt-4 text-[2.15rem] font-black text-[#4A3362]">
                     <span className="font-serif">Total</span>
                     <span className="text-[#5A3F73]">
                       ${finalTotal.toFixed(2)}
                     </span>
                   </div>
                   {shippingResolution.isMatched && (
-                    <p className="text-right text-[11px] font-semibold text-[#6B5487]">
+                    <p className="text-right text-[0.82rem] font-semibold text-[#6B5487]">
                       Total con envío adicional de ${shippingCost.toFixed(2)} para {shippingResolution.matchedSector}.
                     </p>
                   )}
@@ -1125,6 +1133,23 @@ export default function Checkout() {
                         <option key={item.sector} value={item.sector} />
                       ))}
                     </datalist>
+                    {sectorSuggestions.length > 0 && !shippingResolution.isMatched ? (
+                      <div className="overflow-hidden rounded-2xl border border-[#E5D7EF] bg-white shadow-sm">
+                        {sectorSuggestions.map((item) => (
+                          <button
+                            key={item.sector}
+                            type="button"
+                            onClick={() => setSectorInput(item.sector)}
+                            className="flex w-full items-center justify-between border-b border-[#F0E6F7] px-4 py-3 text-left text-sm font-semibold text-[#6B5487] transition-colors hover:bg-[#FBF7FD] last:border-b-0"
+                          >
+                            <span>{item.sector}</span>
+                            <span className="text-[0.78rem] font-black uppercase tracking-[0.12em] text-[#A582CB]">
+                              sugerido
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
                     <span className="text-xs font-medium text-[#6B5487]">
                       {shippingResolution.isMatched
                         ? `Costo de envío para ${shippingResolution.matchedSector}: $${shippingCost.toFixed(2)}`
