@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import { Star, Instagram, Facebook, Music2, Mail, MessageSquare, Phone } from "lucide-react";
 import { Link } from "wouter";
@@ -15,7 +15,9 @@ import { Seo } from "@/components/Seo";
 import { DEFAULT_COMPANY, absoluteUrl } from "@/lib/site";
 
 export default function Home() {
-  const { data: dbReviews = [], isLoading: isLoadingReviews } = useReviews();
+  const reviewsSectionRef = useRef<HTMLElement | null>(null);
+  const [shouldLoadReviews, setShouldLoadReviews] = useState(false);
+  const { data: dbReviews = [], isLoading: isLoadingReviews } = useReviews(shouldLoadReviews);
   const createReviewMutation = useCreateReview();
   
   const [newReview, setNewReview] = useState({ name: "", content: "", stars: 5 });
@@ -41,6 +43,29 @@ export default function Home() {
   // Productos y Datos desde la API real
   const { data: allProducts = [], isLoading: isLoadingAll } = useProducts();
   const { data: company } = useCompany();
+
+  useEffect(() => {
+    if (shouldLoadReviews) return;
+
+    const target = reviewsSectionRef.current;
+    if (!target || typeof IntersectionObserver === "undefined") {
+      setShouldLoadReviews(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShouldLoadReviews(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "300px 0px" },
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [shouldLoadReviews]);
 
   const sectionVariants: Variants = {
     hidden: { opacity: 0, y: 50 },
@@ -165,6 +190,7 @@ export default function Home() {
         {/* REVIEWS SECTION */}
         <motion.section 
           id="testimonios"
+          ref={reviewsSectionRef}
           variants={sectionVariants}
           initial="hidden"
           whileInView="visible"
@@ -246,7 +272,7 @@ export default function Home() {
             ) : null}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
-               {isLoadingReviews ? (
+               {!shouldLoadReviews || isLoadingReviews ? (
                   <div className="col-span-full text-center py-10 opacity-30">Cargando experiencias...</div>
                ) : dbReviews.length > 0 ? (
                  dbReviews.map((review, i) => (
@@ -321,7 +347,7 @@ export default function Home() {
                    src="/logo-footer.png"
                    alt="DIFIORI"
                    className="mb-12 h-36 w-auto object-contain"
-                   loading="eager"
+                   loading="lazy"
                  />
                  <p className="mb-12 text-[1.45rem] font-black leading-relaxed text-[#4B1F6F]" style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}>
                    Diseñando emociones con las flores más frescas de exportación en Guayaquil.

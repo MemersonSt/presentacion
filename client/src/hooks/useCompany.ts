@@ -36,7 +36,7 @@ export function useCompany() {
   return useQuery<CompanyInfo, Error>({
     queryKey: companyQueryKey,
     queryFn: () => fetchCompany(),
-    staleTime: 0,
-    refetchOnMount: "always",
+    staleTime: 1000 * 60 * 10,
+    refetchOnMount: false,
   });
 }

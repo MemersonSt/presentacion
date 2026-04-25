@@ -31,6 +31,14 @@ type PaymentSettings = {
   ownerNotificationName: string;
 };
 
+const DEFAULT_TRANSFER_INSTRUCTIONS = `Banco Pichincha cta ahorro # 2202306049
+Banco Pacifico cta ahorro # 0851179635
+Banco Guayaquil cta ahorro # 1389429
+
+Nombre: Maritza Iveth Medranda Flor
+CI: 0910784024
+Correo: ventas@difiori.com.ec`;
+
 const DEFAULT_SETTINGS: PaymentSettings = {
   paypalEnvironment: "sandbox",
   paypalSandboxClientId: "",
@@ -48,7 +56,7 @@ const DEFAULT_SETTINGS: PaymentSettings = {
   payphoneLiveStoreId: "",
   payphoneLiveToken: "",
   payphoneLiveWebhookToken: "",
-  transferInstructions: "",
+  transferInstructions: DEFAULT_TRANSFER_INSTRUCTIONS,
   shippingSectorRates: [{ sector: "", cost: "" }],
   ownerNotificationEmail: "",
   ownerNotificationName: "",
@@ -358,7 +366,7 @@ export default function PaymentsPage() {
             value={form.transferInstructions}
             onChange={(e) => updateField("transferInstructions", e.target.value)}
             rows={6}
-            placeholder="Banco, cuenta, nombre del titular, mensaje de verificacion, etc."
+            placeholder={DEFAULT_TRANSFER_INSTRUCTIONS}
             className="w-full rounded-lg border border-gray-200 bg-white px-3 py-3 text-sm outline-none focus:border-blue-500"
           />
         </label>

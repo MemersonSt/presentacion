@@ -95,6 +95,17 @@ const PAYMENT_METHODS: {
   },
 ];
 
+const DEFAULT_TRANSFER_INSTRUCTIONS = `Banco Pichincha cta ahorro # 2202306049
+Banco Pacifico cta ahorro # 0851179635
+Banco Guayaquil cta ahorro # 1389429
+
+Nombre: Maritza Iveth Medranda Flor
+CI: 0910784024
+Correo: ventas@difiori.com.ec`;
+
+const DEFAULT_ZELLE_INSTRUCTIONS = `Correo Zelle: rosamoncada085@gmail.com
+Titular: Roberto Rodriguez`;
+
 function normalizeSectorRates(value: unknown): ShippingSectorRate[] {
   if (!Array.isArray(value)) return [];
 
@@ -177,7 +188,7 @@ export default function Checkout() {
   const payphoneBoxStorageKey = "pp_box_payload";
   const transferInstructions =
     company?.settings?.paymentSettings?.transferInstructions ||
-    "Banco: Banco del Pichincha\nCuenta: 2205748975\nTitular: DIFIORI";
+    DEFAULT_TRANSFER_INSTRUCTIONS;
   const shippingSectorRates = useMemo(
     () => normalizeSectorRates(company?.settings?.paymentSettings?.shippingSectorRates),
     [company?.settings?.paymentSettings?.shippingSectorRates]
@@ -1328,8 +1339,11 @@ export default function Checkout() {
                           <p className="text-lg font-black text-[#4A3362]">
                             Pago por Zelle
                           </p>
-                          <p className="mt-1 text-base font-black text-[#4A3362]">
-                            Registraremos tu pedido y el vendedor compartirá o confirmará los datos de pago. Si ya tienes el comprobante, adjúntalo aquí para subirlo automáticamente al confirmar.
+                          <pre className="mt-2 whitespace-pre-wrap font-sans text-base leading-relaxed text-[#4A3362]">
+                            {DEFAULT_ZELLE_INSTRUCTIONS}
+                          </pre>
+                          <p className="mt-3 text-base font-black text-[#4A3362]">
+                            Si ya hiciste el pago, adjunta aquí tu comprobante para subirlo automáticamente al confirmar el pedido.
                           </p>
                         </div>
                       </div>

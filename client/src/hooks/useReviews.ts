@@ -26,10 +26,11 @@ export async function fetchReviews(baseUrl?: string): Promise<Review[]> {
   }
 }
 
-export function useReviews() {
+export function useReviews(enabled = true) {
   return useQuery<Review[], Error>({
     queryKey: reviewsQueryKey,
     queryFn: () => fetchReviews(),
+    enabled,
     staleTime: 1000 * 60 * 5, // 5 minutos de caché
   });
 }

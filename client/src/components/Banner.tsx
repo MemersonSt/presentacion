@@ -9,15 +9,15 @@ import { getPublicAppConfig } from "@/lib/runtime-config";
 
 const DEFAULT_SLIDES = [
   {
-    image: "/assets/banner4.png",
-    title: "Regalos que trascienden",
+    image: "/assets/banner_collage.jpg",
+    title: "Sorprende hoy. Nosotros lo entregamos por ti.",
     subtitle: "Historias reales de alegría en Guayaquil",
     cta: "Ver testimonios",
     href: "/#testimonios",
   },
   {
     image: "https://images.unsplash.com/photo-1508784411316-02b8cd4d3a3a?q=80&w=2000&auto=format&fit=crop",
-    title: "Hoy haces su día especial",
+    title: "Entregas reales personas reales.",
     subtitle: "Entrega en Guayaquil en horas",
     cta: "Comprar ahora",
     href: "/shop",
@@ -65,6 +65,8 @@ export function Banner() {
     }));
   }, [cms]);
 
+  const activeSlide = slides[selectedIndex] || DEFAULT_SLIDES[0];
+
   useEffect(() => {
     if (slides.length <= 1) return;
     const timer = setInterval(() => {
@@ -105,27 +107,23 @@ export function Banner() {
               />
             ) : (
               <motion.img 
-                src={slides[selectedIndex].image} 
-                alt={`Florería DIFIORI - ${slides[selectedIndex].title}`}
+                src={activeSlide.image} 
+                alt={`Florería DIFIORI - ${activeSlide.title}`}
                 initial={{ scale: 1.15 }}
                 animate={{ scale: 1 }}
                 transition={{ duration: 25, ease: "linear" }}
                 loading="eager"
                 decoding="async"
                 fetchPriority="high"
+                sizes="100vw"
                 className="h-full w-full object-cover object-center contrast-[1.15] saturate-[1.1] brightness-[0.85]"
               />
             )}
             {/* Base Overlay to guarantee text readability */}
             <div className="absolute inset-0 -z-10 bg-[#111]" />
-            <img
-              src={slides[selectedIndex].image}
-              alt=""
-              aria-hidden="true"
-              className="absolute inset-0 -z-10 h-full w-full object-cover object-center blur-2xl scale-110 opacity-45"
-            />
             <div className="absolute inset-0 bg-black/30" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#111111]/95 via-[#111111]/30 to-transparent opacity-90" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_40%),linear-gradient(135deg,rgba(17,17,17,0.12),rgba(17,17,17,0.5))]" />
           </motion.div>
         </AnimatePresence>
       </div>
@@ -181,16 +179,16 @@ export function Banner() {
                   className="text-center md:text-left"
                 >
                   <h2 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white mb-5 leading-none tracking-tight">
-                    {slides[selectedIndex].title}
+                    {activeSlide.title}
                   </h2>
                   <p className="text-white/60 font-serif italic text-xl md:text-2xl">
-                    {slides[selectedIndex].subtitle}
+                    {activeSlide.subtitle}
                   </p>
                 </motion.div>
              </AnimatePresence>
 
             <div className="flex flex-col sm:flex-row gap-6 items-center">
-              <Link href={slides[selectedIndex].href} className="group relative flex min-h-[58px] min-w-[240px] items-center justify-center gap-4 overflow-hidden rounded-full bg-accent px-12 py-5 text-sm font-black uppercase tracking-[0.22em] text-white shadow-lg shadow-[#3D2852]/30 transition-all hover:-translate-y-0.5 hover:bg-[#4A3362] hover:shadow-xl hover:shadow-[#3D2852]/35">
+              <Link href={activeSlide.href} className="group relative flex min-h-[58px] min-w-[240px] items-center justify-center gap-4 overflow-hidden rounded-full bg-accent px-12 py-5 text-sm font-black uppercase tracking-[0.22em] text-white shadow-lg shadow-[#3D2852]/30 transition-all hover:-translate-y-0.5 hover:bg-[#4A3362] hover:shadow-xl hover:shadow-[#3D2852]/35">
                 <div className="absolute inset-0 translate-y-[100%] bg-white/10 transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:translate-y-0" />
                 <AnimatePresence mode="wait">
                   <motion.span
@@ -201,7 +199,7 @@ export function Banner() {
                     transition={{ duration: 0.4 }}
                     className="relative z-10 flex items-center gap-4 text-white transition-colors duration-500"
                   >
-                    {slides[selectedIndex].cta}
+                    {activeSlide.cta}
                     <ArrowRight className="h-4 w-4" />
                   </motion.span>
                 </AnimatePresence>

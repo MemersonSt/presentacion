@@ -13,8 +13,48 @@ declare global {
 }
 
 const PAYPHONE_BOX_STORAGE_KEY = "pp_box_payload";
+const PAYPHONE_SDK_URL = "https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js";
+const PAYPHONE_CSS_URL = "https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.css";
 
 type GatewayState = "preparing" | "ready" | "error";
+
+function ensureStylesheet(href: string) {
+  const existing = document.querySelector(`link[href="${href}"]`);
+  if (existing) return;
+
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = href;
+  document.head.appendChild(link);
+}
+
+function ensureScript(src: string) {
+  return new Promise<void>((resolve, reject) => {
+    const existing = document.querySelector(`script[src="${src}"]`) as HTMLScriptElement | null;
+    if (existing) {
+      if (existing.dataset.loaded === "true") {
+        resolve();
+        return;
+      }
+
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", () => reject(new Error("No se pudo cargar el SDK de PayPhone.")), {
+        once: true,
+      });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.onload = () => {
+      script.dataset.loaded = "true";
+      resolve();
+    };
+    script.onerror = () => reject(new Error("No se pudo cargar el SDK de PayPhone."));
+    document.head.appendChild(script);
+  });
+}
 
 export default function PaymentGateway() {
   const [, setLocation] = useLocation();
@@ -66,13 +106,26 @@ export default function PaymentGateway() {
   useEffect(() => {
     if (!widgetPayload) return;
 
-    let attempts = 0;
     let cancelled = false;
 
-    const initializePayPhoneBox = () => {
+    const initializePayPhoneBox = async () => {
       if (cancelled) return;
+
+      try {
+        ensureStylesheet(PAYPHONE_CSS_URL);
+        await ensureScript(PAYPHONE_SDK_URL);
+      } catch (error) {
+        setGatewayState("error");
+        setErrorMessage(error instanceof Error ? error.message : "No se pudo cargar el SDK de PayPhone.");
+        return;
+      }
+
       const PayphoneButtonBox = window.PPaymentButtonBox;
-      if (!PayphoneButtonBox) return;
+      if (!PayphoneButtonBox) {
+        setGatewayState("error");
+        setErrorMessage("No se pudo cargar el SDK de PayPhone.");
+        return;
+      }
 
       const container = document.getElementById("pp-button");
       if (container) {
@@ -83,23 +136,7 @@ export default function PaymentGateway() {
       payphoneBox.render("pp-button");
     };
 
-    const waitForSdk = () => {
-      if (window.PPaymentButtonBox) {
-        initializePayPhoneBox();
-        return;
-      }
-
-      attempts += 1;
-      if (attempts >= 20) {
-        setGatewayState("error");
-        setErrorMessage("No se pudo cargar el SDK de PayPhone.");
-        return;
-      }
-
-      window.setTimeout(waitForSdk, 150);
-    };
-
-    waitForSdk();
+    initializePayPhoneBox();
 
     return () => {
       cancelled = true;
