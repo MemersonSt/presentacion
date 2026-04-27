@@ -23,7 +23,6 @@ import { categoriesQueryKey, fetchCategories } from "../client/src/hooks/useCate
 import { companyQueryKey, fetchCompany } from "../client/src/hooks/useCompany";
 import { cmsHomeHeroQueryKey, fetchHomeHero } from "../client/src/hooks/useCMS";
 import { productsQueryKey, fetchProducts } from "../client/src/hooks/useProducts";
-import { reviewsQueryKey, fetchReviews } from "../client/src/hooks/useReviews";
 import type { Product } from "../client/src/data/mock";
 import type { QueryClient } from "@tanstack/react-query";
 import type { ViteDevServer } from "vite";
@@ -81,6 +80,7 @@ const SITE_URL =
 const ASSET_BASE_URL =
   normalizeUrl(process.env.APP_PUBLIC_ASSET_URL || process.env.ASSET_BASE_URL || process.env.VITE_ASSET_BASE_URL) ||
   "";
+const DEFAULT_HERO_IMAGE = "/assets/banner_collage.jpg";
 const PAYPHONE_WEB_TOKEN = process.env.PAYPHONE_WEB_TOKEN || process.env.PAYPHONE_TOKEN;
 const PAYPHONE_WEB_STORE_ID = process.env.PAYPHONE_WEB_STORE_ID || process.env.PAYPHONE_STORE_ID;
 
@@ -162,6 +162,33 @@ function buildPublicConfigScript() {
   })}</script>`;
 }
 
+function normalizePublicAssetUrl(url: string) {
+  if (!url || url.startsWith("data:")) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+
+  const path = url.startsWith("/") ? url : `/${url}`;
+  return ASSET_BASE_URL ? `${ASSET_BASE_URL}${path}` : path;
+}
+
+function getHomeHeroPreload(queryClient: QueryClient) {
+  const cms = queryClient.getQueryData<{
+    images?: Array<string | { url?: unknown }> | string | null;
+  }>(cmsHomeHeroQueryKey);
+  const images = Array.isArray(cms?.images) ? cms.images : [];
+  const firstImage = images[0];
+  const rawImage =
+    typeof firstImage === "string"
+      ? firstImage
+      : firstImage && typeof firstImage === "object"
+        ? String(firstImage.url || "")
+        : DEFAULT_HERO_IMAGE;
+  const href = normalizePublicAssetUrl(rawImage.trim() || DEFAULT_HERO_IMAGE);
+
+  return href
+    ? `<link rel="preload" as="image" href="${escapeXml(href)}" fetchpriority="high" imagesizes="100vw" />`
+    : "";
+}
+
 function shouldSsrPath(path: string) {
   return (
     path === "/" ||
@@ -185,10 +212,6 @@ async function prefetchSsrRouteData(queryClient: QueryClient, path: string, base
       queryClient.prefetchQuery({
         queryKey: companyQueryKey,
         queryFn: () => fetchCompany(baseUrl),
-      }),
-      queryClient.prefetchQuery({
-        queryKey: reviewsQueryKey,
-        queryFn: () => fetchReviews(baseUrl),
       }),
       queryClient.prefetchQuery({
         queryKey: cmsHomeHeroQueryKey,
@@ -660,7 +683,7 @@ app.use((req, res, next) => {
       });
 
       const page = injectHtml(template, {
-        head: renderSeoTags(seo),
+        head: `${renderSeoTags(seo)}${req.path === "/" ? getHomeHeroPreload(queryClient) : ""}`,
         appHtml,
         stateScript: `${buildPublicConfigScript()}<script>window.__REACT_QUERY_STATE__ = ${serializeForScript(dehydratedState)}</script>`,
       });
