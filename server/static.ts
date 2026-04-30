@@ -7,7 +7,20 @@ export function getDistPath() {
 }
 
 export async function getProdTemplate() {
-  return fs.promises.readFile(path.resolve(getDistPath(), "index.html"), "utf-8");
+  const template = await fs.promises.readFile(path.resolve(getDistPath(), "index.html"), "utf-8");
+
+  return template.replace(
+    /<link rel="stylesheet"([^>]*?)href="([^"]+\.css)"([^>]*)>/g,
+    (_match, beforeHref = "", href = "", afterHref = "") => {
+      const attrs = `${beforeHref}${afterHref}`.trim();
+      const normalizedAttrs = attrs ? ` ${attrs}` : "";
+
+      return [
+        `<link rel="preload" as="style" href="${href}"${normalizedAttrs} onload="this.onload=null;this.rel='stylesheet'">`,
+        `<noscript><link rel="stylesheet" href="${href}"${normalizedAttrs}></noscript>`,
+      ].join("");
+    },
+  );
 }
 
 export function serveStatic(app: Express) {

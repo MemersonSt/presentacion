@@ -63,20 +63,6 @@
   }
 }
 
-.canvas-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1;
-  pointer-events: none;
-}
-
-.glass-card {
-  @apply bg-white/40 backdrop-blur-xl border border-white/40 shadow-xl;
-}
-
 @layer components {
   .page-shell {
     @apply min-h-screen bg-background px-6 pb-24 pt-36 md:px-10 lg:px-20;
@@ -257,10 +243,6 @@
 .checkout-field > span {
   @apply flex items-center gap-2;
   color: #4B0082;
-}
-
-.nav-link-hover {
-  @apply relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-accent after:transition-all hover:after:w-full;
 }
 
 .product-description-strong {
