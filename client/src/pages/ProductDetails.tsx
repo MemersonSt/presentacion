@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "./product-details.css";
 import { Link, useLocation, useRoute } from "wouter";
 import { MessageSquare, Truck, ShieldCheck, Clock, ShoppingBag, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -24,6 +23,10 @@ import {
 } from "@shared/catalog";
 
 export default function ProductDetails() {
+  React.useEffect(() => {
+    void import("./product-details.css");
+  }, []);
+
   const [canonicalMatch, canonicalParams] = useRoute("/producto/:slug");
   const [legacyMatch, legacyParams] = useRoute("/product/:id");
   const [, setLocation] = useLocation();

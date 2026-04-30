@@ -138,6 +138,27 @@ function serializeForScript(value: unknown) {
     .replace(/\u2029/g, "\\u2029");
 }
 
+function isClosedStreamError(error: unknown) {
+  if (!error || typeof error !== "object") return false;
+
+  const code = "code" in error ? String(error.code || "") : "";
+  const name = "name" in error ? String(error.name || "") : "";
+  const message = "message" in error ? String(error.message || "") : "";
+
+  return (
+    code === "ERR_STREAM_UNABLE_TO_PIPE" ||
+    code === "ERR_STREAM_PREMATURE_CLOSE" ||
+    code === "ECONNRESET" ||
+    name === "AbortError" ||
+    message.includes("premature close") ||
+    message.includes("aborted")
+  );
+}
+
+function shouldIgnoreProxyStreamError(error: unknown, req: Request, res: Response) {
+  return isClosedStreamError(error) && (req.destroyed || req.aborted || res.destroyed || res.writableEnded);
+}
+
 function injectHtml(
   template: string,
   {
@@ -281,6 +302,12 @@ async function proxyToBackend(req: Request, res: Response) {
   const ifModifiedSince = req.get("If-Modified-Since");
   const range = req.get("Range");
   const cacheControl = req.get("Cache-Control");
+  const abortController = new AbortController();
+  const abortRequest = () => abortController.abort();
+
+  req.once("aborted", abortRequest);
+  req.once("close", abortRequest);
+  res.once("close", abortRequest);
 
   try {
     const response = await fetch(backendUrl, {
@@ -293,6 +320,7 @@ async function proxyToBackend(req: Request, res: Response) {
         ...(range ? { Range: range } : {}),
         ...(cacheControl ? { "Cache-Control": cacheControl } : {}),
       },
+      signal: abortController.signal,
       body: ["POST", "PUT", "PATCH"].includes(req.method) ? JSON.stringify(req.body) : undefined,
     });
 
@@ -325,8 +353,16 @@ async function proxyToBackend(req: Request, res: Response) {
     await pipeline(Readable.fromWeb(response.body as any), res);
     return;
   } catch (error) {
+    if (shouldIgnoreProxyStreamError(error, req, res)) {
+      return;
+    }
+
     console.error(`Proxy Error (Store -> Backend) [${req.method} ${backendUrl}]:`, error);
     return res.status(500).json({ status: "error", message: "Error conectando con el servidor de productos" });
+  } finally {
+    req.off("aborted", abortRequest);
+    req.off("close", abortRequest);
+    res.off("close", abortRequest);
   }
 }
 
@@ -335,6 +371,12 @@ app.get("/image-proxy", async (req, res) => {
   if (!rawUrl) {
     return res.status(400).send("Missing image url");
   }
+  const abortController = new AbortController();
+  const abortRequest = () => abortController.abort();
+
+  req.once("aborted", abortRequest);
+  req.once("close", abortRequest);
+  res.once("close", abortRequest);
 
   let target: URL;
   try {
@@ -349,6 +391,7 @@ app.get("/image-proxy", async (req, res) => {
 
   try {
     const response = await fetch(target, {
+      signal: abortController.signal,
       headers: {
         Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
       },
@@ -377,8 +420,16 @@ app.get("/image-proxy", async (req, res) => {
     await pipeline(Readable.fromWeb(response.body as any), res);
     return;
   } catch (error) {
+    if (shouldIgnoreProxyStreamError(error, req, res)) {
+      return;
+    }
+
     console.error("Image proxy error:", error);
     return res.status(502).send("Image proxy failed");
+  } finally {
+    req.off("aborted", abortRequest);
+    req.off("close", abortRequest);
+    res.off("close", abortRequest);
   }
 });
 

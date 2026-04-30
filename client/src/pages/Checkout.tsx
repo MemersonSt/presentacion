@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import "./checkout.css";
 import {
   ShoppingBag,
   ChevronLeft,
@@ -164,6 +163,10 @@ function resolveShippingCostBySector(
 }
 
 export default function Checkout() {
+  useEffect(() => {
+    void import("./checkout.css");
+  }, []);
+
   const { items, cartTotal, clearCart, setIsCartOpen, isCartLoading } = useCart();
   const [, setLocation] = useLocation();
   const { data: company } = useCompany();
