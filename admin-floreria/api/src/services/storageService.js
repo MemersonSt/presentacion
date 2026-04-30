@@ -1,8 +1,12 @@
 const path = require("path");
 const SftpClient = require("ssh2-sftp-client");
+const streamifier = require("streamifier");
 const minioClient = require("../lib/s3Config");
+const { cloudinary, isCloudinaryConfigured } = require("../lib/cloudinary");
 
-const STORAGE_TYPE = String(process.env.STORAGE_TYPE || "minio").toLowerCase();
+function getStorageType() {
+  return String(process.env.STORAGE_TYPE || "minio").toLowerCase();
+}
 
 function trimSlashes(value = "") {
   return String(value || "").replace(/^\/+|\/+$/g, "");
@@ -101,9 +105,61 @@ async function uploadToSftp({ objectName, buffer }) {
   };
 }
 
+async function uploadToCloudinary({ objectName, buffer, contentType }) {
+  if (!isCloudinaryConfigured()) {
+    throw new Error("Configuracion Cloudinary incompleta");
+  }
+
+  const normalizedObjectName = trimSlashes(objectName);
+  const parsedObjectName = path.posix.parse(normalizedObjectName);
+  const folder = trimSlashes(parsedObjectName.dir);
+  const publicId = parsedObjectName.name || `upload-${Date.now()}`;
+
+  const result = await new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: folder || undefined,
+        public_id: publicId,
+        resource_type: "auto",
+        overwrite: false,
+        unique_filename: false,
+        filename_override: parsedObjectName.base || undefined,
+        invalidate: true,
+      },
+      (error, uploadResult) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        resolve(uploadResult);
+      }
+    );
+
+    streamifier.createReadStream(buffer).pipe(uploadStream);
+  });
+
+  return {
+    url: result.secure_url || result.url,
+    objectName: result.public_id,
+    storageType: "cloudinary",
+    contentType,
+  };
+}
+
 async function uploadBuffer({ objectName, buffer, contentType }) {
-  if (STORAGE_TYPE === "sftp") {
+  const storageType = getStorageType();
+
+  if (storageType === "cloudinary") {
+    return uploadToCloudinary({ objectName, buffer, contentType });
+  }
+
+  if (storageType === "sftp") {
     return uploadToSftp({ objectName, buffer, contentType });
+  }
+
+  if (storageType !== "minio") {
+    throw new Error(`Proveedor de almacenamiento no soportado: ${storageType}`);
   }
 
   return uploadToMinio({ objectName, buffer, contentType });

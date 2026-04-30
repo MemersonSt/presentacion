@@ -190,7 +190,7 @@ export default function ImageUpload({
           />
 
           <p className="text-xs text-gray-500">
-            Puedes subir una imagen al MinIO o pegar una URL directa para que
+            Puedes subir una imagen al proveedor configurado o pegar una URL directa para que
             se vea en el admin y en la tienda.
           </p>
           <p className="text-xs text-amber-600">

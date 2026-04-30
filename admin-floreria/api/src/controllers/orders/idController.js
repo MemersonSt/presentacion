@@ -3,8 +3,12 @@ const { db: prisma } = require("../../lib/prisma");
 const { orderEvents } = require("../../events/orderEvents");
 const minioClient = require("../../lib/s3Config");
 
-const PROOFS_BUCKET_NAME = "difiori";
-const PROOFS_PUBLIC_BASE_URL = "http://66.94.98.69:9000";
+const PROOFS_BUCKET_NAME = process.env.MINIO_BUCKET || "difiori";
+const PROOFS_PUBLIC_URL = String(
+  process.env.MINIO_PUBLIC_URL || `http://66.94.98.69:9000/${PROOFS_BUCKET_NAME}`
+)
+  .trim()
+  .replace(/\/+$/g, "");
 
 const orderSelect = {
   id: true,
@@ -129,21 +133,39 @@ function getPaymentProofProxyUrl(orderId, rawUrl) {
   return `/api/orders/${orderId}/payment-proof/image`;
 }
 
+function isAbsoluteHttpUrl(value) {
+  return /^https?:\/\//i.test(String(value || ""));
+}
+
 function parseMinioObjectFromUrl(fileUrl) {
   if (!fileUrl) return null;
 
   try {
     const parsedUrl = new URL(fileUrl);
+    const publicUrl = new URL(PROOFS_PUBLIC_URL);
+    if (parsedUrl.origin !== publicUrl.origin) {
+      return null;
+    }
+
     const pathnameParts = parsedUrl.pathname
       .split("/")
       .filter(Boolean)
       .map((segment) => decodeURIComponent(segment));
+    const publicPathParts = publicUrl.pathname
+      .split("/")
+      .filter(Boolean)
+      .map((segment) => decodeURIComponent(segment));
 
-    if (pathnameParts.length < 2) return null;
+    if (pathnameParts.length <= publicPathParts.length) return null;
+    const matchesPrefix = publicPathParts.every(
+      (segment, index) => pathnameParts[index] === segment
+    );
+
+    if (!matchesPrefix) return null;
 
     return {
-      bucketName: pathnameParts[0],
-      objectName: pathnameParts.slice(1).join("/"),
+      bucketName: PROOFS_BUCKET_NAME,
+      objectName: pathnameParts.slice(publicPathParts.length).join("/"),
     };
   } catch (error) {
     return null;
@@ -156,7 +178,7 @@ function buildMinioPublicUrl(objectName) {
     .map((segment) => encodeURIComponent(segment))
     .join("/");
 
-  return `${PROOFS_PUBLIC_BASE_URL}/${PROOFS_BUCKET_NAME}/${objectPath}`;
+  return `${PROOFS_PUBLIC_URL}/${objectPath}`;
 }
 
 function findLatestPaymentProofInMinio(orderNumber) {
@@ -344,6 +366,10 @@ exports.getPaymentProofImage = async (req, res) => {
 
     const minioFile = parseMinioObjectFromUrl(rawPaymentProofImageUrl);
     if (!minioFile) {
+      if (isAbsoluteHttpUrl(rawPaymentProofImageUrl)) {
+        return res.redirect(rawPaymentProofImageUrl);
+      }
+
       return res.status(400).json({
         status: "error",
         message: "La URL del comprobante no es valida.",
