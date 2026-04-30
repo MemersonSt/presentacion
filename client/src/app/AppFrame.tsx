@@ -1,7 +1,10 @@
-import { Suspense, useEffect, useRef, type ComponentType, type ReactNode } from "react";
+import { Suspense, lazy, useEffect, useRef, type ComponentType, type ReactNode } from "react";
 import { useLocation } from "wouter";
 import { Navbar } from "@/components/Navbar";
-import { Toaster } from "@/components/ui/toaster";
+
+const Toaster = lazy(() =>
+  import("@/components/ui/toaster").then((module) => ({ default: module.Toaster })),
+);
 
 const FACEBOOK_PIXEL_ID = "1783051885578047";
 
@@ -158,7 +161,9 @@ export function AppFrame({ Routes, fallback = <RouteFallback /> }: AppFrameProps
           <Routes />
         </Suspense>
       </div>
-      <Toaster />
+      <Suspense fallback={null}>
+        <Toaster />
+      </Suspense>
     </div>
   );
 }

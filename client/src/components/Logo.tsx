@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { useCompany } from "@/hooks/useCompany";
-import { getPublicAppConfig } from "@/lib/runtime-config";
+import { toPublicImageUrl } from "@/lib/media";
 
 interface LogoProps {
   className?: string;
@@ -79,14 +79,6 @@ export function Logo({ className, variant = "light", size = "md" }: LogoProps) {
 }
 
 function getCompanyLogoUrl(logoPath?: string | null) {
-  if (!logoPath || !logoPath.trim()) return null;
-  if (logoPath.startsWith("http://") || logoPath.startsWith("https://") || logoPath.startsWith("data:")) {
-    return logoPath;
-  }
-
-  const normalizedPath = logoPath.startsWith("/") ? logoPath : `/${logoPath}`;
-  const { assetBaseUrl } = getPublicAppConfig();
-  if (assetBaseUrl) return `${assetBaseUrl}${normalizedPath}`;
-  if (typeof window !== "undefined") return `${window.location.origin}${normalizedPath}`;
-  return normalizedPath;
+  const url = toPublicImageUrl(logoPath);
+  return url || null;
 }
