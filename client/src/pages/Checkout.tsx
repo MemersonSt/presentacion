@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import "./checkout.css";
 import {
   ShoppingBag,
   ChevronLeft,

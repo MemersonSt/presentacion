@@ -16,6 +16,7 @@ import {
   slugify,
 } from "../shared/catalog";
 import { createAppQueryClient } from "../client/src/lib/queryClient";
+import { toPublicImageUrl } from "../client/src/lib/media";
 import { renderApp } from "../client/src/server-entry";
 import { DEFAULT_SEO_STATE, renderSeoTags } from "../client/src/components/Seo";
 import { categoriesQueryKey, fetchCategories } from "../client/src/hooks/useCategories";
@@ -162,14 +163,6 @@ function buildPublicConfigScript() {
   })}</script>`;
 }
 
-function normalizePublicAssetUrl(url: string) {
-  if (!url || url.startsWith("data:")) return "";
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
-
-  const path = url.startsWith("/") ? url : `/${url}`;
-  return ASSET_BASE_URL ? `${ASSET_BASE_URL}${path}` : path;
-}
-
 function getHomeHeroPreload(queryClient: QueryClient) {
   const cms = queryClient.getQueryData<{
     images?: Array<string | { url?: unknown }> | string | null;
@@ -182,7 +175,7 @@ function getHomeHeroPreload(queryClient: QueryClient) {
       : firstImage && typeof firstImage === "object"
         ? String(firstImage.url || "")
         : DEFAULT_HERO_IMAGE;
-  const href = normalizePublicAssetUrl(rawImage.trim() || DEFAULT_HERO_IMAGE);
+  const href = toPublicImageUrl(rawImage.trim() || DEFAULT_HERO_IMAGE);
 
   return href
     ? `<link rel="preload" as="image" href="${escapeXml(href)}" fetchpriority="high" imagesizes="100vw" />`
@@ -336,6 +329,58 @@ async function proxyToBackend(req: Request, res: Response) {
     return res.status(500).json({ status: "error", message: "Error conectando con el servidor de productos" });
   }
 }
+
+app.get("/image-proxy", async (req, res) => {
+  const rawUrl = String(req.query.url || "").trim();
+  if (!rawUrl) {
+    return res.status(400).send("Missing image url");
+  }
+
+  let target: URL;
+  try {
+    target = new URL(rawUrl);
+  } catch {
+    return res.status(400).send("Invalid image url");
+  }
+
+  if (!["http:", "https:"].includes(target.protocol)) {
+    return res.status(400).send("Unsupported protocol");
+  }
+
+  try {
+    const response = await fetch(target, {
+      headers: {
+        Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+      },
+    });
+
+    if (!response.ok || !response.body) {
+      return res.status(response.status || 502).send("Could not fetch image");
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+    if (contentType && !contentType.startsWith("image/")) {
+      return res.status(415).send("Unsupported content type");
+    }
+
+    if (contentType) {
+      res.setHeader("Content-Type", contentType);
+    }
+
+    res.setHeader("Cache-Control", "public, max-age=2592000, stale-while-revalidate=604800");
+
+    const etag = response.headers.get("etag");
+    if (etag) {
+      res.setHeader("ETag", etag);
+    }
+
+    await pipeline(Readable.fromWeb(response.body as any), res);
+    return;
+  } catch (error) {
+    console.error("Image proxy error:", error);
+    return res.status(502).send("Image proxy failed");
+  }
+});
 
 async function postJsonToBackend(path: string, payload: unknown) {
   const response = await fetch(buildBackendUrl(path), {

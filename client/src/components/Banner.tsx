@@ -4,11 +4,12 @@ import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import { useCMS } from "@/hooks/useCMS";
 import { DEFAULT_COMPANY } from "@/lib/site";
-import { getPublicAppConfig } from "@/lib/runtime-config";
+import { toPublicImageUrl } from "@/lib/media";
 
 const DEFAULT_SLIDES = [
   {
     image: "/assets/banner_collage.jpg",
+    fallbackImage: "/assets/banner_collage.jpg",
     title: "Sorprende hoy. Nosotros lo entregamos por ti.",
     subtitle: "Historias reales de alegria en Guayaquil",
     cta: "Ver testimonios",
@@ -16,6 +17,7 @@ const DEFAULT_SLIDES = [
   },
   {
     image: "/assets/banner_collage.jpg",
+    fallbackImage: "/assets/banner_collage.jpg",
     title: "Entregas reales personas reales.",
     subtitle: "Entrega en Guayaquil en horas",
     cta: "Comprar ahora",
@@ -23,7 +25,7 @@ const DEFAULT_SLIDES = [
   },
 ];
 
-function normalizeHeroImageUrl(image: unknown) {
+function normalizeHeroImage(image: unknown) {
   const rawUrl =
     typeof image === "string"
       ? image
@@ -32,13 +34,12 @@ function normalizeHeroImageUrl(image: unknown) {
         : "";
   const url = rawUrl.trim();
 
-  if (!url) return "";
-  if (url.startsWith("data:image/")) return url;
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  if (!url) return null;
 
-  const path = url.startsWith("/") ? url : `/${url}`;
-  const { assetBaseUrl } = getPublicAppConfig();
-  return assetBaseUrl ? `${assetBaseUrl}${path}` : path;
+  return {
+    image: toPublicImageUrl(url),
+    fallbackImage: url,
+  };
 }
 
 export function Banner() {
@@ -49,13 +50,14 @@ export function Banner() {
     if (!cms) return DEFAULT_SLIDES;
 
     const imageUrls = Array.isArray(cms.images)
-      ? cms.images.map(normalizeHeroImageUrl).filter(Boolean)
+      ? cms.images.map(normalizeHeroImage).filter(Boolean)
       : [];
 
     if (imageUrls.length === 0) return DEFAULT_SLIDES;
 
-    return imageUrls.map((img: string) => ({
-      image: img,
+    return imageUrls.map((img) => ({
+      image: img.image,
+      fallbackImage: img.fallbackImage,
       title: cms.title || "DIFIORI",
       subtitle: cms.description || "Disenando emociones",
       cta: "Comprar ahora",
@@ -90,6 +92,17 @@ export function Banner() {
           decoding="async"
           fetchPriority="high"
           sizes="100vw"
+          onError={(event) => {
+            const target = event.currentTarget;
+            if (activeSlide.fallbackImage && target.src !== activeSlide.fallbackImage) {
+              target.src = activeSlide.fallbackImage;
+              return;
+            }
+
+            if (target.src !== window.location.origin + DEFAULT_SLIDES[0].image) {
+              target.src = DEFAULT_SLIDES[0].image;
+            }
+          }}
           className="absolute inset-0 h-full w-full object-cover object-center brightness-[0.86]"
         />
 

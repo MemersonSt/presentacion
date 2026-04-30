@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "./product-details.css";
 import { Link, useLocation, useRoute } from "wouter";
 import { MessageSquare, Truck, ShieldCheck, Clock, ShoppingBag, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";

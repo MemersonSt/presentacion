@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Product } from "../data/mock";
 import { resolveApiUrl } from "@/lib/api";
-import { getPublicAppConfig } from "@/lib/runtime-config";
+import { toPublicImageUrl } from "@/lib/media";
 
 const API_URL = "/api/external/products";
 export interface ProductsQueryOptions {
@@ -31,14 +31,8 @@ function getImageUrl(imagePath: string | null | undefined): string {
   if (!imagePath || imagePath.trim() === "" || imagePath === "/assets/product1.png") {
     return PLACEHOLDER;
   }
-  
-  if (imagePath.startsWith("data:image/")) return imagePath;
-  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) return imagePath;
-  const path = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
-  const { assetBaseUrl } = getPublicAppConfig();
-  if (assetBaseUrl) return `${assetBaseUrl}${path}`;
-  if (typeof window !== "undefined") return `${window.location.origin}${path}`;
-  return path;
+
+  return toPublicImageUrl(imagePath) || PLACEHOLDER;
 }
 
 export async function fetchProducts(
