@@ -45,7 +45,7 @@ export function Navbar() {
         {isSearchOpen && <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />}
       </Suspense>
 
-      <nav className="fixed top-0 z-50 w-full border-b border-primary/10 bg-white py-6 shadow-[0_10px_30px_rgba(0,0,0,0.03)] transition-all duration-1000 lg:py-7 min-[1440px]:py-8">
+      <nav className="fixed top-0 z-50 w-full border-b border-primary/10 bg-white py-4 shadow-[0_10px_30px_rgba(0,0,0,0.03)] transition-all duration-1000 sm:py-5 lg:py-7 min-[1440px]:py-8">
         <div className="mx-auto w-full px-6 lg:px-8 min-[1440px]:px-12">
           <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_clamp(190px,16vw,260px)_minmax(0,1fr)] items-center gap-3 min-[1440px]:gap-5">
             <div className="flex min-w-0 items-center justify-start gap-5 min-[1440px]:gap-10">
@@ -137,28 +137,36 @@ export function Navbar() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between lg:hidden">
+          <div className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-2 sm:grid-cols-[52px_minmax(0,1fr)_auto] sm:gap-3 lg:hidden">
             <button
               type="button"
               aria-label="Abrir menú"
-              className={cn("p-1 transition-colors", "text-foreground")}
+              className={cn(
+                "flex h-11 w-11 items-center justify-center rounded-full transition-colors sm:h-12 sm:w-12",
+                "text-foreground",
+              )}
               onClick={() => setIsOpen(!isOpen)}
             >
-              <Menu className="h-8 w-8" strokeWidth={2} />
+              <Menu className="h-7 w-7 sm:h-8 sm:w-8" strokeWidth={2} />
             </button>
 
-            <Link href="/" className="absolute left-1/2 flex items-center -translate-x-1/2">
-              <Logo size="sm" variant="dark" />
-            </Link>
+            <div className="flex min-w-0 justify-center px-2">
+              <Link href="/" className="flex min-w-0 max-w-[180px] items-center justify-center sm:max-w-[210px]">
+                <Logo size="sm" variant="dark" className="w-full items-center" />
+              </Link>
+            </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-end gap-1 sm:gap-2">
               <button
                 type="button"
                 aria-label="Buscar productos"
                 onClick={() => setIsSearchOpen(true)}
-                className={cn("p-1 transition-colors", "text-foreground")}
+                className={cn(
+                  "flex h-11 w-11 items-center justify-center rounded-full transition-colors sm:h-12 sm:w-12",
+                  "text-foreground",
+                )}
               >
-                <Search className="h-7 w-7" strokeWidth={2} />
+                <Search className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={2} />
               </button>
               <button
                 type="button"
@@ -166,17 +174,17 @@ export function Navbar() {
                 onClick={handleCartNavigation}
                 disabled={isCartNavigating}
                 className={cn(
-                  "relative p-1 transition-colors hover:scale-110 disabled:pointer-events-none disabled:opacity-70",
+                  "relative flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:scale-110 disabled:pointer-events-none disabled:opacity-70 sm:h-12 sm:w-12",
                   "text-foreground",
                 )}
               >
                 {isCartNavigating ? (
-                  <Loader2 className="h-7 w-7 animate-spin" strokeWidth={2} />
+                  <Loader2 className="h-6 w-6 animate-spin sm:h-7 sm:w-7" strokeWidth={2} />
                 ) : (
-                  <ShoppingBag className="h-7 w-7" strokeWidth={2} />
+                  <ShoppingBag className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={2} />
                 )}
                 {cartItemCount > 0 && !isCartNavigating ? (
-                  <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#fff] bg-accent text-[10px] font-black text-white shadow-lg">
+                  <span className="absolute right-0 top-0 flex h-4 min-w-4 -translate-y-1 translate-x-1 items-center justify-center rounded-full border-2 border-[#fff] bg-accent px-1 text-[9px] font-black leading-none text-white shadow-lg sm:h-5 sm:min-w-5 sm:text-[10px]">
                     {cartItemCount}
                   </span>
                 ) : null}
