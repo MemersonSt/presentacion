@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import type { Product } from "../data/mock";
 import { resolveApiUrl } from "@/lib/api";
 import { getPublicAppConfig } from "@/lib/runtime-config";
-import { isPublicCatalogProduct } from "@shared/catalog";
 
 const API_URL = "/api/external/products";
 export interface ProductsQueryOptions {
@@ -74,7 +73,7 @@ export async function fetchProducts(
       deliveryTime: p.deliveryTime || "",
       size: p.size || "",
       includes: p.includes || p.description || "",
-    })).filter(isPublicCatalogProduct);
+    }));
 
     return products;
   } catch (error) {

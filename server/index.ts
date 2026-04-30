@@ -13,7 +13,6 @@ import {
   getCategoryPath,
   getProductIdFromSlug,
   getProductPath,
-  isPublicCatalogProduct,
   slugify,
 } from "../shared/catalog";
 import { createAppQueryClient } from "../client/src/lib/queryClient";
@@ -531,7 +530,7 @@ async function fetchPublicProducts(): Promise<PublicProduct[]> {
         category: String(product.category || "General").trim(),
         isBestSeller: Boolean(product.isBestSeller),
       }))
-      .filter((product: PublicProduct) => product.id && isPublicCatalogProduct(product));
+      .filter((product: PublicProduct) => product.id);
   } catch (error) {
     console.warn("Could not fetch live products for sitemap.", error);
     return [];

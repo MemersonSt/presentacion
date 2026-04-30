@@ -44,7 +44,7 @@ export default function OptionForm({
         <p className="text-xs text-muted-foreground">Tipo: {selectedCategory.type}</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="value">Valor *</Label>
           <Input
@@ -97,11 +97,11 @@ export default function OptionForm({
         <Label htmlFor="isActive">Activo</Label>
       </div>
 
-      <div className="flex justify-end space-x-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
+      <div className="flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end">
+        <Button type="button" variant="outline" onClick={onCancel} className="w-full sm:w-auto">
           Cancelar
         </Button>
-        <Button type="submit">
+        <Button type="submit" className="w-full sm:w-auto">
           {editingOption ? "Actualizar" : "Crear"} Opción
         </Button>
       </div>

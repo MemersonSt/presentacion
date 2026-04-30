@@ -46,7 +46,7 @@ export default function CategoryForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="name">Nombre *</Label>
           <Input
@@ -87,7 +87,7 @@ export default function CategoryForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="type">Tipo de Filtro *</Label>
           <Select
@@ -119,7 +119,7 @@ export default function CategoryForm({
       </div>
 
       {showRangeFields && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="minRange">Valor Mínimo</Label>
             <Input
@@ -158,7 +158,7 @@ export default function CategoryForm({
         </p>
       </div>
 
-      <div className="flex items-center space-x-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
         <div className="flex items-center space-x-2">
           <Checkbox
             id="isRequired"
@@ -178,11 +178,11 @@ export default function CategoryForm({
         </div>
       </div>
 
-      <div className="flex justify-end space-x-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
+      <div className="flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end">
+        <Button type="button" variant="outline" onClick={onCancel} className="w-full sm:w-auto">
           Cancelar
         </Button>
-        <Button type="submit">
+        <Button type="submit" className="w-full sm:w-auto">
           {editingCategory ? "Actualizar" : "Crear"} Categoría
         </Button>
       </div>

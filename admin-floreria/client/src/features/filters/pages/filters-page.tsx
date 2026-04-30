@@ -62,9 +62,9 @@ export default function FiltersPage() {
   }
 
   return (
-    <div className="gap-4 md:gap-6 py-4 md:py-6 px-4 lg:px-6">
+    <div className="gap-4 px-4 py-4 md:gap-6 md:py-6 lg:px-6">
       {/* Header */}
-      <div className="flex justify-between items-center gap-2 mt-1">
+      <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold">Filtros de Productos</h2>
           <p className="text-gray-600">
@@ -81,17 +81,17 @@ export default function FiltersPage() {
 
         {/* Categories Tab */}
         <TabsContent value="categories" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex w-full items-center gap-4 sm:w-auto">
               <Input
                 placeholder="Buscar categorías..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="max-w-sm"
+                className="w-full sm:max-w-sm"
               />
             </div>
 
-            <Button onClick={handleNewCategory}>
+            <Button onClick={handleNewCategory} className="w-full sm:w-auto">
               <IconCirclePlusFilled />
               Nueva Categoría
             </Button>
@@ -170,7 +170,7 @@ export default function FiltersPage() {
             <div className="lg:col-span-2">
               <Card>
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <CardTitle className="text-lg">
                         {selectedCategory
@@ -185,7 +185,9 @@ export default function FiltersPage() {
                     </div>
 
                     {selectedCategory && (
-                      <Button onClick={handleNewOption}>Nueva Opción</Button>
+                      <Button onClick={handleNewOption} className="w-full sm:w-auto">
+                        Nueva Opción
+                      </Button>
                     )}
                   </div>
                 </CardHeader>

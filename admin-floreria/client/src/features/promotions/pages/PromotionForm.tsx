@@ -262,7 +262,7 @@ export default function PromotionForm() {
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto px-4 py-6 sm:px-6 sm:py-8">
       <Card>
         <CardHeader>
           <CardTitle>
@@ -436,7 +436,7 @@ export default function PromotionForm() {
               )}
 
               {formData.type === "BUY_X_GET_Y" && (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="buyQuantity">Cantidad a Comprar *</Label>
                     <Input
@@ -509,7 +509,7 @@ export default function PromotionForm() {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="startsAt">Fecha de Inicio *</Label>
                 <Input
@@ -540,7 +540,7 @@ export default function PromotionForm() {
               formData.type === "FIXED_AMOUNT") && (
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold">Condiciones (opcional)</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="minQuantity">Cantidad Minima</Label>
                     <Input
@@ -663,16 +663,17 @@ export default function PromotionForm() {
               </p>
             </div>
 
-            <div className="flex justify-end space-x-4">
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => navigate("/app/promotions")}
                 disabled={loading}
+                className="w-full sm:w-auto"
               >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" disabled={loading} className="w-full sm:w-auto">
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isEditMode ? "Actualizar" : "Crear"} Promocion
               </Button>
