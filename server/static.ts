@@ -39,6 +39,11 @@ export function serveStatic(app: Express) {
           return;
         }
 
+        if (/favicon|apple-touch-icon/i.test(path.basename(filePath))) {
+          res.setHeader("Cache-Control", "public, max-age=300, stale-while-revalidate=3600");
+          return;
+        }
+
         res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
       },
     }),
