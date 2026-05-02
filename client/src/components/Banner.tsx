@@ -42,6 +42,12 @@ function normalizeHeroImage(image: unknown) {
   };
 }
 
+type HeroImage = NonNullable<ReturnType<typeof normalizeHeroImage>>;
+
+function isHeroImage(image: ReturnType<typeof normalizeHeroImage>): image is HeroImage {
+  return Boolean(image);
+}
+
 export function Banner() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const { data: cms } = useCMS();
@@ -50,7 +56,7 @@ export function Banner() {
     if (!cms) return DEFAULT_SLIDES;
 
     const imageUrls = Array.isArray(cms.images)
-      ? cms.images.map(normalizeHeroImage).filter(Boolean)
+      ? cms.images.map(normalizeHeroImage).filter(isHeroImage)
       : [];
 
     if (imageUrls.length === 0) return DEFAULT_SLIDES;
