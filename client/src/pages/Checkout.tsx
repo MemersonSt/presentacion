@@ -1038,7 +1038,7 @@ export default function Checkout() {
                 )}
               >
                 <h3 className="flex items-center gap-2 font-sans text-2xl font-black tracking-tight text-[#4B0082] sm:gap-3 sm:text-4xl">
-                  <User className="h-9 w-9" /> Quién envía
+                  <User className="h-7 w-7 sm:h-9 sm:w-9" /> Quién envía
                 </h3>
                 <div className="grid grid-cols-1 gap-5">
                   <label className="checkout-field">
@@ -1103,7 +1103,7 @@ export default function Checkout() {
                 )}
               >
                 <h3 className="flex items-center gap-2 font-sans text-2xl font-black tracking-tight text-[#4B0082] sm:gap-3 sm:text-4xl">
-                  <Truck className="h-9 w-9" /> Quién recibe
+                  <Truck className="h-7 w-7 sm:h-9 sm:w-9" /> Quién recibe
                 </h3>
                 <div className="grid grid-cols-1 gap-5">
                   <label className="checkout-field">
@@ -1246,7 +1246,7 @@ export default function Checkout() {
                 )}
               >
                 <h3 className="flex items-center gap-2 font-sans text-2xl font-black tracking-tight text-[#4B0082] sm:gap-3 sm:text-4xl">
-                  <CreditCard className="h-9 w-9" /> Métodos de pago
+                  <CreditCard className="h-7 w-7 sm:h-9 sm:w-9" /> Métodos de pago
                 </h3>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {PAYMENT_METHODS.map(({ label, description, Icon }) => (
