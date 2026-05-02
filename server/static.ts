@@ -33,7 +33,6 @@ export function serveStatic(app: Express) {
 
   app.use(
     express.static(distPath, {
-      index: false,
       setHeaders: (res, filePath) => {
         if (filePath.endsWith(".html")) {
           res.setHeader("Cache-Control", "no-cache");
