@@ -129,11 +129,11 @@ export default function Home() {
     <main className="min-h-screen bg-background selection:bg-accent selection:text-white overflow-clip scroll-smooth">
       <Seo
         title="Floristería en Guayaquil | Arreglos Florales y Regalos a Domicilio | DIFIORI"
-        description="Compra arreglos florales, ramos de rosas y regalos a domicilio en Guayaquil con DIFIORI. Entregas en Guayaquil, Samborondón, Durán y Vía a la Costa."
+        description="Compra arreglos florales, ramos de flores y regalos a domicilio en Guayaquil con DIFIORI. Entregas en Guayaquil, Samborondón, Durán y Vía a la Costa."
         path="/"
         schema={homeSchema}
       />
-      <h1 className="sr-only">DIFIORI Floristería Guayaquil - Arreglos Florales, Ramos de Rosas y Regalos a Domicilio</h1>
+      <h1 className="sr-only">DIFIORI Floristería Guayaquil - Arreglos Florales, Ramos de Flores y Regalos a Domicilio</h1>
       
       {/* 1. Header is in App.tsx/Navbar.tsx */}
       

@@ -19,7 +19,7 @@ export default function Shop() {
     "@type": "CollectionPage",
     name: "Catálogo DIFIORI",
     url: "https://difiori.com/shop",
-    description: "Catálogo de arreglos florales, ramos de rosas y regalos a domicilio en Guayaquil.",
+    description: "Catálogo de arreglos florales, ramos de flores y regalos a domicilio en Guayaquil.",
     image: absoluteUrl("/opengraph.jpg"),
     breadcrumb: {
       "@type": "BreadcrumbList",
@@ -44,7 +44,7 @@ export default function Shop() {
     <div className="page-shell">
       <Seo
         title="Catálogo de Arreglos Florales en Guayaquil | DIFIORI"
-        description="Explora el catálogo de DIFIORI con ramos de rosas, flores mixtas, desayunos sorpresa y regalos a domicilio en Guayaquil."
+        description="Explora el catálogo de DIFIORI con ramos de flores, flores mixtas, desayunos sorpresa y regalos a domicilio en Guayaquil."
         path="/shop"
         schema={shopSchema}
       />

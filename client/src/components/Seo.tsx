@@ -31,7 +31,7 @@ export interface SeoManager {
 export const DEFAULT_SEO_STATE: SeoState = {
   title: "Floristería en Guayaquil | Arreglos Florales y Regalos a Domicilio | DIFIORI",
   description:
-    "Compra arreglos florales, ramos de rosas y regalos a domicilio en Guayaquil con DIFIORI. Entregas en Guayaquil, Samborondón, Durán y Vía a la Costa.",
+    "Compra arreglos florales, ramos de flores y regalos a domicilio en Guayaquil con DIFIORI. Entregas en Guayaquil, Samborondón, Durán y Vía a la Costa.",
   path: "/",
   robots: "index, follow",
   image: DEFAULT_SEO_IMAGE,
