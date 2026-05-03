@@ -1,6 +1,6 @@
 import { build as esbuild } from "esbuild";
 import { build as viteBuild } from "vite";
-import { rm, readFile, writeFile } from "fs/promises";
+import { rm, readFile } from "fs/promises";
 
 // server deps to bundle to reduce openat(2) syscalls
 // which helps cold start times
@@ -32,31 +32,11 @@ const allowlist = [
   "zod-validation-error",
 ];
 
-async function deferBuiltStylesheet() {
-  const indexPath = "dist/public/index.html";
-  const html = await readFile(indexPath, "utf-8");
-  const optimizedHtml = html.replace(
-    /<link rel="stylesheet"([^>]*?)href="([^"]+\.css)"([^>]*)>/g,
-    (_match, beforeHref = "", href = "", afterHref = "") => {
-      const attrs = `${beforeHref}${afterHref}`.trim();
-      const normalizedAttrs = attrs ? ` ${attrs}` : "";
-
-      return [
-        `<link rel="preload" as="style" href="${href}"${normalizedAttrs} onload="this.onload=null;this.rel='stylesheet'">`,
-        `<noscript><link rel="stylesheet" href="${href}"${normalizedAttrs}></noscript>`,
-      ].join("");
-    },
-  );
-
-  await writeFile(indexPath, optimizedHtml);
-}
-
 async function buildAll() {
   await rm("dist", { recursive: true, force: true });
 
   console.log("building client...");
   await viteBuild();
-  await deferBuiltStylesheet();
 
   console.log("building server...");
   const pkg = JSON.parse(await readFile("package.json", "utf-8"));
