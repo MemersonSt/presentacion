@@ -27,7 +27,7 @@ export const CATEGORIES = [
   { 
     name: "Flores mixtas", 
     slug: "flores-mixtas", 
-    image: "/assets/product2.png" 
+    image: "/assets/banner_collage.jpg" 
   },
   { 
     name: "Desayunos sorpresa", 
@@ -37,7 +37,7 @@ export const CATEGORIES = [
   { 
     name: "Regalos con vino", 
     slug: "regalos-con-vino", 
-    image: "/assets/product5.png" 
+    image: "/assets/banner_collage.jpg" 
   },
   { 
     name: "Cumpleaños", 
@@ -72,8 +72,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Combinación vibrante de lirios, margaritas y claveles en tonos pasteles. Una explosión de frescura para cualquier ocasión.",
     category: "Flores mixtas",
     price: "$38.00",
-    image: "/assets/product2.png",
-    additionalImages: ["/assets/product2.png"],
+    image: "/assets/banner_collage.jpg",
+    additionalImages: ["/assets/banner_collage.jpg"],
     isBestSeller: true,
     stock: 12,
     deliveryTime: "2-4 horas",
@@ -90,7 +90,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     additionalImages: [
       "/assets/Desayunos sorpresa para aniversario, con minitorta  en Guayaquil..jpeg",
       "/assets/Desayuno sorpresa con flores para aniversario en Guayaquil.jpeg",
-      "/assets/product3.png",
+      "/assets/banner_collage.jpg",
     ],
     isBestSeller: true,
     stock: 8,
@@ -107,7 +107,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     image: "/assets/Ramo de flores para aniversario, con rosas rojas, vino, ferrero , en Guayaquil..jpeg",
     additionalImages: [
       "/assets/Ramo de flores para aniversario, con rosas rojas, vino, ferrero , en Guayaquil..jpeg",
-      "/assets/product4.png",
+      "/assets/banner_collage.jpg",
     ],
     isBestSeller: false,
     stock: 20,
@@ -121,8 +121,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Caja de regalo que incluye una botella de vino tinto Cabernet Sauvignon y un pequeño arreglo de flores complementario.",
     category: "Regalos con vino",
     price: "$65.00",
-    image: "/assets/product5.png",
-    additionalImages: ["/assets/product5.png"],
+    image: "/assets/banner_collage.jpg",
+    additionalImages: ["/assets/banner_collage.jpg"],
     isBestSeller: false,
     stock: 5,
     deliveryTime: "3-5 horas",
@@ -138,7 +138,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     image: "/assets/Ramo de rosas con rosas rosadas para 15 años en Guayaquil.jpeg",
     additionalImages: [
       "/assets/Ramo de rosas con rosas rosadas para 15 años en Guayaquil.jpeg",
-      "/assets/product6.png",
+      "/assets/banner_collage.jpg",
     ],
     isBestSeller: false,
     stock: 10,
