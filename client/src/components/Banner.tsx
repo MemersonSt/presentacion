@@ -65,7 +65,7 @@ export function Banner() {
       image: img.image,
       fallbackImage: img.fallbackImage,
       title: cms.title || "DIFIORI",
-      subtitle: cms.description || "Disenando emociones",
+      subtitle: cms.description || "Floristeria en Guayaquil",
       cta: "Comprar ahora",
       href: "/shop",
     }));
