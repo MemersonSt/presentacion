@@ -1,116 +1,29 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React from "react";
 import { ArrowRight, MessageCircle } from "lucide-react";
 import { Link } from "wouter";
-import { cn } from "@/lib/utils";
-import { useCMS } from "@/hooks/useCMS";
 import { DEFAULT_COMPANY } from "@/lib/site";
-import { toPublicImageUrl } from "@/lib/media";
 
-const DEFAULT_SLIDES = [
-  {
-    image: "/assets/banner_collage.jpg",
-    fallbackImage: "/assets/banner_collage.jpg",
-    title: "Sorprende hoy. Nosotros lo entregamos por ti.",
-    subtitle: "Historias reales de alegria en Guayaquil",
-    cta: "Ver testimonios",
-    href: "/#testimonios",
-  },
-  {
-    image: "/assets/banner_collage.jpg",
-    fallbackImage: "/assets/banner_collage.jpg",
-    title: "Entregas reales personas reales.",
-    subtitle: "Entrega en Guayaquil en horas",
-    cta: "Comprar ahora",
-    href: "/shop",
-  },
-];
-
-function normalizeHeroImage(image: unknown) {
-  const rawUrl =
-    typeof image === "string"
-      ? image
-      : image && typeof image === "object" && "url" in image
-        ? String((image as { url?: unknown }).url || "")
-        : "";
-  const url = rawUrl.trim();
-
-  if (!url) return null;
-
-  return {
-    image: toPublicImageUrl(url),
-    fallbackImage: url,
-  };
-}
-
-type HeroImage = NonNullable<ReturnType<typeof normalizeHeroImage>>;
-
-function isHeroImage(image: ReturnType<typeof normalizeHeroImage>): image is HeroImage {
-  return Boolean(image);
-}
+const FIXED_BANNER = {
+  image: "/assets/banner_collage.webp",
+  title: "Sorprende hoy. Nosotros lo entregamos por ti.",
+  subtitle: "Historias reales de alegria en Guayaquil",
+  cta: "Ver testimonios",
+  href: "/#testimonios",
+};
 
 export function Banner() {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const { data: cms } = useCMS();
-
-  const slides = useMemo(() => {
-    if (!cms) return DEFAULT_SLIDES;
-
-    const imageUrls = Array.isArray(cms.images)
-      ? cms.images.map(normalizeHeroImage).filter(isHeroImage)
-      : [];
-
-    if (imageUrls.length === 0) return DEFAULT_SLIDES;
-
-    return imageUrls.map((img) => ({
-      image: img.image,
-      fallbackImage: img.fallbackImage,
-      title: cms.title || "DIFIORI",
-      subtitle: cms.description || "Floristeria en Guayaquil",
-      cta: "Comprar ahora",
-      href: "/shop",
-    }));
-  }, [cms]);
-
-  const activeSlide = slides[selectedIndex] || DEFAULT_SLIDES[0];
-  const shouldAutoplay = Boolean(cms && slides.length > 1);
-
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [slides.length]);
-
-  useEffect(() => {
-    if (!shouldAutoplay) return;
-
-    const timer = window.setInterval(() => {
-      setSelectedIndex((prev) => (prev + 1) % slides.length);
-    }, 12000);
-
-    return () => window.clearInterval(timer);
-  }, [shouldAutoplay, slides.length]);
-
   return (
     <section className="relative overflow-hidden bg-[#111]">
       <div className="relative h-[calc(100svh-76px)] min-h-[440px] max-h-[620px] md:h-[82vh] md:min-h-[560px] md:max-h-none">
         <img
-          src={activeSlide.image}
-          alt={`Floreria DIFIORI - ${activeSlide.title}`}
+          src={FIXED_BANNER.image}
+          alt={`Floreria DIFIORI - ${FIXED_BANNER.title}`}
           width={1024}
           height={571}
           loading="eager"
           decoding="async"
           fetchPriority="high"
           sizes="100vw"
-          onError={(event) => {
-            const target = event.currentTarget;
-            if (activeSlide.fallbackImage && target.src !== activeSlide.fallbackImage) {
-              target.src = activeSlide.fallbackImage;
-              return;
-            }
-
-            if (target.src !== window.location.origin + DEFAULT_SLIDES[0].image) {
-              target.src = DEFAULT_SLIDES[0].image;
-            }
-          }}
           className="absolute inset-0 h-full w-full object-cover object-center brightness-[0.86]"
         />
 
@@ -125,18 +38,18 @@ export function Banner() {
                 DIFIORI Guayaquil
               </div>
               <h2 className="min-h-[6.9rem] text-[2.45rem] font-semibold leading-[0.94] tracking-normal text-white md:min-h-[10.8rem] md:text-6xl lg:text-7xl">
-                {activeSlide.title}
+                {FIXED_BANNER.title}
               </h2>
               <p className="mx-auto mt-4 min-h-[3.5rem] max-w-[22rem] text-base italic leading-snug text-white/72 md:mx-0 md:mt-5 md:min-h-[4.5rem] md:max-w-2xl md:text-2xl md:leading-relaxed">
-                {activeSlide.subtitle}
+                {FIXED_BANNER.subtitle}
               </p>
 
               <div className="mt-6 flex min-h-[128px] flex-col items-center gap-3 sm:min-h-[56px] sm:flex-row md:mt-8 md:items-start md:gap-4">
                 <Link
-                  href={activeSlide.href}
+                  href={FIXED_BANNER.href}
                   className="inline-flex min-h-[54px] w-full max-w-[230px] items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-xs font-black uppercase tracking-[0.16em] text-white shadow-lg shadow-[#3D2852]/30 transition-colors hover:bg-[#4A3362] md:min-h-[56px] md:max-w-none md:min-w-[220px] md:gap-3 md:px-8 md:py-4 md:text-sm md:tracking-[0.2em]"
                 >
-                  {activeSlide.cta}
+                  {FIXED_BANNER.cta}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
 
@@ -151,23 +64,6 @@ export function Banner() {
                 </a>
               </div>
             </div>
-
-            {slides.length > 1 ? (
-              <div className="mt-6 flex min-h-[3px] justify-center gap-3 opacity-80 md:mt-8 md:justify-start">
-                {slides.map((_, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    aria-label={`Ver banner ${index + 1}`}
-                    onClick={() => setSelectedIndex(index)}
-                    className={cn(
-                      "h-[3px] rounded-full transition-all duration-300",
-                      selectedIndex === index ? "w-12 bg-white" : "w-5 bg-white/35",
-                    )}
-                  />
-                ))}
-              </div>
-            ) : null}
           </div>
         </div>
       </div>
