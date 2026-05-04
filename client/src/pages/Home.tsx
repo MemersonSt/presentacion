@@ -19,6 +19,7 @@ const HOME_PRODUCT_LIMIT = HOME_PRODUCTS_PER_CATEGORY * HOME_CATEGORY_LIMIT;
 
 export default function Home() {
   const reviewsSectionRef = useRef<HTMLElement | null>(null);
+  const [shouldLoadCatalog, setShouldLoadCatalog] = useState(false);
   const [shouldLoadReviews, setShouldLoadReviews] = useState(false);
   const { data: dbReviews = [], isLoading: isLoadingReviews } = useReviews(shouldLoadReviews);
   const createReviewMutation = useCreateReview();
@@ -44,8 +45,11 @@ export default function Home() {
   };
 
   // Productos y Datos desde la API real
-  const { data: allProducts = [], isLoading: isLoadingAll } = useProducts({ limit: HOME_PRODUCT_LIMIT });
-  const { data: company } = useCompany();
+  const { data: allProducts = [], isLoading: isLoadingAll } = useProducts({
+    limit: HOME_PRODUCT_LIMIT,
+    enabled: shouldLoadCatalog,
+  });
+  const { data: company } = useCompany(shouldLoadCatalog);
   const categorySections = React.useMemo(() => {
     const sections = new Map<string, typeof allProducts>();
 
@@ -65,6 +69,29 @@ export default function Home() {
       }))
       .slice(0, HOME_CATEGORY_LIMIT);
   }, [allProducts]);
+
+  useEffect(() => {
+    if (shouldLoadCatalog || typeof window === "undefined") return;
+
+    const startCatalogLoad = () => {
+      if ("requestIdleCallback" in window) {
+        (window as Window & {
+          requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+        }).requestIdleCallback?.(() => setShouldLoadCatalog(true), { timeout: 1200 });
+        return;
+      }
+
+      window.setTimeout(() => setShouldLoadCatalog(true), 350);
+    };
+
+    if (document.readyState === "complete") {
+      startCatalogLoad();
+      return;
+    }
+
+    window.addEventListener("load", startCatalogLoad, { once: true });
+    return () => window.removeEventListener("load", startCatalogLoad);
+  }, [shouldLoadCatalog]);
 
   useEffect(() => {
     if (shouldLoadReviews) return;
@@ -147,7 +174,7 @@ export default function Home() {
         {/* Main Content: Sidebar + Catalog */}
         <section className="relative z-20 flex flex-col gap-10 pt-10 mb-40 lg:flex-row xl:gap-8">
           <aside className="h-fit shrink-0 lg:sticky lg:top-32 lg:w-[280px] xl:w-[300px]">
-            <CategorySidebar variant="link" />
+            <CategorySidebar variant="link" enabled={shouldLoadCatalog} />
           </aside>
 
           <main className="flex-1 w-full overflow-hidden">
@@ -161,7 +188,7 @@ export default function Home() {
             </div>
 
             <div id="product-list" className="space-y-20 scroll-mt-32">
-              {isLoadingAll ? (
+              {!shouldLoadCatalog || isLoadingAll ? (
                 // Skeleton loading state (minimal)
                 Array(6).fill(0).map((_, i) => (
                   <div key={i} className="product-skeleton" />

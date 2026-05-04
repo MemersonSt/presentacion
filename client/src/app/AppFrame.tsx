@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useRef, type ComponentType, type ReactNode } from "react";
+import { Suspense, lazy, useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { useLocation } from "wouter";
 import { Navbar } from "@/components/Navbar";
 
@@ -79,6 +79,7 @@ export function AppFrame({ Routes, fallback = <RouteFallback /> }: AppFrameProps
   const [location] = useLocation();
   const hasTrackedInitialPageView = useRef(false);
   const hasInitializedPixel = useRef(false);
+  const [shouldLoadToaster, setShouldLoadToaster] = useState(false);
   const hideNavbar = location === "/checkout" || location === "/payment-gateway" || location === "/payment-result";
 
   useEffect(() => {
@@ -143,6 +144,20 @@ export function AppFrame({ Routes, fallback = <RouteFallback /> }: AppFrameProps
   }, []);
 
   useEffect(() => {
+    if (shouldLoadToaster || typeof window === "undefined") return;
+
+    const loadToaster = () => setShouldLoadToaster(true);
+
+    if (document.readyState === "complete") {
+      window.setTimeout(loadToaster, 1200);
+      return;
+    }
+
+    window.addEventListener("load", loadToaster, { once: true });
+    return () => window.removeEventListener("load", loadToaster);
+  }, [shouldLoadToaster]);
+
+  useEffect(() => {
     if (!hasTrackedInitialPageView.current) {
       hasTrackedInitialPageView.current = true;
       return;
@@ -161,9 +176,11 @@ export function AppFrame({ Routes, fallback = <RouteFallback /> }: AppFrameProps
           <Routes />
         </Suspense>
       </div>
-      <Suspense fallback={null}>
-        <Toaster />
-      </Suspense>
+      {shouldLoadToaster ? (
+        <Suspense fallback={null}>
+          <Toaster />
+        </Suspense>
+      ) : null}
     </div>
   );
 }

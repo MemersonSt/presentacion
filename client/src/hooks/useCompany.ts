@@ -32,10 +32,11 @@ export async function fetchCompany(baseUrl?: string): Promise<CompanyInfo> {
   }
 }
 
-export function useCompany() {
+export function useCompany(enabled = true) {
   return useQuery<CompanyInfo, Error>({
     queryKey: companyQueryKey,
     queryFn: () => fetchCompany(),
+    enabled,
     staleTime: 1000 * 60 * 10,
     refetchOnMount: false,
   });
