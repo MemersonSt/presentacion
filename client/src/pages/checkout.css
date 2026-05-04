@@ -12,6 +12,10 @@
 }
 
 .checkout-panel {
+  position: relative;
+  overflow: hidden;
+  border-style: solid;
+  border-width: 1px;
   color: #4b0082;
   background: #ffffff;
   border-color: rgba(90, 63, 115, 0.16);
@@ -29,10 +33,18 @@
 }
 
 .checkout-input {
+  width: 100%;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  outline: none;
+  transition: all 150ms ease;
   background: #ffffff;
   border-color: rgba(90, 63, 115, 0.22);
   color: #4b0082;
-  font-weight: 700;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
@@ -56,9 +68,42 @@
 }
 
 .checkout-field {
+  display: block;
+  font-size: 1rem;
+  font-weight: 900;
   color: #4b0082;
 }
 
 .checkout-field > span {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  line-height: 1.375;
   color: #4b0082;
+}
+
+@media (max-width: 640px) {
+  .checkout-shell {
+    overflow-x: hidden;
+  }
+
+  .checkout-panel {
+    box-shadow: 0 12px 30px rgba(74, 51, 98, 0.08);
+  }
+
+  .checkout-panel::before {
+    display: none;
+  }
+}
+
+@media (min-width: 640px) {
+  .checkout-input {
+    border-radius: 1rem;
+    padding: 1rem 1.25rem;
+    font-size: 1.125rem;
+  }
+
+  .checkout-field {
+    font-size: 1.125rem;
+  }
 }
