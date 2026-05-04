@@ -7,10 +7,10 @@ export const categoriesQueryKey = ["categories"] as const;
 export async function fetchCategories(baseUrl?: string): Promise<string[]> {
   try {
     const res = await fetch(resolveApiUrl(API_URL, baseUrl));
-    if (!res.ok) throw new Error("Error al cargar categorías");
+    if (!res.ok) throw new Error("Error al cargar categorias");
 
     const json = await res.json();
-    if (json.status !== "success") throw new Error("Respuesta inválida del servidor");
+    if (json.status !== "success") throw new Error("Respuesta invalida del servidor");
 
     return json.data;
   } catch (error) {
@@ -19,10 +19,11 @@ export async function fetchCategories(baseUrl?: string): Promise<string[]> {
   }
 }
 
-export function useCategories() {
+export function useCategories(enabled = true) {
   return useQuery<string[], Error>({
     queryKey: categoriesQueryKey,
     queryFn: () => fetchCategories(),
-    staleTime: 1000 * 60 * 10, // 10 minutos (las categorías no cambian muy seguido)
+    enabled,
+    staleTime: 1000 * 60 * 10,
   });
 }

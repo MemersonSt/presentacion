@@ -21,7 +21,6 @@ import { renderApp } from "../client/src/server-entry";
 import { DEFAULT_SEO_STATE, renderSeoTags } from "../client/src/components/Seo";
 import { categoriesQueryKey, fetchCategories } from "../client/src/hooks/useCategories";
 import { companyQueryKey, fetchCompany } from "../client/src/hooks/useCompany";
-import { cmsHomeHeroQueryKey, fetchHomeHero } from "../client/src/hooks/useCMS";
 import { productsQueryKey, fetchProducts } from "../client/src/hooks/useProducts";
 import type { Product } from "../client/src/data/mock";
 import type { QueryClient } from "@tanstack/react-query";
@@ -205,22 +204,9 @@ function buildPublicConfigScript() {
 }
 
 function getHomeHeroPreload(queryClient: QueryClient) {
-  const cms = queryClient.getQueryData<{
-    images?: Array<string | { url?: unknown }> | string | null;
-  }>(cmsHomeHeroQueryKey);
-  const images = Array.isArray(cms?.images) ? cms.images : [];
-  const firstImage = images[0];
-  const rawImage =
-    typeof firstImage === "string"
-      ? firstImage
-      : firstImage && typeof firstImage === "object"
-        ? String(firstImage.url || "")
-        : DEFAULT_HERO_IMAGE;
-  const href = toPublicImageUrl(rawImage.trim() || DEFAULT_HERO_IMAGE);
+  void queryClient;
 
-  return href
-    ? `<link rel="preload" as="image" href="${escapeXml(href)}" fetchpriority="high" imagesizes="100vw" />`
-    : "";
+  return `<link rel="preload" as="image" href="/assets/banner_collage_mobile.webp" type="image/webp" fetchpriority="high" imagesrcset="/assets/banner_collage_mobile.webp 767w, /assets/banner_collage_desktop.webp 768w" imagesizes="100vw" />`;
 }
 
 function shouldSsrPath(path: string) {
@@ -246,10 +232,6 @@ async function prefetchSsrRouteData(queryClient: QueryClient, path: string, base
       queryClient.prefetchQuery({
         queryKey: companyQueryKey,
         queryFn: () => fetchCompany(baseUrl),
-      }),
-      queryClient.prefetchQuery({
-        queryKey: cmsHomeHeroQueryKey,
-        queryFn: () => fetchHomeHero(baseUrl),
       }),
     ]);
 

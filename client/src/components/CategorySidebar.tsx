@@ -13,17 +13,28 @@ interface CategorySidebarProps {
   activeCategory?: string | null;
   setActiveCategory?: (cat: string | null) => void;
   variant?: "filter" | "link";
+  enabled?: boolean;
 }
 
 export function CategorySidebar({
   activeCategory = null,
   setActiveCategory,
   variant = "filter",
+  enabled = true,
 }: CategorySidebarProps) {
   const productListHash = "#product-list";
   const [isOpen, setIsOpen] = useState(false);
   const [, setLocation] = useLocation();
-  const { data: categories, isLoading } = useCategories();
+  const { data: categories, isLoading } = useCategories(enabled);
+
+  if (!enabled) {
+    return (
+      <div className="w-full lg:w-72">
+        <div className="surface-card hidden h-[28rem] animate-pulse lg:block" />
+        <div className="h-20 animate-pulse rounded-2xl border border-[#D9C6EA] bg-white lg:hidden" />
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
