@@ -5,6 +5,7 @@ import { FAQS } from "@/data/mock";
 import { useCompany } from "@/hooks/useCompany";
 import { useReviews, useCreateReview } from "@/hooks/useReviews";
 import { DEFAULT_COMPANY } from "@/lib/site";
+import "./home-deferred.css";
 
 export function HomeDeferredSections() {
   const { data: dbReviews = [], isLoading: isLoadingReviews } = useReviews(true);
@@ -38,24 +39,24 @@ export function HomeDeferredSections() {
     <>
       <section
         id="testimonios"
-        className="deferred-section relative left-1/2 right-1/2 mb-32 w-screen -translate-x-1/2 border-y border-[#DECDF0] bg-[#F4ECFB] px-6 py-20 sm:px-10"
+        className="deferred-section home-testimonials"
       >
-        <div className="absolute -top-10 left-1/2 h-20 w-1 -translate-x-1/2 bg-gradient-to-b from-transparent to-primary/20" />
+        <div className="home-testimonials-accent" />
 
-        <div className="mb-20 text-center">
+        <div className="home-deferred-heading">
           <h2 className="section-title">Lo que dicen de nosotros</h2>
           <p className="section-copy">Tu satisfaccion es nuestra mayor recompensa.</p>
         </div>
-        <div className="mb-10 text-center">
+        <div className="home-deferred-action">
           <button type="button" onClick={() => setShowForm(!showForm)} className="ui-btn-primary">
             {showForm ? "Cerrar Formulario" : "Escribir una resena"}
           </button>
         </div>
 
         {showForm ? (
-          <div className="mx-auto mb-20 max-w-xl overflow-hidden">
-            <form onSubmit={handleAddReview} className="surface-card space-y-6 p-8">
-              <div className="mb-4 flex justify-center gap-2">
+          <div className="home-review-form-wrap">
+            <form onSubmit={handleAddReview} className="surface-card home-review-form">
+              <div className="home-review-stars">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
@@ -91,21 +92,21 @@ export function HomeDeferredSections() {
         ) : null}
 
         {reviewMessage ? (
-          <p className="mx-auto mb-10 max-w-xl rounded-2xl border border-primary/15 bg-white/70 px-5 py-4 text-center text-sm font-semibold text-foreground/70">
+          <p className="home-review-message">
             {reviewMessage}
           </p>
         ) : null}
 
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-12 md:grid-cols-2">
+        <div className="home-review-grid">
           {isLoadingReviews ? (
-            <div className="col-span-full py-10 text-center opacity-30">Cargando experiencias...</div>
+            <div className="home-review-loading">Cargando experiencias...</div>
           ) : dbReviews.length > 0 ? (
             dbReviews.map((review, i) => (
               <div
                 key={review.id || i}
-                className="surface-card group relative p-8 transition-transform duration-300 hover:-translate-y-1 sm:p-10"
+                className="surface-card home-review-card"
               >
-                <div className="mb-6 flex gap-1 opacity-40 transition-opacity duration-700 group-hover:opacity-100">
+                <div className="home-review-card-stars">
                   {[...Array(review.stars)].map((_, s) => (
                     <Star key={s} className="h-5 w-5 fill-accent text-accent" />
                   ))}
@@ -116,8 +117,8 @@ export function HomeDeferredSections() {
                 >
                   "{review.content}"
                 </p>
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 font-bold text-accent transition-transform duration-700 group-hover:rotate-[360deg]">
+                <div className="home-review-card-meta">
+                  <div className="home-review-avatar">
                     {review.name[0]}
                   </div>
                   <div>
@@ -138,40 +139,40 @@ export function HomeDeferredSections() {
               </div>
             ))
           ) : (
-            <div className="col-span-full py-20 text-center font-serif text-2xl italic text-foreground/60">
+            <div className="home-review-empty">
               Aun no hay resenas. Se el primero en compartir tu experiencia.
             </div>
           )}
         </div>
       </section>
 
-      <section id="faq" className="deferred-section mb-40">
-        <div className="mb-16 text-center">
+      <section id="faq" className="deferred-section home-faq">
+        <div className="home-deferred-heading home-faq-heading">
           <h2
-            className="text-4xl font-black leading-tight text-[#4B1F6F] md:text-6xl"
+            className="home-faq-title"
             style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}
           >
             Preguntas frecuentes
           </h2>
           <p
-            className="mt-3 text-xl leading-relaxed text-[#4B1F6F] md:text-2xl"
+            className="home-faq-copy"
             style={{ fontFamily: "Arial, sans-serif" }}
           >
             Informacion clave sobre entregas, pagos y tiempos de atencion.
           </p>
         </div>
 
-        <div className="mx-auto grid max-w-4xl gap-6">
+        <div className="home-faq-grid">
           {FAQS.map((faq) => (
-            <article key={faq.question} className="surface-card p-8">
+            <article key={faq.question} className="surface-card home-faq-card">
               <h3
-                className="mb-4 text-2xl font-black text-[#4B1F6F] md:text-3xl"
+                className="home-faq-card-title"
                 style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}
               >
                 {faq.question}
               </h3>
               <p
-                className="text-lg leading-relaxed text-[#4B1F6F] md:text-xl"
+                className="home-faq-card-copy"
                 style={{ fontFamily: "Arial, sans-serif" }}
               >
                 {faq.answer}
@@ -181,22 +182,22 @@ export function HomeDeferredSections() {
         </div>
       </section>
 
-      <footer id="contacto" className="deferred-section border-t border-[#DECDF0] bg-[#F4ECFB] px-6 pt-44 pb-14">
-        <div className="container mx-auto">
-          <div className="mb-36 grid grid-cols-1 gap-24 md:grid-cols-2 lg:grid-cols-4">
-            <div className="lg:col-span-1">
-              <img src="/logo-footer.png" alt="DIFIORI" className="mb-12 h-36 w-auto object-contain" loading="lazy" />
+      <footer id="contacto" className="deferred-section home-footer">
+        <div className="home-footer-container">
+          <div className="home-footer-grid">
+            <div className="home-footer-brand">
+              <img src="/logo-footer.png" alt="DIFIORI" className="home-footer-logo" loading="lazy" />
               <p
-                className="mb-12 text-[1.45rem] font-black leading-relaxed text-[#4B1F6F]"
+                className="home-footer-brand-copy"
                 style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}
               >
                 Disenando emociones con las flores mas frescas de exportacion en Guayaquil.
               </p>
-              <div className="flex gap-4">
+              <div className="home-footer-socials">
                 {[Instagram, Facebook, Music2].map((Icon, i) => (
                   <div
                     key={i}
-                    className="cursor-pointer rounded-2xl border border-[#DECDF0] bg-white/35 p-6 text-[#3D2852] transition-all duration-500 hover:scale-110 hover:bg-accent hover:text-white"
+                    className="home-footer-social"
                   >
                     <Icon className="h-7 w-7" />
                   </div>
@@ -206,102 +207,96 @@ export function HomeDeferredSections() {
 
             <div>
               <h4
-                className="mb-12 text-[1.2rem] font-black uppercase tracking-[0.3em] text-[#4B1F6F]"
+                className="home-footer-title"
                 style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}
               >
                 La Maison
               </h4>
-              <ul
-                className="space-y-6 text-[1rem] font-black uppercase tracking-widest text-[#4B1F6F]"
-                style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}
-              >
-                <li className="cursor-pointer transition-all duration-500 hover:translate-x-2 hover:text-accent">Tienda</li>
-                <li className="cursor-pointer transition-all duration-500 hover:translate-x-2 hover:text-accent">Contacto</li>
-                <li className="cursor-pointer transition-all duration-500 hover:translate-x-2 hover:text-accent">Preguntas Frecuentes</li>
-                <li className="cursor-pointer transition-all duration-500 hover:translate-x-2 hover:text-accent">Terminos y Condiciones</li>
+              <ul className="home-footer-links" style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}>
+                <li className="home-footer-link">Tienda</li>
+                <li className="home-footer-link">Contacto</li>
+                <li className="home-footer-link">Preguntas Frecuentes</li>
+                <li className="home-footer-link">Terminos y Condiciones</li>
               </ul>
             </div>
 
             <div>
               <h4
-                className="mb-12 text-[1.2rem] font-black uppercase tracking-[0.3em] text-[#4B1F6F]"
+                className="home-footer-title"
                 style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}
               >
                 Soporte
               </h4>
-              <ul
-                className="space-y-6 text-[1rem] font-black uppercase tracking-widest text-[#4B1F6F]"
-                style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}
-              >
-                <li className="cursor-pointer transition-all duration-500 hover:translate-x-2 hover:text-accent">Envios y Entregas</li>
-                <li className="cursor-pointer transition-all duration-500 hover:translate-x-2 hover:text-accent">Cuidado de Flores</li>
-                <li className="cursor-pointer transition-all duration-500 hover:translate-x-2 hover:text-accent">Politica de Privacidad</li>
-                <li className="cursor-pointer transition-all duration-500 hover:translate-x-2 hover:text-accent">FAQs Soporte</li>
+              <ul className="home-footer-links" style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}>
+                <li className="home-footer-link">Envios y Entregas</li>
+                <li className="home-footer-link">Cuidado de Flores</li>
+                <li className="home-footer-link">Politica de Privacidad</li>
+                <li className="home-footer-link">FAQs Soporte</li>
               </ul>
             </div>
 
             <div>
               <h4
-                className="mb-12 text-[1.2rem] font-black uppercase tracking-[0.3em] text-[#4B1F6F]"
+                className="home-footer-title"
                 style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}
               >
                 Contacto Directo
               </h4>
-              <div className="space-y-10">
-                <div className="group flex items-center gap-5">
-                  <div className="rounded-2xl bg-accent/10 p-6 transition-colors duration-500 group-hover:bg-accent">
+              <div className="home-footer-contact-list">
+                <div className="home-footer-contact-group">
+                  <div className="home-footer-contact-icon">
                     <MessageSquare className="h-6 w-6 text-accent transition-colors duration-500 group-hover:text-white" />
                   </div>
                   <div
-                    className="text-base font-black uppercase text-[#4B1F6F]"
+                    className="home-footer-contact-copy"
                     style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}
                   >
-                    <span className="mb-1.5 block text-[#4B1F6F]">WhatsApp</span>
-                    <a href={`https://wa.me/${companyPhoneDigits}`} className="transition-colors duration-500 hover:text-accent">
+                    <span className="home-footer-contact-label">WhatsApp</span>
+                    <a href={`https://wa.me/${companyPhoneDigits}`} className="home-footer-contact-link">
                       {companyPhoneDisplay}
                     </a>
                   </div>
                 </div>
-                <div className="group flex items-center gap-5">
-                  <div className="rounded-2xl bg-accent/10 p-6 transition-colors duration-500 group-hover:bg-accent">
+                <div className="home-footer-contact-group">
+                  <div className="home-footer-contact-icon">
                     <Phone className="h-6 w-6 text-accent transition-colors duration-500 group-hover:text-white" />
                   </div>
                   <div
-                    className="text-base font-black uppercase text-[#4B1F6F]"
+                    className="home-footer-contact-copy"
                     style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}
                   >
-                    <span className="mb-1.5 block text-[#4B1F6F]">Llamadas</span>
-                    <span className="transition-colors duration-500 group-hover:text-accent">{companyPhoneDisplay}</span>
+                    <span className="home-footer-contact-label">Llamadas</span>
+                    <span className="home-footer-contact-link">{companyPhoneDisplay}</span>
                   </div>
                 </div>
-                <div className="group flex items-center gap-5">
-                  <div className="rounded-2xl bg-accent/10 p-6 transition-colors duration-500 group-hover:bg-accent">
+                <div className="home-footer-contact-group">
+                  <div className="home-footer-contact-icon">
                     <Mail className="h-6 w-6 text-accent transition-colors duration-500 group-hover:text-white" />
                   </div>
                   <div
-                    className="text-base font-black uppercase text-[#4B1F6F]"
+                    className="home-footer-contact-copy"
                     style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}
                   >
-                    <span className="mb-1.5 block text-[#4B1F6F]">Email</span>
-                    <span className="break-all transition-colors duration-500 group-hover:text-accent">{companyEmail}</span>
+                    <span className="home-footer-contact-label">Email</span>
+                    <span className="home-footer-contact-link home-footer-email">{companyEmail}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col items-center justify-between gap-10 border-t border-primary/10 pt-14 md:flex-row">
+          <div className="home-footer-bottom">
             <p
-              className="text-base font-black uppercase tracking-[0.35em] text-[#4B1F6F]"
+              className="home-footer-bottom-copy"
               style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}
             >
               © 2026 DIFIORI Ecuador. Todos los derechos reservados.
             </p>
             <div
-              className="flex gap-8 text-base font-black uppercase tracking-[0.3em] text-[#4B1F6F]"
+              className="home-footer-bottom-meta"
               style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}
             >
-              <span className="cursor-pointer transition-colors duration-500 hover:text-accent">Guayaquil, Ecuador</span>
+              <span className="home-footer-bottom-link">Guayaquil, Ecuador</span>
             </div>
           </div>
         </div>
