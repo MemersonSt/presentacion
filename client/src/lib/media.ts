@@ -43,3 +43,42 @@ export function toPublicImageUrl(source?: string | null) {
   const { assetBaseUrl } = getPublicAppConfig();
   return assetBaseUrl ? `${assetBaseUrl}${normalizedPath}` : normalizedPath;
 }
+
+function unwrapImageProxyUrl(source: string) {
+  if (!source.startsWith("/image-proxy?")) return source;
+
+  try {
+    const parsed = new URL(source, "https://difiori.com");
+    return parsed.searchParams.get("url") || source;
+  } catch {
+    return source;
+  }
+}
+
+function isCloudinaryUrl(source: string) {
+  try {
+    const parsed = new URL(source);
+    return parsed.hostname === "res.cloudinary.com" && parsed.pathname.includes("/image/upload/");
+  } catch {
+    return false;
+  }
+}
+
+function buildCloudinaryVariant(source: string, width: number) {
+  return source.replace("/image/upload/", `/image/upload/f_auto,q_auto,c_limit,w_${width}/`);
+}
+
+export function getResponsiveImageSrcSet(
+  source?: string | null,
+  widths: number[] = [320, 480, 640, 960],
+) {
+  const value = String(source || "").trim();
+  if (!value || value.startsWith("data:image/")) return undefined;
+
+  const originalSource = unwrapImageProxyUrl(value);
+  if (!isCloudinaryUrl(originalSource)) return undefined;
+
+  return widths
+    .map((width) => `${toPublicImageUrl(buildCloudinaryVariant(originalSource, width))} ${width}w`)
+    .join(", ");
+}

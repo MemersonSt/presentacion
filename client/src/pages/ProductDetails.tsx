@@ -3,6 +3,7 @@ import { Link, useLocation, useRoute } from "wouter";
 import { MessageSquare, Truck, ShieldCheck, Clock, ShoppingBag, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { getResponsiveImageSrcSet } from "@/lib/media";
 import { useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/context/CartContext";
 import { Seo } from "@/components/Seo";
@@ -182,6 +183,7 @@ export default function ProductDetails() {
       ],
     },
   };
+  const selectedImageSrcSet = getResponsiveImageSrcSet(selectedImage, [480, 768, 1024, 1280]);
 
   return (
     <div className="page-shell">
@@ -229,38 +231,46 @@ export default function ProductDetails() {
             >
               <img
                 src={selectedImage}
+                srcSet={selectedImageSrcSet}
                 className="w-full h-full object-contain object-center p-6 transition-transform duration-700 group-hover:scale-[1.02] cursor-zoom-in"
                 alt={product.name}
                 loading="eager"
                 decoding="async"
                 fetchPriority="high"
+                sizes="(min-width: 1024px) 50vw, 92vw"
               />
             </motion.div>
 
             {galleryImages.length > 1 ? (
               <div className="flex gap-4 justify-center lg:justify-start w-full max-w-xl overflow-x-auto pb-4 no-scrollbar">
-                {galleryImages.map((img, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    aria-label={`Ver imagen ${i + 1} de ${product.name}`}
-                    onMouseEnter={() => setSelectedImage(img)}
-                    onClick={() => setSelectedImage(img)}
-                    className={cn(
-                      "h-24 w-24 min-w-[6rem] overflow-hidden rounded-2xl border-2 bg-white transition-all hover:scale-105",
-                      selectedImage === img ? "border-accent shadow-lg" : "border-primary/10",
-                    )}
-                  >
-                    <img
-                      src={img}
-                      className="w-full h-full object-contain object-center p-1"
-                      alt={`${product.name} vista ${i + 1}`}
-                      loading="lazy"
-                      decoding="async"
-                      fetchPriority="low"
-                    />
-                  </button>
-                ))}
+                {galleryImages.map((img, i) => {
+                  const thumbnailSrcSet = getResponsiveImageSrcSet(img, [96, 192, 256]);
+
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      aria-label={`Ver imagen ${i + 1} de ${product.name}`}
+                      onMouseEnter={() => setSelectedImage(img)}
+                      onClick={() => setSelectedImage(img)}
+                      className={cn(
+                        "h-24 w-24 min-w-[6rem] overflow-hidden rounded-2xl border-2 bg-white transition-all hover:scale-105",
+                        selectedImage === img ? "border-accent shadow-lg" : "border-primary/10",
+                      )}
+                    >
+                      <img
+                        src={img}
+                        srcSet={thumbnailSrcSet}
+                        className="w-full h-full object-contain object-center p-1"
+                        alt={`${product.name} vista ${i + 1}`}
+                        loading="lazy"
+                        decoding="async"
+                        fetchPriority="low"
+                        sizes="96px"
+                      />
+                    </button>
+                  );
+                })}
               </div>
             ) : null}
           </div>
