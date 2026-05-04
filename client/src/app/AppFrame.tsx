@@ -146,15 +146,29 @@ export function AppFrame({ Routes, fallback = <RouteFallback /> }: AppFrameProps
   useEffect(() => {
     if (shouldLoadToaster || typeof window === "undefined") return;
 
-    const loadToaster = () => setShouldLoadToaster(true);
+    let fallbackTimeout = 0;
+    const interactionEvents: Array<keyof WindowEventMap> = ["pointerdown", "keydown", "touchstart"];
 
-    if (document.readyState === "complete") {
-      window.setTimeout(loadToaster, 1200);
-      return;
-    }
+    const loadToaster = () => {
+      setShouldLoadToaster(true);
+      interactionEvents.forEach((eventName) => {
+        window.removeEventListener(eventName, loadToaster);
+      });
+      if (fallbackTimeout) window.clearTimeout(fallbackTimeout);
+    };
 
-    window.addEventListener("load", loadToaster, { once: true });
-    return () => window.removeEventListener("load", loadToaster);
+    interactionEvents.forEach((eventName) => {
+      window.addEventListener(eventName, loadToaster, { passive: true, once: true });
+    });
+
+    fallbackTimeout = window.setTimeout(loadToaster, 10000);
+
+    return () => {
+      interactionEvents.forEach((eventName) => {
+        window.removeEventListener(eventName, loadToaster);
+      });
+      if (fallbackTimeout) window.clearTimeout(fallbackTimeout);
+    };
   }, [shouldLoadToaster]);
 
   useEffect(() => {

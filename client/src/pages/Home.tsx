@@ -18,6 +18,7 @@ const HOME_CATEGORY_LIMIT = 4;
 const HOME_PRODUCT_LIMIT = HOME_PRODUCTS_PER_CATEGORY * HOME_CATEGORY_LIMIT;
 
 export default function Home() {
+  const catalogSectionRef = useRef<HTMLElement | null>(null);
   const reviewsSectionRef = useRef<HTMLElement | null>(null);
   const [shouldLoadCatalog, setShouldLoadCatalog] = useState(false);
   const [shouldLoadReviews, setShouldLoadReviews] = useState(false);
@@ -73,24 +74,24 @@ export default function Home() {
   useEffect(() => {
     if (shouldLoadCatalog || typeof window === "undefined") return;
 
-    const startCatalogLoad = () => {
-      if ("requestIdleCallback" in window) {
-        (window as Window & {
-          requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
-        }).requestIdleCallback?.(() => setShouldLoadCatalog(true), { timeout: 1200 });
-        return;
-      }
-
-      window.setTimeout(() => setShouldLoadCatalog(true), 350);
-    };
-
-    if (document.readyState === "complete") {
-      startCatalogLoad();
+    const target = catalogSectionRef.current;
+    if (!target || typeof IntersectionObserver === "undefined") {
+      setShouldLoadCatalog(true);
       return;
     }
 
-    window.addEventListener("load", startCatalogLoad, { once: true });
-    return () => window.removeEventListener("load", startCatalogLoad);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShouldLoadCatalog(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "450px 0px" },
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
   }, [shouldLoadCatalog]);
 
   useEffect(() => {
@@ -172,7 +173,10 @@ export default function Home() {
       <div className="mx-auto w-full max-w-[1600px] px-6 py-20 relative z-20 xl:px-10">
         
         {/* Main Content: Sidebar + Catalog */}
-        <section className="relative z-20 flex flex-col gap-10 pt-10 mb-40 lg:flex-row xl:gap-8">
+        <section
+          ref={catalogSectionRef}
+          className="relative z-20 flex flex-col gap-10 pt-10 mb-40 lg:flex-row xl:gap-8"
+        >
           <aside className="h-fit shrink-0 lg:sticky lg:top-32 lg:w-[280px] xl:w-[300px]">
             <CategorySidebar variant="link" enabled={shouldLoadCatalog} />
           </aside>
