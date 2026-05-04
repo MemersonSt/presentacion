@@ -1,0 +1,203 @@
+import { Link, useRoute } from "wouter";
+import { Flower2, MapPin, MessageSquare, Truck } from "lucide-react";
+import { ProductCard } from "@/components/ProductCard";
+import { Seo } from "@/components/Seo";
+import { useProducts } from "@/hooks/useProducts";
+import { DEFAULT_COMPANY, absoluteUrl, canonicalUrl } from "@/lib/site";
+
+const landingPages = {
+  "/flores-guayaquil": {
+    path: "/flores-guayaquil",
+    title: "Flores Guayaquil | Flores a Domicilio en Guayaquil | DIFIORI",
+    description:
+      "Compra flores en Guayaquil con DIFIORI. Ramos de flores, arreglos florales y regalos con entrega a domicilio en Guayaquil, Samborondon, Duran y Via a la Costa.",
+    keywords: "flores Guayaquil, flores a domicilio Guayaquil, arreglos florales Guayaquil, comprar flores Guayaquil",
+    h1: "Flores en Guayaquil",
+    intro:
+      "DIFIORI prepara flores frescas, ramos y arreglos florales para entregas a domicilio en Guayaquil. Creamos detalles para cumpleanos, aniversarios, amor, condolencias y regalos especiales.",
+    focus: ["Flores frescas seleccionadas", "Entrega a domicilio en Guayaquil", "Pedidos por tienda online o WhatsApp"],
+  },
+  "/florerias-en-guayaquil": {
+    path: "/florerias-en-guayaquil",
+    title: "Florerias en Guayaquil | Floreria DIFIORI con Entrega a Domicilio",
+    description:
+      "DIFIORI es una floreria en Guayaquil especializada en arreglos florales, ramos de flores y regalos a domicilio para ocasiones especiales.",
+    keywords: "florerias en Guayaquil, floreria Guayaquil, floristeria Guayaquil, arreglos florales Guayaquil",
+    h1: "Floreria en Guayaquil",
+    intro:
+      "Si buscas florerias en Guayaquil, DIFIORI combina diseno floral, flores frescas y atencion directa para ayudarte a enviar un detalle elegante el mismo dia o en fecha programada.",
+    focus: ["Arreglos florales personalizados", "Atencion directa por WhatsApp", "Cobertura en sectores de Guayaquil"],
+  },
+  "/ramos-de-flores": {
+    path: "/ramos-de-flores",
+    title: "Ramos de Flores en Guayaquil | Ramos a Domicilio | DIFIORI",
+    description:
+      "Encuentra ramos de flores en Guayaquil para cumpleanos, aniversarios y regalos romanticos. DIFIORI entrega ramos y arreglos florales a domicilio.",
+    keywords: "ramos de flores, ramos de flores Guayaquil, ramos a domicilio Guayaquil, ramos de rosas Guayaquil",
+    h1: "Ramos de flores",
+    intro:
+      "Nuestros ramos de flores estan pensados para regalar emociones: rosas, flores mixtas y composiciones elegantes listas para enviar en Guayaquil.",
+    focus: ["Ramos para amor y aniversario", "Ramos de rosas y flores mixtas", "Opciones con regalos complementarios"],
+  },
+} as const;
+
+type LandingPath = keyof typeof landingPages;
+
+function useCurrentLandingPage() {
+  const [floresMatch] = useRoute("/flores-guayaquil");
+  const [floreriasMatch] = useRoute("/florerias-en-guayaquil");
+  const [ramosMatch] = useRoute("/ramos-de-flores");
+
+  if (floresMatch) return landingPages["/flores-guayaquil"];
+  if (floreriasMatch) return landingPages["/florerias-en-guayaquil"];
+  if (ramosMatch) return landingPages["/ramos-de-flores"];
+
+  return landingPages["/flores-guayaquil"];
+}
+
+export const SEO_LANDING_PATHS = Object.keys(landingPages) as LandingPath[];
+
+export default function SeoLandingPage() {
+  const page = useCurrentLandingPage();
+  const { data: products = [], isLoading } = useProducts();
+  const highlightedProducts = products
+    .filter((product) => {
+      const text = `${product.name} ${product.category} ${product.description}`.toLowerCase();
+      return text.includes("flor") || text.includes("ramo") || text.includes("rosa");
+    })
+    .slice(0, 6);
+  const pageSchema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        name: page.h1,
+        url: canonicalUrl(page.path),
+        description: page.description,
+        image: absoluteUrl("/opengraph.jpg"),
+        breadcrumb: {
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            {
+              "@type": "ListItem",
+              position: 1,
+              name: "Inicio",
+              item: canonicalUrl("/"),
+            },
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: page.h1,
+              item: canonicalUrl(page.path),
+            },
+          ],
+        },
+      },
+      {
+        "@type": "Florist",
+        "@id": `${canonicalUrl("/")}#organization`,
+        name: DEFAULT_COMPANY.name,
+        url: canonicalUrl("/"),
+        image: absoluteUrl("/opengraph.jpg"),
+        telephone: `+${DEFAULT_COMPANY.phoneDigits}`,
+        email: DEFAULT_COMPANY.email,
+        priceRange: "$$",
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: DEFAULT_COMPANY.city,
+          addressCountry: "EC",
+        },
+        areaServed: ["Guayaquil", "Samborondon", "Duran", "Via a la Costa"],
+      },
+    ],
+  };
+
+  return (
+    <main className="page-shell">
+      <Seo
+        title={page.title}
+        description={page.description}
+        keywords={page.keywords}
+        path={page.path}
+        schema={pageSchema}
+      />
+
+      <div className="page-container">
+        <div className="page-header">
+          <div className="page-kicker">DIFIORI Guayaquil</div>
+          <h1 className="page-title">{page.h1}</h1>
+          <p className="page-copy">{page.intro}</p>
+        </div>
+
+        <section className="grid gap-4 md:grid-cols-3">
+          {page.focus.map((item) => (
+            <article key={item} className="surface-card p-6">
+              <Flower2 className="mb-5 h-7 w-7 text-accent" aria-hidden="true" />
+              <h2 className="text-xl font-semibold text-foreground">{item}</h2>
+            </article>
+          ))}
+        </section>
+
+        <section className="mt-14 grid gap-6 rounded-[1.5rem] border border-primary/15 bg-white/70 p-6 md:grid-cols-3">
+          <div className="flex gap-4">
+            <MapPin className="mt-1 h-6 w-6 shrink-0 text-accent" aria-hidden="true" />
+            <div>
+              <h2 className="text-lg font-semibold">Cobertura local</h2>
+              <p className="mt-2 text-sm leading-relaxed text-foreground/65">
+                Entregamos flores en Guayaquil y coordinamos envios a Samborondon, Duran y Via a la Costa.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <Truck className="mt-1 h-6 w-6 shrink-0 text-accent" aria-hidden="true" />
+            <div>
+              <h2 className="text-lg font-semibold">Entrega a domicilio</h2>
+              <p className="mt-2 text-sm leading-relaxed text-foreground/65">
+                Preparamos arreglos florales y ramos de flores para regalos, fechas especiales y sorpresas.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <MessageSquare className="mt-1 h-6 w-6 shrink-0 text-accent" aria-hidden="true" />
+            <div>
+              <h2 className="text-lg font-semibold">Compra facil</h2>
+              <p className="mt-2 text-sm leading-relaxed text-foreground/65">
+                Haz tu pedido en la tienda online o escribe por WhatsApp para confirmar disponibilidad.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-16">
+          <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+            <div>
+              <h2 className="section-title">Arreglos destacados</h2>
+              <p className="section-copy">Flores y regalos disponibles para enviar en Guayaquil.</p>
+            </div>
+            <Link href="/shop" className="ui-btn-secondary">
+              Ver catalogo
+            </Link>
+          </div>
+
+          {isLoading ? (
+            <div className="product-grid">
+              {Array(6).fill(0).map((_, index) => (
+                <div key={index} className="product-skeleton" />
+              ))}
+            </div>
+          ) : highlightedProducts.length > 0 ? (
+            <div className="product-grid">
+              {highlightedProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <p className="empty-state-title">Explora el catalogo completo de DIFIORI.</p>
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
+  );
+}

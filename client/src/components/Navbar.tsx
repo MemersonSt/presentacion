@@ -4,6 +4,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { Logo } from "@/components/Logo";
 import { useCart } from "@/context/CartContext";
 import { DEFAULT_COMPANY } from "@/lib/site";
+import "./navbar.css";
 
 const SearchOverlay = lazy(() =>
   import("@/components/SearchOverlay").then((module) => ({ default: module.SearchOverlay })),
@@ -92,69 +93,50 @@ export function Navbar() {
         {isSearchOpen && <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />}
       </Suspense>
 
-      <nav className="fixed top-0 z-50 w-full border-b border-primary/10 bg-white py-4 shadow-[0_10px_30px_rgba(0,0,0,0.03)] transition-all duration-1000 sm:py-5 lg:py-7 min-[1440px]:py-8">
-        <div className="mx-auto w-full px-6 lg:px-8 min-[1440px]:px-12">
-          <div className="hidden grid-cols-[minmax(0,1fr)_clamp(190px,16vw,260px)_minmax(0,1fr)] items-center gap-3 lg:grid min-[1440px]:gap-5">
-            <div className="flex min-w-0 items-center justify-start gap-5 min-[1440px]:gap-10">
+      <nav className="site-nav">
+        <div className="site-nav-shell">
+          <div className="site-nav-desktop">
+            <div className="site-nav-desktop-left">
               {leftLinks.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
-                  className={cn(
-                    "group relative whitespace-nowrap text-[clamp(0.95rem,1.05vw,1.08rem)] font-black uppercase tracking-[0.14em] transition-all duration-500 min-[1440px]:tracking-[0.18em] min-[1600px]:text-[1.14rem]",
-                    "text-foreground hover:text-accent",
-                  )}
+                  className={cn("site-nav-link", "text-foreground hover:text-accent")}
                 >
                   {link.label}
-                  <span
-                    className={cn(
-                      "absolute -bottom-2 left-1/2 h-[1px] w-0 -translate-x-1/2 transition-all duration-500 group-hover:w-full",
-                      "bg-accent/40",
-                    )}
-                  />
+                  <span className={cn("site-nav-link-line", "bg-accent/40")} />
                 </a>
               ))}
             </div>
 
-            <div className="flex min-w-0 items-center justify-center">
-              <Link href="/" className="group flex w-full items-center justify-center overflow-visible">
+            <div className="site-nav-brand-wrap">
+              <Link href="/" className="site-nav-brand-link">
                 <Logo
                   size="md"
                   variant="dark"
-                  className="w-full max-w-[230px] scale-95 transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] min-[1440px]:max-w-[260px] min-[1440px]:scale-100"
+                  className="site-nav-brand-logo"
                 />
               </Link>
             </div>
 
-            <div className="flex min-w-0 items-center justify-end gap-5 min-[1440px]:gap-10">
+            <div className="site-nav-desktop-right">
               {rightLinks.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
-                  className={cn(
-                    "group relative hidden whitespace-nowrap text-[clamp(0.95rem,1.05vw,1.08rem)] font-black uppercase tracking-[0.14em] transition-all duration-500 xl:block min-[1440px]:tracking-[0.18em] min-[1600px]:text-[1.14rem]",
-                    "text-foreground hover:text-accent",
-                  )}
+                  className={cn("site-nav-link site-nav-link-desktop-only", "text-foreground hover:text-accent")}
                 >
                   {link.label}
-                  <span
-                    className={cn(
-                      "absolute -bottom-2 left-1/2 h-[1px] w-0 -translate-x-1/2 transition-all duration-500 group-hover:w-full",
-                      "bg-accent/40",
-                    )}
-                  />
+                  <span className={cn("site-nav-link-line", "bg-accent/40")} />
                 </a>
               ))}
 
-              <div
-                className="flex shrink-0 items-center gap-4 border-l pl-4 transition-colors duration-500 min-[1440px]:gap-8 min-[1440px]:pl-8"
-                style={{ borderLeftColor: "rgba(0,0,0,0.1)" }}
-              >
+              <div className="site-nav-actions">
                 <button
                   type="button"
                   aria-label="Buscar productos"
                   onClick={() => setIsSearchOpen(true)}
-                  className={cn("transition-all hover:scale-110", "text-foreground hover:text-accent")}
+                  className={cn("site-nav-icon-button", "text-foreground hover:text-accent")}
                 >
                   <IconSearch className="h-6 w-6 min-[1440px]:h-7 min-[1440px]:w-7" />
                 </button>
@@ -163,10 +145,7 @@ export function Navbar() {
                   aria-label={`Ver carrito (${cartItemCount})`}
                   onClick={handleCartNavigation}
                   disabled={isCartNavigating}
-                  className={cn(
-                    "relative flex items-center gap-2 transition-all hover:scale-110 disabled:pointer-events-none disabled:opacity-70",
-                    "text-foreground hover:text-accent",
-                  )}
+                  className={cn("site-nav-cart-button", "text-foreground hover:text-accent")}
                 >
                   {isCartNavigating ? (
                     <IconSpinner className="h-6 w-6 min-[1440px]:h-7 min-[1440px]:w-7" />
@@ -179,28 +158,28 @@ export function Navbar() {
             </div>
           </div>
 
-          <div className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-2 sm:grid-cols-[52px_minmax(0,1fr)_auto] sm:gap-3 lg:hidden">
+          <div className="site-nav-mobile">
             <button
               type="button"
               aria-label="Abrir menú"
-              className={cn("flex h-11 w-11 items-center justify-center rounded-full transition-colors sm:h-12 sm:w-12", "text-foreground")}
+              className={cn("site-nav-mobile-icon", "text-foreground")}
               onClick={() => setIsOpen(!isOpen)}
             >
               <IconMenu className="h-7 w-7 sm:h-8 sm:w-8" />
             </button>
 
-            <div className="flex min-w-0 justify-center px-2">
-              <Link href="/" className="flex min-w-0 max-w-[180px] items-center justify-center sm:max-w-[210px]">
+            <div className="site-nav-mobile-brand">
+              <Link href="/" className="site-nav-mobile-brand-link">
                 <Logo size="sm" variant="dark" className="w-full items-center" />
               </Link>
             </div>
 
-            <div className="flex items-center justify-end gap-1 sm:gap-2">
+            <div className="site-nav-mobile-actions">
               <button
                 type="button"
                 aria-label="Buscar productos"
                 onClick={() => setIsSearchOpen(true)}
-                className={cn("flex h-11 w-11 items-center justify-center rounded-full transition-colors sm:h-12 sm:w-12", "text-foreground")}
+                className={cn("site-nav-mobile-icon", "text-foreground")}
               >
                 <IconSearch className="h-6 w-6 sm:h-7 sm:w-7" />
               </button>
@@ -230,25 +209,25 @@ export function Navbar() {
         </div>
 
         {isOpen ? (
-          <div className="mobile-menu-enter fixed inset-0 z-[100] flex h-screen w-full flex-col bg-background/95 p-8 backdrop-blur-3xl lg:hidden">
-            <div className="mb-16 flex items-center justify-between">
+          <div className="mobile-menu-enter site-nav-mobile-menu">
+            <div className="site-nav-mobile-menu-head">
               <Logo size="sm" variant="dark" />
               <button
                 type="button"
                 aria-label="Cerrar menú"
-                className="p-2 text-foreground/50 transition-colors hover:text-foreground"
+                className="site-nav-mobile-menu-close"
                 onClick={() => setIsOpen(false)}
               >
                 <IconClose className="h-6 w-6" />
               </button>
             </div>
 
-            <div className="mt-8 flex flex-col items-center gap-8 text-center">
+            <div className="site-nav-mobile-menu-links">
               {[...leftLinks, ...rightLinks].map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
-                  className="text-3xl font-serif italic text-foreground/80 transition-colors hover:text-accent"
+                  className="site-nav-mobile-menu-link"
                   onClick={() => setIsOpen(false)}
                 >
                   {link.label}
@@ -264,7 +243,7 @@ export function Navbar() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Contactar por WhatsApp"
-        className="group fixed bottom-8 right-8 z-[100] flex h-[60px] w-[60px] items-center justify-center rounded-full border border-white/20 bg-[#25D366] shadow-[0_20px_50px_rgba(37,211,102,0.35)] transition-colors duration-300 hover:bg-[#1ebe5d] hover:shadow-[0_24px_54px_rgba(37,211,102,0.4)]"
+        className="site-nav-whatsapp"
       >
         <div className="relative flex h-7 w-7 items-center justify-center">
           <svg
