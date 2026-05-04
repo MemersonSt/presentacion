@@ -6,6 +6,7 @@ type JsonLd = Record<string, unknown> | Array<Record<string, unknown>>;
 export interface SeoProps {
   title: string;
   description: string;
+  keywords?: string;
   path?: string;
   robots?: string;
   image?: string;
@@ -16,6 +17,7 @@ export interface SeoProps {
 export interface SeoState {
   title: string;
   description: string;
+  keywords?: string;
   path: string;
   robots: string;
   image: string;
@@ -29,9 +31,10 @@ export interface SeoManager {
 }
 
 export const DEFAULT_SEO_STATE: SeoState = {
-  title: "Floristería en Guayaquil | Arreglos Florales y Regalos a Domicilio | DIFIORI",
+  title: "Flores Guayaquil | Floreria en Guayaquil y Ramos de Flores | DIFIORI",
   description:
-    "Compra arreglos florales, ramos de flores y regalos a domicilio en Guayaquil con DIFIORI. Entregas en Guayaquil, Samborondón, Durán y Vía a la Costa.",
+    "Compra flores en Guayaquil, ramos de flores y arreglos florales a domicilio con DIFIORI. Entregas en Guayaquil, Samborondon, Duran y Via a la Costa.",
+  keywords: "flores Guayaquil, florerias en Guayaquil, ramos de flores, arreglos florales Guayaquil, floristeria Guayaquil",
   path: "/",
   robots: "index, follow",
   image: DEFAULT_SEO_IMAGE,
@@ -73,6 +76,7 @@ export function SeoProvider({
 export function buildSeoState({
   title,
   description,
+  keywords,
   path = "/",
   robots = "index, follow",
   image = DEFAULT_SEO_IMAGE,
@@ -82,6 +86,7 @@ export function buildSeoState({
   return {
     title,
     description,
+    keywords,
     path,
     robots,
     image,
@@ -96,6 +101,7 @@ export function renderSeoTags(state: SeoState) {
   const tags = [
     `<title>${escapeHtml(state.title)}</title>`,
     `<meta name="description" content="${escapeHtml(state.description)}" />`,
+    state.keywords ? `<meta name="keywords" content="${escapeHtml(state.keywords)}" />` : "",
     `<meta name="robots" content="${escapeHtml(state.robots)}" />`,
     `<meta name="author" content="${escapeHtml(DEFAULT_COMPANY.name)}" />`,
     `<meta property="og:title" content="${escapeHtml(state.title)}" />`,
@@ -109,7 +115,7 @@ export function renderSeoTags(state: SeoState) {
     `<meta name="twitter:description" content="${escapeHtml(state.description)}" />`,
     `<meta name="twitter:image" content="${escapeHtml(imageUrl)}" />`,
     `<link rel="canonical" href="${escapeHtml(canonical)}" />`,
-  ];
+  ].filter(Boolean);
 
   if (state.schema) {
     tags.push(
@@ -132,6 +138,10 @@ function upsertMeta(attribute: "name" | "property", key: string, content: string
   element.setAttribute("content", content);
 }
 
+function removeMeta(attribute: "name" | "property", key: string) {
+  document.head.querySelector<HTMLMetaElement>(`meta[${attribute}="${key}"]`)?.remove();
+}
+
 function upsertLink(rel: string, href: string) {
   let element = document.head.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
 
@@ -147,6 +157,7 @@ function upsertLink(rel: string, href: string) {
 export function Seo({
   title,
   description,
+  keywords,
   path = "/",
   robots = "index, follow",
   image = DEFAULT_SEO_IMAGE,
@@ -157,6 +168,7 @@ export function Seo({
   const seoState = buildSeoState({
     title,
     description,
+    keywords,
     path,
     robots,
     image,
@@ -176,6 +188,11 @@ export function Seo({
     document.documentElement.lang = "es";
 
     upsertMeta("name", "description", seoState.description);
+    if (seoState.keywords) {
+      upsertMeta("name", "keywords", seoState.keywords);
+    } else {
+      removeMeta("name", "keywords");
+    }
     upsertMeta("name", "robots", seoState.robots);
     upsertMeta("name", "author", DEFAULT_COMPANY.name);
     upsertMeta("property", "og:title", seoState.title);

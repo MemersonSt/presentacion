@@ -124,12 +124,18 @@ export default function Home() {
         telephone: `+${DEFAULT_COMPANY.phoneDigits}`,
         email: DEFAULT_COMPANY.email,
         priceRange: "$$",
+        description: "Floreria en Guayaquil especializada en flores, ramos de flores, arreglos florales y regalos a domicilio.",
         address: {
           "@type": "PostalAddress",
           addressLocality: "Guayaquil",
           addressCountry: "EC",
         },
         areaServed: ["Guayaquil", "Samborondon", "Duran", "Via a la Costa"],
+        makesOffer: [
+          { "@type": "Offer", itemOffered: { "@type": "Product", name: "Flores en Guayaquil" } },
+          { "@type": "Offer", itemOffered: { "@type": "Product", name: "Ramos de flores" } },
+          { "@type": "Offer", itemOffered: { "@type": "Product", name: "Arreglos florales a domicilio" } },
+        ],
       },
     ],
   };
@@ -137,18 +143,40 @@ export default function Home() {
   return (
     <main className="min-h-screen overflow-clip bg-background scroll-smooth selection:bg-accent selection:text-white">
       <Seo
-        title="Floristeria en Guayaquil | Arreglos Florales y Regalos a Domicilio | DIFIORI"
-        description="Compra arreglos florales, ramos de flores y regalos a domicilio en Guayaquil con DIFIORI. Entregas en Guayaquil, Samborondon, Duran y Via a la Costa."
+        title="Flores Guayaquil | Floreria en Guayaquil y Ramos de Flores | DIFIORI"
+        description="Compra flores en Guayaquil, ramos de flores y arreglos florales a domicilio con DIFIORI. Entregas en Guayaquil, Samborondon, Duran y Via a la Costa."
+        keywords="flores Guayaquil, florerias en Guayaquil, ramos de flores, arreglos florales Guayaquil, floristeria Guayaquil"
         path="/"
         schema={homeSchema}
       />
-      <h1 className="sr-only">DIFIORI Floristeria Guayaquil - Arreglos Florales, Ramos de Flores y Regalos a Domicilio</h1>
+      <h1 className="sr-only">DIFIORI Flores Guayaquil - Floreria en Guayaquil, Ramos de Flores y Arreglos Florales a Domicilio</h1>
 
       <section className="home-shell-banner-slot">
         <Banner />
       </section>
 
       <div className="home-shell-main">
+        <section className="mx-auto mb-12 grid w-full max-w-6xl gap-4 px-6 md:grid-cols-3">
+          <a href="/flores-guayaquil" className="surface-card p-6 transition-transform hover:-translate-y-1">
+            <h2 className="text-2xl font-semibold text-foreground">Flores Guayaquil</h2>
+            <p className="mt-2 text-sm leading-relaxed text-foreground/65">
+              Flores frescas y arreglos florales con entrega a domicilio en Guayaquil.
+            </p>
+          </a>
+          <a href="/florerias-en-guayaquil" className="surface-card p-6 transition-transform hover:-translate-y-1">
+            <h2 className="text-2xl font-semibold text-foreground">Florerias en Guayaquil</h2>
+            <p className="mt-2 text-sm leading-relaxed text-foreground/65">
+              Floreria DIFIORI para regalos, fechas especiales y pedidos por WhatsApp.
+            </p>
+          </a>
+          <a href="/ramos-de-flores" className="surface-card p-6 transition-transform hover:-translate-y-1">
+            <h2 className="text-2xl font-semibold text-foreground">Ramos de flores</h2>
+            <p className="mt-2 text-sm leading-relaxed text-foreground/65">
+              Ramos de rosas y flores mixtas para enviar en Guayaquil.
+            </p>
+          </a>
+        </section>
+
         <div ref={catalogTriggerRef} className="sr-only" aria-hidden="true" />
         <Suspense fallback={<CatalogFallback />}>
           {shouldLoadCatalog ? <HomeCatalogSection /> : <CatalogFallback />}

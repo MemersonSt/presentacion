@@ -2,6 +2,7 @@ import { Switch, Route } from "wouter";
 import Home from "@/pages/Home";
 import Shop from "@/pages/Shop";
 import CategoryPage from "@/pages/CategoryPage";
+import SeoLandingPage from "@/pages/SeoLandingPage";
 import NotFound from "@/pages/not-found";
 import ProductDetails from "@/pages/ProductDetails";
 import Checkout from "@/pages/Checkout";
@@ -13,6 +14,9 @@ export function ServerRoutes() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/shop" component={Shop} />
+      <Route path="/flores-guayaquil" component={SeoLandingPage} />
+      <Route path="/florerias-en-guayaquil" component={SeoLandingPage} />
+      <Route path="/ramos-de-flores" component={SeoLandingPage} />
       <Route path="/categoria/:slug" component={CategoryPage} />
       <Route path="/producto/:slug" component={ProductDetails} />
       <Route path="/product/:id" component={ProductDetails} />

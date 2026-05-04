@@ -606,6 +606,12 @@ type PublicProduct = {
   price: string;
 };
 
+const SEO_LANDING_PATHS = [
+  "/flores-guayaquil",
+  "/florerias-en-guayaquil",
+  "/ramos-de-flores",
+];
+
 async function fetchPublicProducts(): Promise<PublicProduct[]> {
   try {
     const response = await fetch(buildBackendUrl("/api/external/products"));
@@ -694,6 +700,7 @@ app.get("/sitemap.xml", async (_req, res) => {
   const urls = Array.from(new Set([
     "/",
     "/shop",
+    ...SEO_LANDING_PATHS,
     ...categoryUrls,
     ...products.map((product) => getProductPath(product)),
   ]));
