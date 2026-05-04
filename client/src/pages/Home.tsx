@@ -73,25 +73,32 @@ export default function Home() {
 
   useEffect(() => {
     if (shouldLoadCatalog || typeof window === "undefined") return;
+    let fallbackTimeout = 0;
 
-    const target = catalogSectionRef.current;
-    if (!target || typeof IntersectionObserver === "undefined") {
+    const interactionEvents: Array<keyof WindowEventMap> = ["pointerdown", "keydown", "touchstart", "scroll"];
+
+    const startCatalogLoad = (event?: Event) => {
+      if (event?.type === "scroll" && window.scrollY < 80) return;
+
       setShouldLoadCatalog(true);
-      return;
-    }
+      interactionEvents.forEach((eventName) => {
+        window.removeEventListener(eventName, startCatalogLoad);
+      });
+      if (fallbackTimeout) window.clearTimeout(fallbackTimeout);
+    };
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setShouldLoadCatalog(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "450px 0px" },
-    );
+    interactionEvents.forEach((eventName) => {
+      window.addEventListener(eventName, startCatalogLoad, { passive: true, once: true });
+    });
 
-    observer.observe(target);
-    return () => observer.disconnect();
+    fallbackTimeout = window.setTimeout(() => setShouldLoadCatalog(true), 10000);
+
+    return () => {
+      interactionEvents.forEach((eventName) => {
+        window.removeEventListener(eventName, startCatalogLoad);
+      });
+      if (fallbackTimeout) window.clearTimeout(fallbackTimeout);
+    };
   }, [shouldLoadCatalog]);
 
   useEffect(() => {

@@ -7,15 +7,21 @@ interface LogoProps {
   className?: string;
   variant?: "light" | "dark";
   size?: "sm" | "md" | "lg";
+  useCompanyData?: boolean;
 }
 
-export function Logo({ className, variant = "light", size = "md" }: LogoProps) {
-  const { data: company } = useCompany();
+export function Logo({
+  className,
+  variant = "light",
+  size = "md",
+  useCompanyData = false,
+}: LogoProps) {
+  const { data: company } = useCompany(useCompanyData);
   const color = variant === "light" ? "#E6E6E6" : "#3D2852";
   const sizes = {
     sm: "h-9",
     md: "h-16",
-    lg: "h-20"
+    lg: "h-20",
   };
 
   const logoUrl = getCompanyLogoUrl(company?.logo);
@@ -41,7 +47,6 @@ export function Logo({ className, variant = "light", size = "md" }: LogoProps) {
         xmlns="http://www.w3.org/2000/svg"
         className="h-full w-auto max-w-full overflow-visible"
       >
-        {/* Main Text DIFIORI */}
         <text
           x="200"
           y="43"
@@ -51,13 +56,12 @@ export function Logo({ className, variant = "light", size = "md" }: LogoProps) {
             fontFamily: "Montserrat, sans-serif",
             fontWeight: 800,
             fontSize: "52px",
-            letterSpacing: "0.12em"
+            letterSpacing: "0.12em",
           }}
         >
           DIFIORI
         </text>
 
-        {/* Tagline FLORES • REGALOS • EVENTOS */}
         <text
           x="200"
           y="68"
@@ -68,7 +72,7 @@ export function Logo({ className, variant = "light", size = "md" }: LogoProps) {
             fontWeight: 700,
             fontSize: "18px",
             letterSpacing: "0.22em",
-            opacity: 1
+            opacity: 1,
           }}
         >
           FLORES • REGALOS • EVENTOS
